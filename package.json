@@ -1,0 +1,28 @@
+{
+  "name": "telangana-real-estate-platform",
+  "version": "1.0.0",
+  "description": "Mediator & brokerage platform for land and flat transactions in Telangana & Hyderabad Metro",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspaces",
+    "build": "npm run build --workspaces",
+    "test": "npm run test --workspaces",
+    "lint": "npm run lint --workspaces"
+  },
+  "keywords": [
+    "real-estate",
+    "brokerage",
+    "telangana",
+    "hyderabad",
+    "nextjs",
+    "postgresql",
+    "hmda",
+    "dharani"
+  ],
+  "author": "Telangana Realty Team",
+  "license": "UNLICENSED"
+}

@@ -1,0 +1,50 @@
+{
+  "brand": {
+    "name": "Telangana Realty Hub",
+    "tagline": "100% Verified Land & Flat Brokerage in Hyderabad & Telangana"
+  },
+  "nav": {
+    "home": "Home",
+    "properties": "Explore Properties",
+    "lands": "Land & Plots",
+    "flats": "Apartments & Flats",
+    "listProperty": "List Your Property",
+    "howItWorks": "How It Works",
+    "about": "About Us",
+    "contact": "Contact",
+    "teamLogin": "Agent Login"
+  },
+  "hero": {
+    "title": "Verified Land & Flat Investments with Complete Legal Clarity",
+    "subtitle": "Every single property undergoes rigorous 13-document verification by legal experts before listing. No hidden encumbrances, zero guesswork.",
+    "searchPlaceholder": "Search by Location, Mandal, Highway, or Survey No...",
+    "ctaExplore": "Browse Verified Listings",
+    "ctaList": "Submit Property for Verification"
+  },
+  "trust": {
+    "verifiedBadge": "13-Point Legally Verified",
+    "brokerageModel": "Transparent Deal Brokerage",
+    "brokerageDesc": "We represent you with full transparency, conduct on-ground site visits, and coordinate registry documentation end-to-end.",
+    "orrAccess": "ORR Growth Corridors",
+    "titleClear": "Clear Title Guarantee",
+    "noDirectSpam": "Direct Owner Data Protected — Mediated by Certified Deal Agents"
+  },
+  "cta": {
+    "bookVisit": "Book a Site Visit",
+    "requestCall": "Request Callback",
+    "askQuestion": "Ask a Legal/Property Question",
+    "viewDetails": "View Full Details",
+    "uploadDocs": "Upload Documents"
+  },
+  "filters": {
+    "type": "Property Type",
+    "allTypes": "All Types",
+    "land": "Agricultural / Venture Land",
+    "flat": "Residential Flat",
+    "location": "Location / Mandal",
+    "priceRange": "Price Range",
+    "distanceOrr": "Distance from ORR (km)",
+    "acres": "Acreage",
+    "bhk": "Bedrooms (BHK)"
+  }
+}
