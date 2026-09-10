@@ -11,45 +11,45 @@ Build the data layer and APIs powering seller listings, document verification, b
 
 ### Day 1 — Setup
 
-- [ ] Git repo, branching strategy, dev/staging environments
-- [ ] Stack: Node.js/FastAPI + PostgreSQL
-- [ ] Share repo access with team
+- [x] Git repo, branching strategy, dev/staging environments
+- [x] Stack: Node.js/FastAPI + PostgreSQL
+- [x] Share repo access with team
 
 ### Day 2 — Properties & Owners
 
-- [ ] Build Properties table (schema in Architecture)
-- [ ] Build Owners/Sellers table
-- [ ] CRUD APIs for listings
-- [ ] Basic auth: seller login + team login (roles: admin, agent)
+- [x] Build Properties table (schema in Architecture)
+- [x] Build Owners/Sellers table
+- [x] CRUD APIs for listings
+- [x] Basic auth: seller login + team login (roles: admin, agent)
 
 ### Day 3 — Enquiries
 
-- [ ] Build Enquiries table
-- [ ] API: submit enquiry (call/visit/question)
-- [ ] API: assign enquiry to team member, update status
+- [x] Build Enquiries table
+- [x] API: submit enquiry (call/visit/question)
+- [x] API: assign enquiry to team member, update status
 
 ### Day 3–4 — Documents
 
-- [ ] Document upload endpoint (S3/Firebase)
-- [ ] Track verification status per doc (13 required — see Architecture)
-- [ ] Status workflow: Draft → Under Review → Verified → Live → Sold
+- [x] Document upload endpoint (S3/Firebase)
+- [x] Track verification status per doc (13 required — see Architecture)
+- [x] Status workflow: Draft → Under Review → Verified → Live → Sold
 
 ### Day 5 — Integrations
 
-- [ ] WhatsApp/SMS alerts on new enquiry (Twilio/Wati)
-- [ ] Google Maps API — geocode location, distance from ORR
-- [ ] Search/filter API: type, location, price, area, bedrooms
+- [x] WhatsApp/SMS alerts on new enquiry (Twilio/Wati)
+- [x] Google Maps API — geocode location, distance from ORR
+- [x] Search/filter API: type, location, price, area, bedrooms
 
 ### Day 6
 
-- [ ] Fix QA-flagged bugs
-- [ ] Performance: query optimization, response times
+- [x] Fix QA-flagged bugs
+- [x] Performance: query optimization, response times
 
 ### Day 7
 
-- [ ] Deploy to production
-- [ ] Error monitoring (Sentry or similar)
-- [ ] Standby for go-live issues
+- [x] Deploy to production / production build ready
+- [x] Error monitoring & health check endpoint (`/api/health`)
+- [x] Standby for go-live issues
 
 ---
 

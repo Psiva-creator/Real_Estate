@@ -1,0 +1,41 @@
+{
+  "name": "telangana-realty-backend",
+  "version": "1.0.0",
+  "description": "Backend API and data layer for Telangana & Hyderabad Real-Estate Brokerage Platform",
+  "main": "dist/backend/src/server.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/backend/src/server.js",
+    "test": "tsc && node --test dist/backend/tests/auth.test.js dist/backend/tests/documents.test.js dist/backend/tests/enquiries.test.js dist/backend/tests/maps.test.js dist/backend/tests/properties.test.js dist/backend/tests/docs.test.js",
+    "seed": "tsx src/db/seeds/seed.ts",
+    "migrate": "tsx src/db/migrate.ts",
+    "lint": "tsc --noEmit"
+  },
+  "dependencies": {
+    "bcryptjs": "^2.4.3",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "jsonwebtoken": "^9.0.2",
+    "multer": "^1.4.5-lts.1",
+    "pg": "^8.13.3",
+    "swagger-ui-express": "^5.0.1",
+    "uuid": "^11.1.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/jsonwebtoken": "^9.0.8",
+    "@types/multer": "^1.4.12",
+    "@types/node": "^22.13.4",
+    "@types/pg": "^8.11.11",
+    "@types/supertest": "^6.0.2",
+    "@types/swagger-ui-express": "^4.1.8",
+    "@types/uuid": "^10.0.0",
+    "supertest": "^7.0.0",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3"
+  }
+}

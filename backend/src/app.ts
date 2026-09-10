@@ -1,0 +1,167 @@
+import express, { Request, Response, NextFunction } from 'express';
+import cors from 'cors';
+import path from 'path';
+import { config } from './config/index.js';
+import { authController } from './modules/auth/auth.controller.js';
+import { propertiesController } from './modules/properties/properties.controller.js';
+import { documentsController, documentUploadMiddleware } from './modules/documents/documents.controller.js';
+import { enquiriesController } from './modules/enquiries/enquiries.controller.js';
+import { ownersController } from './modules/owners/owners.controller.js';
+import { mapsController } from './modules/maps/maps.controller.js';
+import { adminController } from './modules/admin/admin.controller.js';
+import { requireAuth, requireRole, optionalAuth } from './middleware/auth.js';
+
+import swaggerUi from 'swagger-ui-express';
+import { openApiSpec } from './docs/openapi.js';
+
+export const app = express();
+
+// Global Middlewares
+app.use(cors());
+app.use(express.json({ limit: '20mb' }));
+app.use(express.urlencoded({ extended: true, limit: '20mb' }));
+
+// Static uploads serving (for local file driver)
+app.use('/uploads', express.static(path.resolve(config.uploadDir)));
+
+// --- API DOCUMENTATION (SWAGGER UI) ---
+app.get('/api/docs.json', (_req: Request, res: Response) => {
+  res.json(openApiSpec);
+});
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
+
+// --- HEALTH CHECK ---
+app.get('/api/health', (_req: Request, res: Response) => {
+  res.json({
+    status: 'healthy',
+    timestamp: new Date().toISOString(),
+    service: 'Telangana Real-Estate Brokerage Backend',
+    version: '1.0.0',
+  });
+});
+
+// --- AUTH ROUTES ---
+const authRouter = express.Router();
+authRouter.post('/register', authController.register.bind(authController));
+authRouter.post('/login', authController.login.bind(authController));
+authRouter.get('/me', requireAuth, authController.me.bind(authController));
+app.use('/api/auth', authRouter);
+
+// --- PROPERTIES ROUTES (PUBLIC & SELLER) ---
+const propertiesRouter = express.Router();
+propertiesRouter.get('/', propertiesController.listPublic.bind(propertiesController));
+propertiesRouter.get('/search', propertiesController.search.bind(propertiesController));
+propertiesRouter.get('/:id', propertiesController.getDetail.bind(propertiesController));
+propertiesRouter.post('/', optionalAuth, propertiesController.createListing.bind(propertiesController));
+propertiesRouter.patch(
+  '/:id/status',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  propertiesController.updateStatus.bind(propertiesController)
+);
+app.use('/api/properties', propertiesRouter);
+
+// --- DOCUMENTS & 13-VERIFICATION GATE ROUTES ---
+const documentsRouter = express.Router();
+documentsRouter.post(
+  '/properties/:id/documents/upload',
+  documentUploadMiddleware,
+  documentsController.uploadDocument.bind(documentsController)
+);
+documentsRouter.post(
+  '/properties/:id/documents/upload-url',
+  documentsController.getPresignedUploadUrl.bind(documentsController)
+);
+documentsRouter.get(
+  '/properties/:id/documents',
+  documentsController.listDocuments.bind(documentsController)
+);
+documentsRouter.get(
+  '/properties/:id/documents/go-live-check',
+  documentsController.checkGoLiveEligibility.bind(documentsController)
+);
+documentsRouter.patch(
+  '/properties/:id/documents/:docType/verify',
+  requireAuth,
+  requireRole(['ADMIN']),
+  documentsController.verifyDocument.bind(documentsController)
+);
+app.use('/api', documentsRouter);
+
+// --- ENQUIRIES & LEAD PIPELINE ROUTES ---
+const enquiriesRouter = express.Router();
+enquiriesRouter.post('/', enquiriesController.submitEnquiry.bind(enquiriesController));
+enquiriesRouter.get(
+  '/',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  enquiriesController.listEnquiries.bind(enquiriesController)
+);
+enquiriesRouter.get(
+  '/:id',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  enquiriesController.getEnquiry.bind(enquiriesController)
+);
+enquiriesRouter.patch(
+  '/:id/assign',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  enquiriesController.assignEnquiry.bind(enquiriesController)
+);
+enquiriesRouter.patch(
+  '/:id/status',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  enquiriesController.updateStatus.bind(enquiriesController)
+);
+enquiriesRouter.patch(
+  '/:id/schedule-visit',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  enquiriesController.scheduleSiteVisit.bind(enquiriesController)
+);
+app.use('/api/enquiries', enquiriesRouter);
+
+// --- OWNERS / SELLERS ROUTES ---
+const ownersRouter = express.Router();
+ownersRouter.get('/me', requireAuth, ownersController.getMyProfile.bind(ownersController));
+ownersRouter.get('/', requireAuth, requireRole(['ADMIN']), ownersController.listAll.bind(ownersController));
+ownersRouter.get('/:id', requireAuth, requireRole(['ADMIN']), ownersController.getDetail.bind(ownersController));
+app.use('/api/owners', ownersRouter);
+
+// --- MAPS & ORR DISTANCE ROUTES ---
+const mapsRouter = express.Router();
+mapsRouter.get('/distance', mapsController.calculateOrrDistance.bind(mapsController));
+app.use('/api/maps', mapsRouter);
+
+// --- ADMIN / TEAM BACK-OFFICE ROUTES ---
+const adminRouter = express.Router();
+adminRouter.get(
+  '/dashboard',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  adminController.getDashboardStats.bind(adminController)
+);
+adminRouter.get(
+  '/properties',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  adminController.listAllProperties.bind(adminController)
+);
+adminRouter.get(
+  '/properties/:id',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  propertiesController.getInternalDetail.bind(propertiesController)
+);
+app.use('/api/admin', adminRouter);
+
+// Centralized error handler
+app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
+  console.error('Unhandled API Error:', err);
+  res.status(500).json({
+    error: 'Internal Server Error',
+    message: err.message,
+  });
+});
