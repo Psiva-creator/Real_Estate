@@ -80,7 +80,8 @@ export class StorageService {
   ): Promise<UploadedFileMeta> {
     const ext = path.extname(originalName) || '.pdf';
     const filename = `${docType}_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext}`;
-    const propertyDir = path.join(this.baseUploadDir, propertyId);
+    const safePropertyId = path.basename(propertyId);
+    const propertyDir = path.join(this.baseUploadDir, safePropertyId);
 
     if (!fs.existsSync(propertyDir)) {
       fs.mkdirSync(propertyDir, { recursive: true });
@@ -89,7 +90,7 @@ export class StorageService {
     const filePath = path.join(propertyDir, filename);
     await fs.promises.writeFile(filePath, buffer);
 
-    const fileUrl = `/uploads/${propertyId}/${filename}`;
+    const fileUrl = `/uploads/${safePropertyId}/${filename}`;
 
     return {
       fileUrl,

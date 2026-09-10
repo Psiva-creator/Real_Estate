@@ -7,7 +7,10 @@
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/backend/src/server.js",
-    "test": "tsc && node --test dist/backend/tests/auth.test.js dist/backend/tests/documents.test.js dist/backend/tests/enquiries.test.js dist/backend/tests/maps.test.js dist/backend/tests/properties.test.js dist/backend/tests/docs.test.js",
+    "test": "npm run test:unit",
+    "test:unit": "tsc && node --test dist/backend/tests/auth.test.js dist/backend/tests/documents.test.js dist/backend/tests/enquiries.test.js dist/backend/tests/maps.test.js dist/backend/tests/properties.test.js dist/backend/tests/docs.test.js",
+    "test:integration": "tsc && node --test dist/backend/tests/postgres.integration.test.js",
+    "test:all": "npm run test:unit && npm run test:integration",
     "seed": "tsx src/db/seeds/seed.ts",
     "migrate": "tsx src/db/migrate.ts",
     "lint": "tsc --noEmit"

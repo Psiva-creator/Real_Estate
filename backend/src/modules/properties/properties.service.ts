@@ -208,12 +208,12 @@ export class PropertiesService {
       );
     }
 
-    // Crucial Verification Gate: Cannot transition to LIVE unless all mandatory docs are VERIFIED
-    if (newStatus === 'LIVE') {
+    // Crucial Verification Gate: Cannot transition to VERIFIED or LIVE unless all mandatory docs are VERIFIED
+    if (newStatus === 'VERIFIED' || newStatus === 'LIVE') {
       const eligibility = await documentsService.validateForGoLive(id);
       if (!eligibility.canGoLive) {
         throw new Error(
-          `Cannot transition listing to LIVE. The following mandatory verification documents are pending or unverified: ${eligibility.missingDocs.join(
+          `Cannot transition listing to ${newStatus}. The following mandatory verification documents are pending or unverified: ${eligibility.missingDocs.join(
             ', '
           )}`
         );
@@ -225,6 +225,63 @@ export class PropertiesService {
   }
 
   /**
+   * Validate partial update fields
+   */
+  validateUpdateInput(updates: Partial<Property>) {
+    if (updates.status !== undefined) {
+      throw new Error('Property status cannot be updated via generic PATCH. Use PATCH /api/properties/:id/status');
+    }
+
+    if (updates.titleEn !== undefined && (!updates.titleEn || !updates.titleEn.trim())) {
+      throw new Error('English title cannot be empty');
+    }
+
+    if (updates.descriptionEn !== undefined && (!updates.descriptionEn || !updates.descriptionEn.trim())) {
+      throw new Error('English description cannot be empty');
+    }
+
+    if (updates.type !== undefined && !['LAND', 'FLAT'].includes(updates.type)) {
+      throw new Error('Property type must be LAND or FLAT');
+    }
+
+    if (updates.pricing) {
+      if (updates.pricing.totalPrice !== undefined && (typeof updates.pricing.totalPrice !== 'number' || updates.pricing.totalPrice <= 0)) {
+        throw new Error('Valid total price greater than 0 is required');
+      }
+      if (updates.pricing.pricePerAcre !== undefined && (typeof updates.pricing.pricePerAcre !== 'number' || updates.pricing.pricePerAcre < 0)) {
+        throw new Error('pricePerAcre must be a positive number');
+      }
+      if (updates.pricing.pricePerSqft !== undefined && (typeof updates.pricing.pricePerSqft !== 'number' || updates.pricing.pricePerSqft < 0)) {
+        throw new Error('pricePerSqft must be a positive number');
+      }
+    }
+
+    if (updates.location) {
+      if (updates.location.latitude !== undefined && (typeof updates.location.latitude !== 'number' || updates.location.latitude < -90 || updates.location.latitude > 90)) {
+        throw new Error('Latitude must be between -90 and 90');
+      }
+      if (updates.location.longitude !== undefined && (typeof updates.location.longitude !== 'number' || updates.location.longitude < -180 || updates.location.longitude > 180)) {
+        throw new Error('Longitude must be between -180 and 180');
+      }
+    }
+
+    if (updates.land) {
+      if (updates.land.totalAcres !== undefined && (typeof updates.land.totalAcres !== 'number' || updates.land.totalAcres <= 0)) {
+        throw new Error('Total acres must be a positive number');
+      }
+    }
+
+    if (updates.flat) {
+      if (updates.flat.bedrooms !== undefined && (typeof updates.flat.bedrooms !== 'number' || updates.flat.bedrooms < 0)) {
+        throw new Error('Bedrooms cannot be negative');
+      }
+      if (updates.flat.sqft !== undefined && (typeof updates.flat.sqft !== 'number' || updates.flat.sqft <= 0)) {
+        throw new Error('Sqft must be a positive number');
+      }
+    }
+  }
+
+  /**
    * Update property details
    */
   async updateProperty(id: string, updates: Partial<Property>): Promise<Property> {
@@ -233,10 +290,56 @@ export class PropertiesService {
       throw new Error(`Property ${id} not found`);
     }
 
-    // Do not allow direct status update through this method
-    const { status, sellerId, id: _id, ...safeUpdates } = updates;
+    this.validateUpdateInput(updates);
+
+    // Strip protected system fields
+    const { status, sellerId, id: _id, createdAt, updatedAt, viewsCount, isFeatured, ...safeUpdates } = updates as any;
+
+    let location = safeUpdates.location;
+    if (location) {
+      let distanceFromOrrKm = location.distanceFromOrrKm;
+      let tier = location.tier;
+
+      if (location.latitude && location.longitude && distanceFromOrrKm === undefined) {
+        distanceFromOrrKm = mapsService.calculateDistanceFromOrr({
+          lat: location.latitude,
+          lng: location.longitude,
+        });
+      } else if (distanceFromOrrKm === undefined && (location.mandal || location.village)) {
+        const lookup = mapsService.lookupLocation(location.mandal || location.village);
+        if (lookup) {
+          distanceFromOrrKm = lookup.distanceFromOrrKm;
+          tier = lookup.tier;
+        }
+      }
+
+      if (distanceFromOrrKm !== undefined && !tier) {
+        tier = mapsService.determineServiceTier(distanceFromOrrKm, location.mandal || property.location.mandal);
+      }
+
+      safeUpdates.location = {
+        ...location,
+        distanceFromOrrKm: distanceFromOrrKm ?? property.location.distanceFromOrrKm,
+        tier: tier ?? property.location.tier,
+      };
+    }
+
     const updated = await db.updateProperty(id, safeUpdates);
-    return updated!;
+    if (!updated) {
+      throw new Error(`Property ${id} not found`);
+    }
+    return updated;
+  }
+
+  /**
+   * Delete property
+   */
+  async deleteProperty(id: string): Promise<boolean> {
+    const property = await db.findPropertyById(id);
+    if (!property) {
+      return false;
+    }
+    return db.deleteProperty(id);
   }
 
   async listAllForAdmin(): Promise<Property[]> {

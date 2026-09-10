@@ -10,8 +10,8 @@ async function startServer() {
   const pgConnected = await db.testConnection();
   if (pgConnected) {
     console.log('✅ PostgreSQL database connected successfully');
-  } else {
-    console.log('ℹ️  Running with in-memory database store (development/test mode)');
+  } else if (config.nodeEnv !== 'test') {
+    throw new Error('Fatal: PostgreSQL connection failed. Production runtime requires a working PostgreSQL database.');
   }
 
   // Seed default data if store is empty

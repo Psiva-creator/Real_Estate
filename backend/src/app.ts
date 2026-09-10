@@ -15,9 +15,19 @@ import swaggerUi from 'swagger-ui-express';
 import { openApiSpec } from './docs/openapi.js';
 
 export const app = express();
+app.disable('x-powered-by');
 
 // Global Middlewares
-app.use(cors());
+app.use(
+  cors({
+    origin: config.nodeEnv === 'production'
+      ? [config.frontendUrl]
+      : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
+    credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+  })
+);
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
@@ -59,26 +69,45 @@ propertiesRouter.patch(
   requireRole(['ADMIN', 'AGENT']),
   propertiesController.updateStatus.bind(propertiesController)
 );
+propertiesRouter.patch(
+  '/:id',
+  requireAuth,
+  propertiesController.updateProperty.bind(propertiesController)
+);
+propertiesRouter.delete(
+  '/:id',
+  requireAuth,
+  propertiesController.deleteProperty.bind(propertiesController)
+);
 app.use('/api/properties', propertiesRouter);
 
 // --- DOCUMENTS & 13-VERIFICATION GATE ROUTES ---
 const documentsRouter = express.Router();
 documentsRouter.post(
   '/properties/:id/documents/upload',
+  optionalAuth,
   documentUploadMiddleware,
   documentsController.uploadDocument.bind(documentsController)
 );
 documentsRouter.post(
   '/properties/:id/documents/upload-url',
+  optionalAuth,
   documentsController.getPresignedUploadUrl.bind(documentsController)
 );
 documentsRouter.get(
+  '/properties/:id/documents/go-live-check',
+  optionalAuth,
+  documentsController.checkGoLiveEligibility.bind(documentsController)
+);
+documentsRouter.get(
   '/properties/:id/documents',
+  requireAuth,
   documentsController.listDocuments.bind(documentsController)
 );
 documentsRouter.get(
-  '/properties/:id/documents/go-live-check',
-  documentsController.checkGoLiveEligibility.bind(documentsController)
+  '/properties/:id/documents/:docType',
+  requireAuth,
+  documentsController.getDocument.bind(documentsController)
 );
 documentsRouter.patch(
   '/properties/:id/documents/:docType/verify',

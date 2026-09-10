@@ -28,6 +28,11 @@ export class DocumentsService {
       throw new Error('Unsupported file format. Only PDF, JPG, JPEG, and PNG files are allowed.');
     }
 
+    const existingDoc = await db.findDocument(propertyId, docType);
+    if (existingDoc && existingDoc.status === 'VERIFIED') {
+      throw new Error(`Cannot re-upload document ${docType}: It is already VERIFIED. Revocation required by legal team before re-upload.`);
+    }
+
     const savedFile = await storageService.saveBuffer(
       fileBuffer,
       propertyId,
@@ -69,6 +74,14 @@ export class DocumentsService {
     const existingDoc = await db.findDocument(propertyId, docType);
     if (!existingDoc) {
       throw new Error(`Document of type ${docType} has not been uploaded yet for this property`);
+    }
+
+    if (existingDoc.status === 'PENDING') {
+      throw new Error(`Cannot verify or reject document ${docType} with status PENDING. The document must be UPLOADED first.`);
+    }
+
+    if (existingDoc.status === 'VERIFIED' && status === 'VERIFIED') {
+      throw new Error(`Document ${docType} is already VERIFIED.`);
     }
 
     const updatedDoc = await db.upsertDocument({
@@ -132,6 +145,10 @@ export class DocumentsService {
 
   async getPropertyDocuments(propertyId: string): Promise<PropertyDocument[]> {
     return db.findDocumentsByPropertyId(propertyId);
+  }
+
+  async getDocument(propertyId: string, docType: DocumentType): Promise<PropertyDocument | null> {
+    return db.findDocument(propertyId, docType);
   }
 }
 

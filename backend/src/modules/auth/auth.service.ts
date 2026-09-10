@@ -30,7 +30,15 @@ export class AuthService {
     }
 
     const passwordHash = input.password ? await hashPassword(input.password) : undefined;
-    const role: UserRole = input.role || 'SELLER';
+    
+    // Disallow self-registering as ADMIN or AGENT via public registration
+    let role: UserRole = 'SELLER';
+    if (input.role) {
+      if (input.role === 'ADMIN' || input.role === 'AGENT') {
+        throw new Error('Unauthorized: Cannot self-register as ADMIN or AGENT role');
+      }
+      role = input.role;
+    }
 
     const user = await db.createUser({
       name: input.name,
@@ -70,13 +78,16 @@ export class AuthService {
     }
 
     if (!user) {
-      throw new Error('Invalid credentials: user not found');
+      throw new Error('Invalid credentials');
     }
 
-    if (user.passwordHash && password) {
+    if (user.passwordHash) {
+      if (!password) {
+        throw new Error('Password is required');
+      }
       const isValid = await comparePassword(password, user.passwordHash);
       if (!isValid) {
-        throw new Error('Invalid password');
+        throw new Error('Invalid credentials');
       }
     }
 

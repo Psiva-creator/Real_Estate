@@ -91,7 +91,7 @@ export class PropertiesController {
     try {
       let sellerId = req.body.sellerId;
 
-      // If user is authenticated as SELLER, ensure seller profile exists
+      // If user is authenticated, derive sellerId strictly from session
       if (req.user) {
         let owner = await db.findOwnerByUserId(req.user.id);
         if (!owner) {
@@ -107,10 +107,14 @@ export class PropertiesController {
           });
         }
         sellerId = owner.id;
-      }
+      } else {
+        // If unauthenticated, seller details MUST be provided in body; raw sellerId is forbidden
+        if (!req.body.seller) {
+          return res.status(400).json({
+            error: 'Authentication or seller contact details (name, phone) are required to submit a listing',
+          });
+        }
 
-      // If no auth but seller info provided in body (public seller onboarding wizard)
-      if (!sellerId && req.body.seller) {
         const { name, phone, whatsapp, email, aadharNumber } = req.body.seller;
         if (!name || !phone) {
           return res.status(400).json({ error: 'Seller name and phone are required for listing submission' });
@@ -134,7 +138,7 @@ export class PropertiesController {
 
       if (!sellerId) {
         return res.status(400).json({
-          error: 'sellerId or seller details (name, phone) are required to create a listing',
+          error: 'Unable to determine seller profile for property listing',
         });
       }
 
@@ -196,6 +200,87 @@ export class PropertiesController {
         property,
         seller: owner,
         documents,
+      });
+    } catch (err) {
+      return res.status(500).json({ error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Generic property update (Protected fields stripped, RBAC/ownership enforced)
+   * PATCH /api/properties/:id
+   */
+  async updateProperty(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const property = await propertiesService.getInternalPropertyDetail(id);
+      if (!property) {
+        return res.status(404).json({ error: 'Property not found' });
+      }
+
+      // Check authorization: Admin and Agent can modify; Seller can only modify their own listing
+      const isStaff = req.user.role === 'ADMIN' || req.user.role === 'AGENT';
+      let isOwner = false;
+      if (req.user.role === 'SELLER') {
+        const owner = await db.findOwnerByUserId(req.user.id);
+        isOwner = !!owner && owner.id === property.sellerId;
+      }
+
+      if (!isStaff && !isOwner) {
+        return res.status(403).json({ error: 'Forbidden: You do not have permission to modify this property' });
+      }
+
+      const updated = await propertiesService.updateProperty(id, req.body);
+
+      return res.json({
+        message: 'Property updated successfully',
+        property: updated,
+      });
+    } catch (err) {
+      return res.status(400).json({ error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Delete property (Cascading deletes related documents & enquiries, RBAC/ownership enforced)
+   * DELETE /api/properties/:id
+   */
+  async deleteProperty(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      const property = await propertiesService.getInternalPropertyDetail(id);
+      if (!property) {
+        return res.status(404).json({ error: 'Property not found' });
+      }
+
+      // Check authorization: Admin and Agent can delete; Seller can only delete their own listing
+      const isStaff = req.user.role === 'ADMIN' || req.user.role === 'AGENT';
+      let isOwner = false;
+      if (req.user.role === 'SELLER') {
+        const owner = await db.findOwnerByUserId(req.user.id);
+        isOwner = !!owner && owner.id === property.sellerId;
+      }
+
+      if (!isStaff && !isOwner) {
+        return res.status(403).json({ error: 'Forbidden: You do not have permission to delete this property' });
+      }
+
+      const deleted = await propertiesService.deleteProperty(id);
+      if (!deleted) {
+        return res.status(404).json({ error: 'Property not found' });
+      }
+
+      return res.json({
+        message: 'Property deleted successfully',
+        propertyId: id,
       });
     } catch (err) {
       return res.status(500).json({ error: (err as Error).message });

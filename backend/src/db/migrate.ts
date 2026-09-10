@@ -3,12 +3,13 @@ import path from 'path';
 import { Pool } from 'pg';
 import { config } from '../config/index.js';
 
-export async function runMigrations() {
+export async function runMigrations(databaseUrl?: string) {
+  const targetUrl = databaseUrl || config.databaseUrl;
   console.log('🔄 Connecting to PostgreSQL database for migration...');
-  console.log(`📡 URL: ${config.databaseUrl.replace(/:[^:@]+@/, ':****@')}`);
+  console.log(`📡 URL: ${targetUrl.replace(/:[^:@]+@/, ':****@')}`);
 
   const pool = new Pool({
-    connectionString: config.databaseUrl,
+    connectionString: targetUrl,
     ssl: config.dbSsl ? { rejectUnauthorized: false } : false,
   });
 
