@@ -11,7 +11,10 @@
     "dev": "npm run dev --workspaces",
     "build": "npm run build --workspaces",
     "test": "npm run test --workspaces",
-    "lint": "npm run lint --workspaces"
+    "lint": "npm run lint --workspaces",
+    "sync": "./scripts/git-sync.sh --once",
+    "sync:status": "./scripts/git-sync.sh --status",
+    "sync:logs": "./scripts/git-sync.sh --logs"
   },
   "keywords": [
     "real-estate",
