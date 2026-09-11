@@ -1,0 +1,39 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --primary-50: #eef8f3;
+  --primary-100: #d6efe2;
+  --primary-500: #15803d;
+  --primary-600: #166534;
+  --primary-700: #14532d;
+  --secondary-500: #b45309;
+  --secondary-600: #92400e;
+  --verified-green: #059669;
+  --surface: #ffffff;
+  --bg-slate: #f8fafc;
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    background-color: var(--bg-slate);
+    color: #0f172a;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  }
+}
+
+/* Custom utility classes */
+.shield-badge {
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80;
+}
+
+.tap-target {
+  min-height: 48px;
+  min-width: 48px;
+}
