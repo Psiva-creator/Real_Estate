@@ -185,6 +185,7 @@ export default function DashboardEnquiriesPage() {
                 type="button"
                 onClick={() => setSearch('')}
                 className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-700"
+                aria-label="Clear search"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -193,7 +194,10 @@ export default function DashboardEnquiriesPage() {
 
           {/* Status filter */}
           <div className="relative min-w-[170px]">
+            <label htmlFor="statusFilter" className="sr-only">Status filter</label>
             <select
+              id="statusFilter"
+              aria-label="Status filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as EnquiryStatus | 'ALL')}
               className="w-full h-10 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer appearance-none"
@@ -210,7 +214,10 @@ export default function DashboardEnquiriesPage() {
 
           {/* Type filter */}
           <div className="relative min-w-[150px]">
+            <label htmlFor="typeFilter" className="sr-only">Type filter</label>
             <select
+              id="typeFilter"
+              aria-label="Type filter"
               value={typeFilter}
               onChange={(e) => setTypeFilter(e.target.value as EnquiryType | 'ALL')}
               className="w-full h-10 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-blue-600 cursor-pointer appearance-none"
@@ -300,7 +307,10 @@ export default function DashboardEnquiriesPage() {
                     {/* Assigned Agent */}
                     <td className="px-4 py-3.5">
                        <div className="relative">
+                        <label htmlFor={`agentSelect-${lead.id}`} className="sr-only">Assigned Agent</label>
                         <select
+                          id={`agentSelect-${lead.id}`}
+                          aria-label="Assigned Agent"
                           value={lead.agentName}
                           onChange={(e) => updateAgent(lead.id, e.target.value)}
                           className="w-full h-8 px-2 pr-6 rounded-md bg-white border border-slate-200 text-xs text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none"
@@ -316,7 +326,10 @@ export default function DashboardEnquiriesPage() {
                     {/* Status */}
                     <td className="px-4 py-3.5">
                        <div className="relative">
+                        <label htmlFor={`statusSelect-${lead.id}`} className="sr-only">Status</label>
                         <select
+                          id={`statusSelect-${lead.id}`}
+                          aria-label="Status"
                           value={lead.status}
                           onChange={(e) => updateStatus(lead.id, e.target.value as EnquiryStatus)}
                           className={`w-full h-8 px-2 pr-6 rounded-md border text-xs font-bold focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none ${

@@ -134,8 +134,10 @@ export default function DashboardPropertiesPage() {
 
           {/* Status filter */}
           <div className="relative min-w-[160px]">
-            <label className="sr-only">Status filter</label>
+            <label htmlFor="statusFilter" className="sr-only">Status filter</label>
             <select
+              id="statusFilter"
+              aria-label="Status filter"
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
               className="w-full h-10 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600 cursor-pointer appearance-none"
@@ -153,8 +155,10 @@ export default function DashboardPropertiesPage() {
 
           {/* Verification filter */}
           <div className="relative min-w-[170px]">
-            <label className="sr-only">Verification filter</label>
+            <label htmlFor="verifFilter" className="sr-only">Verification filter</label>
             <select
+              id="verifFilter"
+              aria-label="Verification filter"
               value={verifFilter}
               onChange={(e) => setVerifFilter(e.target.value as VerifFilter)}
               className="w-full h-10 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600 cursor-pointer appearance-none"
