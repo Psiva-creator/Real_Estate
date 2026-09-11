@@ -66,6 +66,36 @@ backend/
 │   │   └── storage/         # AWS S3 / Firebase file handler
 │   ├── middleware/          # Auth, RBAC, input validation
 │   └── types/               # Backend specific DTOs & models
+├── tests/                   # Automated unit & PostgreSQL integration tests
 ├── package.json
 └── tsconfig.json
 ```
+
+---
+
+## 🚀 Running & Verification
+
+```bash
+# Install dependencies
+npm install
+
+# Run automated tests (Unit & Integration)
+npm run test:all
+
+# Seed database with sample Hyderabad listings
+npm run seed
+
+# Start development server
+npm run dev
+
+# Build & run production server
+npm run build
+npm start
+```
+
+### 📖 Interactive API Documentation
+OpenAPI 3.0 documentation and Swagger UI are hosted at:
+- **Swagger UI:** `http://localhost:5000/api/docs`
+- **OpenAPI JSON Spec:** `http://localhost:5000/api/docs/spec`
+
+*Last Updated & Verified: 2026-09-11 (Day 7 QA & Launch Complete)*
