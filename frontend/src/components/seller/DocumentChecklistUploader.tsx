@@ -245,7 +245,8 @@ export default function DocumentChecklistUploader({
                 }}
               />
 
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+              {/* Row: stack vertically on mobile, side-by-side from md */}
+              <div className="flex flex-col min-[560px]:flex-row min-[560px]:items-center justify-between gap-3">
                 {/* Left info */}
                 <div className="flex items-start gap-3 min-w-0">
                   <div
@@ -299,7 +300,8 @@ export default function DocumentChecklistUploader({
                           <span>{uploaderDict.statusUploading}</span>
                           <span>{docState.uploadProgress || 45}%</span>
                         </div>
-                        <div className="w-48 h-1.5 bg-blue-100 rounded-full overflow-hidden">
+                        {/* Full-width progress bar on all screen sizes */}
+                        <div className="w-full h-1.5 bg-blue-100 rounded-full overflow-hidden">
                           <div
                             className="h-full bg-blue-600 transition-all duration-200"
                             style={{ width: `${docState.uploadProgress || 45}%` }}
@@ -310,9 +312,9 @@ export default function DocumentChecklistUploader({
 
                     {isUploaded && docState.fileName && (
                       <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-emerald-800">
-                        <span className="inline-flex items-center gap-1 font-semibold">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                          <span className="truncate max-w-xs">{docState.fileName}</span>
+                        <span className="inline-flex items-center gap-1 font-semibold min-w-0">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                          <span className="truncate max-w-[160px] sm:max-w-xs">{docState.fileName}</span>
                         </span>
                         <span className="text-slate-400">•</span>
                         <span className="text-slate-500 font-mono text-[11px]">
@@ -331,8 +333,8 @@ export default function DocumentChecklistUploader({
                   </div>
                 </div>
 
-                {/* Right Actions */}
-                <div className="flex items-center gap-2 self-end md:self-center shrink-0">
+                {/* Right Actions — self-start on mobile so they don't stretch */}
+                <div className="flex items-center gap-2 self-start min-[560px]:self-center shrink-0">
                   {!isUploaded && !isUploading && (
                     <button
                       type="button"

@@ -19,12 +19,28 @@
   html {
     scroll-behavior: smooth;
     -webkit-tap-highlight-color: transparent;
+    /* Prevent horizontal scroll at the root level on all breakpoints */
+    overflow-x: hidden;
+    max-width: 100vw;
   }
 
   body {
     background-color: var(--bg-slate);
     color: #0f172a;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    /* Prevent horizontal overflow on mobile */
+    overflow-x: hidden;
+    max-width: 100%;
+    /* Safe-area support for notched / bottom-bar phones */
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  /* Ensure images and embeds never exceed their container */
+  img,
+  video,
+  iframe,
+  embed {
+    max-width: 100%;
   }
 }
 
@@ -37,3 +53,17 @@
   min-height: 48px;
   min-width: 48px;
 }
+
+/* Mobile-safe text truncation helper */
+.truncate-mobile {
+  @apply truncate max-w-[calc(100vw-2rem)];
+}
+
+/* Dashboard status badges */
+.badge-verified   { @apply px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs; }
+.badge-live       { @apply px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-xs; }
+.badge-review     { @apply px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs; }
+.badge-draft      { @apply px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs; }
+.badge-sold       { @apply px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-xs; }
+.badge-new        { @apply px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 font-bold text-xs; }
+

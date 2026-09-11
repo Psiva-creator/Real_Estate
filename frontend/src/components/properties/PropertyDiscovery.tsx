@@ -306,9 +306,9 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
   );
 
   return (
-    <div className="w-full max-w-full space-y-6">
+    <div className="w-full max-w-full space-y-6 overflow-hidden">
       {/* Search & Main Filter Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4">
+      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4 overflow-hidden">
         {/* Top Row: Search Input & Quick Type Tabs */}
         <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
           {/* Search Input Bar */}
@@ -335,8 +335,8 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
             )}
           </div>
 
-          {/* Quick Property Type Tabs (Preserved from original implementation) */}
-          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto pb-1 md:pb-0">
+          {/* Quick Property Type Tabs — scrollable on narrow screens */}
+          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
             <button
               type="button"
               onClick={() => handleTypeTabClick('ALL')}
@@ -375,7 +375,8 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
         {/* Multi-Criteria Filter Dropdowns (Location, Price, Area, ORR Distance, Verification) */}
         <div className="pt-3 border-t border-slate-100">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+          {/* Filter dropdowns — 1 col on xs, 2 on sm, 5 on lg */}
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5 gap-3">
             {/* 1. Location / Mandal Filter */}
             <div>
               <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
@@ -511,7 +512,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
       </div>
 
       {/* Results Header & Mobile Toggle */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+      <div className="flex flex-col min-[480px]:flex-row items-stretch min-[480px]:items-center justify-between gap-3">
         <div className="text-sm font-semibold text-slate-700 flex items-center gap-2">
           <span>
             {isTe
@@ -526,7 +527,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
         </div>
 
         {/* Mobile List / Map Toggle (visible only on < lg screens) */}
-        <div className="flex lg:hidden items-center self-start sm:self-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div className="flex lg:hidden items-center self-start min-[480px]:self-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
           <button
             type="button"
             onClick={() => setMobileView('list')}

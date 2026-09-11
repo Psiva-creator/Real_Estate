@@ -49,16 +49,16 @@ export default function Navbar({ locale }: NavbarProps) {
           {/* Logo & Brand */}
           <Link
             href={`/${locale}`}
-            className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 rounded-lg"
+            className="flex items-center gap-2.5 group focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 rounded-lg min-w-0"
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200">
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-xl bg-gradient-to-br from-emerald-800 to-emerald-950 text-white flex items-center justify-center shadow-sm group-hover:scale-105 transition-transform duration-200 shrink-0">
               <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-emerald-300" />
             </div>
-            <div className="flex flex-col">
-              <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-emerald-800 transition-colors">
+            <div className="flex flex-col min-w-0">
+              <span className="text-base sm:text-lg font-bold text-slate-900 tracking-tight leading-tight group-hover:text-emerald-800 transition-colors truncate">
                 {dict.brand.name}
               </span>
-              <span className="text-[10px] sm:text-xs font-semibold text-emerald-700 tracking-wider uppercase hidden xs:block">
+              <span className="text-[10px] sm:text-xs font-semibold text-emerald-700 tracking-wider uppercase hidden xs:block truncate">
                 {locale === 'te' ? 'ధృవీకరించబడిన బ్రోకరేజ్' : 'Verified Telangana Brokerage'}
               </span>
             </div>
@@ -128,7 +128,8 @@ export default function Navbar({ locale }: NavbarProps) {
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white shadow-xl animate-in slide-in-from-top-2 duration-150">
-          <div className="max-w-7xl mx-auto px-4 py-5 space-y-4">
+          {/* max-h so drawer never pushes content off-screen on 360px phones */}
+          <div className="max-w-7xl mx-auto px-4 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
             <nav className="flex flex-col space-y-1" aria-label="Mobile Navigation">
               {navLinks.map((link) => {
                 const Icon = link.icon;
@@ -144,7 +145,7 @@ export default function Navbar({ locale }: NavbarProps) {
                         : 'text-slate-800 hover:bg-slate-100'
                     }`}
                   >
-                    <Icon className="w-5 h-5 text-emerald-700" />
+                    <Icon className="w-5 h-5 text-emerald-700 shrink-0" />
                     <span>{link.label}</span>
                   </Link>
                 );
@@ -157,7 +158,7 @@ export default function Navbar({ locale }: NavbarProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 w-full px-4 py-3.5 rounded-xl bg-emerald-800 text-white font-semibold shadow-sm hover:bg-emerald-700 tap-target text-base"
               >
-                <PlusCircle className="w-5 h-5 text-emerald-200" />
+                <PlusCircle className="w-5 h-5 text-emerald-200 shrink-0" />
                 <span>{dict.nav.listProperty}</span>
               </Link>
 
@@ -166,7 +167,7 @@ export default function Navbar({ locale }: NavbarProps) {
                 onClick={() => setIsMobileMenuOpen(false)}
                 className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 tap-target text-sm"
               >
-                <UserCheck className="w-4 h-4 text-slate-500" />
+                <UserCheck className="w-4 h-4 text-slate-500 shrink-0" />
                 <span>{dict.nav.teamLogin}</span>
               </Link>
             </div>

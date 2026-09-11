@@ -154,7 +154,7 @@ export default function EnquiryModal({
         className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden max-h-[92vh] flex flex-col animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-2 duration-200"
       >
         {/* Header */}
-        <div className="px-5 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70">
+        <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
           <div>
             <h3 id="modal-headline" className="text-base sm:text-lg font-extrabold text-slate-900">
               {activeType === 'SITE_VISIT' && dict.enquiryModal.titleSiteVisit}
@@ -176,7 +176,7 @@ export default function EnquiryModal({
         </div>
 
         {/* Content Body */}
-        <div className="p-5 sm:p-6 overflow-y-auto flex-1 space-y-5">
+        <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-5 overscroll-contain">
           {/* Success State */}
           {result ? (
             <div className="py-6 text-center space-y-4">
@@ -236,8 +236,8 @@ export default function EnquiryModal({
             </div>
           ) : (
             /* Form State */
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Type Switch Tabs */}
+            <form onSubmit={handleSubmit} className="space-y-4 min-w-0">
+              {/* Type Switch Tabs — always 3 columns, text hidden on narrowest */}
               <div role="tablist" aria-label="Enquiry type" className="grid grid-cols-3 gap-1.5 p-1 bg-slate-100 rounded-xl">
                 <button
                   type="button"
@@ -354,7 +354,7 @@ export default function EnquiryModal({
 
               {/* Conditional Fields: SITE_VISIT */}
               {activeType === 'SITE_VISIT' && (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
+                <div className="grid grid-cols-1 min-[420px]:grid-cols-2 gap-3 pt-1">
                   <div className="space-y-1">
                     <label className="block text-xs font-bold text-slate-700">
                       {dict.enquiryModal.preferredDate} <span className="text-red-500">*</span>
