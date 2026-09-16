@@ -15,24 +15,24 @@
 
 ## 📅 Day-by-Day Roadmap
 
-- [ ] **Day 1 — Kickoff:**
+- [x] **Day 1 — Kickoff:**
   - Finalize business name, domain, brand colors/logo.
   - Lock MVP scope; communicate any cuts across the team.
   - Confirm all 5 teammates are onboarded to their workspaces.
   - Set daily standup time (e.g., 9:30 AM).
   - Share brand assets with UI/UX Design and Frontend.
-- [ ] **Day 2 — Shared Resources & Sourcing Kickoff:**
+- [x] **Day 2 — Shared Resources & Sourcing Kickoff:**
   - Set up shared Drive: seller contacts, doc templates, property data.
   - Share document checklist context with Backend.
   - Begin outreach to existing contacts for 5–10 real listings.
-- [ ] **Day 3–4 — Property Data Collection:**
+- [x] **Day 3–4 — Property Data Collection:**
   - Collect property details + 13 required verification documents from sellers.
   - Organize into `sourcing/sample-properties/`.
   - Prepare data handoff to Content & Bilingual.
-- [ ] **Day 5 — Content & Data Verification:**
+- [x] **Day 5 — Content & Data Verification:**
   - Review English and Telugu copy with Content Manager.
   - Confirm handed-off property data is accurate and complete.
-- [ ] **Day 6 — UAT Walkthrough & Go/No-Go Call:**
+- [ ] **Day 6 — UAT Walkthrough & Go/No-Go Call (In Progress):**
   - Conduct staging walkthrough with 1–2 real sellers/buyers and QA Lead.
   - Finalize domain, hosting, and SSL with Backend.
   - Review pre-launch checklist with QA.
