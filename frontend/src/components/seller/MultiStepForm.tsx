@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Building,
@@ -24,6 +24,8 @@ import { Locale, getDictionary } from '@/lib/i18n';
 import { SellerFormData, INITIAL_SELLER_FORM_DATA, PropertyType } from '@/types/seller';
 import DocumentChecklistUploader from './DocumentChecklistUploader';
 import { formatINR } from '@/lib/formatters';
+import { createProperty, CreatePropertyDTO } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 interface MultiStepFormProps {
   locale: Locale;
@@ -55,6 +57,21 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRefId, setSubmittedRefId] = useState<string | null>(null);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const { user, token, isAuthenticated } = useAuth();
+
+  // Auto-populate contact info if user is already authenticated
+  useEffect(() => {
+    if (isAuthenticated && user) {
+      setFormData((prev) => ({
+        ...prev,
+        sellerName: prev.sellerName || user.name || '',
+        sellerPhone: prev.sellerPhone || user.phone || '',
+        sellerEmail: prev.sellerEmail || user.email || '',
+      }));
+    }
+  }, [isAuthenticated, user]);
 
   const steps: StepMeta[] = [
     { id: 'type', label: sfDict.steps.type, icon: Home },
@@ -72,6 +89,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
   // Helper for updating form field
   const updateField = <K extends keyof SellerFormData>(field: K, value: SellerFormData[K]) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
+    if (submitError) setSubmitError(null);
     // Clear error for that field when user types
     if (errors[field]) {
       setErrors((prev) => {
@@ -186,19 +204,134 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
     }
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validateCurrentStep()) return;
 
     setIsSubmitting(true);
+    setSubmitError(null);
 
-    // Simulate mock submission to backend
-    setTimeout(() => {
-      const generatedId = `TS-HYD-${Math.floor(1000 + Math.random() * 9000)}`;
-      setSubmittedRefId(generatedId);
+    try {
+      const totalPriceNum = parseFloat(formData.totalPrice);
+      const orrDistanceNum =
+        formData.distanceFromOrrKm !== '' && !isNaN(Number(formData.distanceFromOrrKm))
+          ? parseFloat(formData.distanceFromOrrKm)
+          : undefined;
+
+      // Land specifics mapping
+      let landPayload: CreatePropertyDTO['land'] = undefined;
+      if (formData.propertyType === 'LAND') {
+        let acres = parseFloat(formData.totalAcres);
+        if (isNaN(acres) || acres <= 0) {
+          if (formData.sqYards && !isNaN(parseFloat(formData.sqYards))) {
+            acres = parseFloat(formData.sqYards) / 4840;
+          } else if (formData.guntas && !isNaN(parseFloat(formData.guntas))) {
+            acres = parseFloat(formData.guntas) / 40;
+          } else {
+            acres = 1.0;
+          }
+        }
+
+        const surveyArr = formData.surveyNumbers
+          .split(/[,;\s]+/)
+          .map((s) => s.trim())
+          .filter(Boolean);
+
+        landPayload = {
+          totalAcres: acres,
+          surveyNumbers: surveyArr.length > 0 ? surveyArr : ['1/A'],
+          soilType: 'RED',
+          developmentLevel: formData.developmentLevel || 'RAW',
+          roadWidthFt: formData.roadWidthFt ? parseInt(formData.roadWidthFt, 10) : undefined,
+          waterAvailable: formData.waterAvailable,
+          electricityAvailable: formData.electricityAvailable,
+        };
+      }
+
+      // Flat specifics mapping
+      let flatPayload: CreatePropertyDTO['flat'] = undefined;
+      if (formData.propertyType === 'FLAT') {
+        const amenitiesArr = formData.amenities
+          ? formData.amenities
+              .split(/[,;]+/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+
+        flatPayload = {
+          sqft: formData.sqft ? parseInt(formData.sqft, 10) : 1000,
+          bedrooms: formData.bedrooms ? parseInt(formData.bedrooms, 10) : 2,
+          bathrooms: formData.bathrooms ? parseInt(formData.bathrooms, 10) : undefined,
+          floor: formData.floor ? parseInt(formData.floor, 10) : undefined,
+          totalFloors: formData.totalFloors ? parseInt(formData.totalFloors, 10) : undefined,
+          amenities: amenitiesArr,
+          possessionStatus: formData.possessionStatus || 'READY_TO_MOVE',
+          furnishingStatus: formData.furnishingStatus || 'UNFURNISHED',
+        };
+      }
+
+      // Pricing details mapping
+      const pricingPayload: CreatePropertyDTO['pricing'] = {
+        totalPrice: totalPriceNum,
+        pricePerAcre: formData.pricePerAcre ? parseFloat(formData.pricePerAcre) : undefined,
+        pricePerSqft: formData.pricePerSqft ? parseFloat(formData.pricePerSqft) : undefined,
+        pricePerSqYard: formData.pricePerSqYard ? parseFloat(formData.pricePerSqYard) : undefined,
+        isNegotiable: formData.isNegotiable,
+      };
+
+      // Representative default imagery by property type
+      const mainImage =
+        formData.propertyType === 'LAND'
+          ? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
+          : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80';
+
+      const payload: CreatePropertyDTO = {
+        seller: {
+          name: formData.sellerName.trim(),
+          phone: formData.sellerPhone.trim(),
+          whatsapp: formData.sellerPhone.trim(),
+          email: formData.sellerEmail.trim() || undefined,
+        },
+        type: formData.propertyType,
+        titleEn: formData.title.trim(),
+        titleTe: isTe ? formData.title.trim() : undefined,
+        descriptionEn: formData.description.trim(),
+        descriptionTe: isTe ? formData.description.trim() : undefined,
+        location: {
+          district: formData.district.trim(),
+          mandal: formData.mandal.trim(),
+          village: formData.village.trim(),
+          distanceFromOrrKm: orrDistanceNum,
+          zone: formData.zone || undefined,
+        },
+        land: landPayload,
+        flat: flatPayload,
+        pricing: pricingPayload,
+        mainImage,
+      };
+
+      const result = await createProperty(payload, token || undefined);
+
+      if (result.success && result.propertyId) {
+        setSubmittedRefId(result.propertyId);
+        window.scrollTo({ top: 100, behavior: 'smooth' });
+      } else {
+        throw new Error(
+          result.message ||
+            sfDict.review?.submissionError ||
+            'Failed to submit property listing'
+        );
+      }
+    } catch (err: unknown) {
+      console.error('[MultiStepForm] Submission error:', err);
+      const msg =
+        (err as Error)?.message ||
+        sfDict.review?.submissionError ||
+        'Failed to submit property listing. Please try again.';
+      setSubmitError(msg);
+    } finally {
       setIsSubmitting(false);
-      window.scrollTo({ top: 100, behavior: 'smooth' });
-    }, 800);
+    }
   };
 
   const handleResetForm = () => {
@@ -206,6 +339,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
     setSubmittedRefId(null);
     setCurrentStepIndex(0);
     setErrors({});
+    setSubmitError(null);
   };
 
   // Count uploaded docs
@@ -239,7 +373,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
             {sfDict.review.successRef}
           </span>
-          <span className="text-xl font-extrabold text-emerald-800 font-mono mt-0.5 block">
+          <span className="text-base sm:text-lg font-extrabold text-emerald-800 font-mono break-all mt-0.5 block">
             {submittedRefId}
           </span>
           <span className="text-xs text-slate-500 mt-1 block">
@@ -1236,6 +1370,19 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 </p>
               )}
             </div>
+
+            {/* Backend Submission Error Banner */}
+            {submitError && (
+              <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 flex items-start gap-3 text-xs sm:text-sm animate-in fade-in duration-150">
+                <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
+                <div className="space-y-0.5">
+                  <span className="font-bold block">
+                    {isTe ? 'సమర్పణ విఫలమైంది' : 'Submission Failed'}
+                  </span>
+                  <span className="text-slate-700">{submitError}</span>
+                </div>
+              </div>
+            )}
           </div>
         )}
 

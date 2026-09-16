@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isValidLocale, Locale, LOCALES, getDictionary } from '@/lib/i18n';
 import { MOCK_PROPERTIES } from '@/lib/mockData';
+import { getPropertyById } from '@/lib/api';
 import { formatINR, formatOrrDistance } from '@/lib/formatters';
 import {
   ShieldCheck,
@@ -37,13 +38,14 @@ interface PropertyDetailPageProps {
   };
 }
 
-export default function PropertyDetailPage({ params }: PropertyDetailPageProps) {
+export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   if (!isValidLocale(params.locale)) notFound();
   const locale = params.locale as Locale;
   const isTe = locale === 'te';
   const dict = getDictionary(locale);
 
-  const property = MOCK_PROPERTIES.find((p) => p.id === params.id);
+  // Try backend first, fall back to mock
+  const property = await getPropertyById(params.id);
   if (!property) notFound();
 
   const title = isTe && property.titleTe ? property.titleTe : property.title;

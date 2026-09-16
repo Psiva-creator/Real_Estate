@@ -17,12 +17,15 @@ import {
 import { Locale, getDictionary } from '@/lib/i18n';
 import { VERIFIED_13_DOCS, DocumentKey, DocumentStatus, VerificationDoc } from '@/lib/constants';
 import { DocumentUploadItem, PropertyType } from '@/types/seller';
+import { uploadPropertyDocument } from '@/lib/api';
+import { useAuth } from '@/lib/auth-context';
 
 interface DocumentChecklistUploaderProps {
   locale: Locale;
   propertyType: PropertyType;
   documents: Record<string, DocumentUploadItem>;
   onChange: (documents: Record<string, DocumentUploadItem>) => void;
+  propertyId?: string;
   className?: string;
 }
 
@@ -31,6 +34,7 @@ export default function DocumentChecklistUploader({
   propertyType,
   documents,
   onChange,
+  propertyId,
   className = '',
 }: DocumentChecklistUploaderProps) {
   const dict = getDictionary(locale);
@@ -39,6 +43,7 @@ export default function DocumentChecklistUploader({
 
   const [activeUploadingKey, setActiveUploadingKey] = useState<string | null>(null);
   const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const { token } = useAuth();
 
   // Calculate stats
   const uploadedCount = Object.values(documents).filter(
@@ -56,37 +61,136 @@ export default function DocumentChecklistUploader({
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   };
 
-  // Mock upload simulation
-  const handleFileSelect = (key: DocumentKey, file: File) => {
-    setActiveUploadingKey(key);
+  // Real upload & staging handler
+  const handleFileSelect = async (key: DocumentKey, file: File) => {
+    // 1. Validate file extension
+    const allowed = ['.pdf', '.jpg', '.jpeg', '.png', '.webp'];
+    const ext = file.name.substring(file.name.lastIndexOf('.')).toLowerCase();
+    if (!allowed.includes(ext)) {
+      onChange({
+        ...documents,
+        [key]: {
+          key,
+          status: 'FAILED',
+          file,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          errorMessage:
+            uploaderDict.invalidFormatError ||
+            'Unsupported file format. Only PDF, JPG, JPEG, and PNG files are allowed.',
+        },
+      });
+      return;
+    }
 
-    // Initial state: uploading 15%
-    onChange({
-      ...documents,
-      [key]: {
-        key,
-        status: 'UPLOADING',
-        fileName: file.name,
-        fileSize: file.size,
-        fileType: file.type,
-        uploadProgress: 20,
-      },
-    });
+    // 2. Validate file size (15MB limit)
+    if (file.size > 15 * 1024 * 1024) {
+      onChange({
+        ...documents,
+        [key]: {
+          key,
+          status: 'FAILED',
+          file,
+          fileName: file.name,
+          fileSize: file.size,
+          fileType: file.type,
+          errorMessage:
+            uploaderDict.fileSizeError || 'File size exceeds 15MB limit.',
+        },
+      });
+      return;
+    }
 
-    // Simulate progressive network upload
-    setTimeout(() => {
+    // 3. If real propertyId is available, upload directly to backend
+    if (propertyId) {
+      setActiveUploadingKey(key);
       onChange({
         ...documents,
         [key]: {
           key,
           status: 'UPLOADING',
+          file,
           fileName: file.name,
           fileSize: file.size,
           fileType: file.type,
-          uploadProgress: 65,
+          uploadProgress: 10,
         },
       });
-    }, 250);
+
+      try {
+        const uploadRes = await uploadPropertyDocument(
+          propertyId,
+          key,
+          file,
+          (progressPercent) => {
+            onChange({
+              ...documents,
+              [key]: {
+                key,
+                status: 'UPLOADING',
+                file,
+                fileName: file.name,
+                fileSize: file.size,
+                fileType: file.type,
+                uploadProgress: progressPercent,
+              },
+            });
+          },
+          token || undefined
+        );
+
+        onChange({
+          ...documents,
+          [key]: {
+            key,
+            status: 'UPLOADED',
+            file,
+            fileUrl: uploadRes.document?.fileUrl,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            uploadProgress: 100,
+            uploadedAt: new Date().toLocaleTimeString([], {
+              hour: '2-digit',
+              minute: '2-digit',
+            }),
+            errorMessage: undefined,
+          },
+        });
+      } catch (err: unknown) {
+        onChange({
+          ...documents,
+          [key]: {
+            key,
+            status: 'FAILED',
+            file,
+            fileName: file.name,
+            fileSize: file.size,
+            fileType: file.type,
+            errorMessage: (err as Error)?.message || 'Upload failed. Click retry.',
+          },
+        });
+      } finally {
+        setActiveUploadingKey(null);
+      }
+      return;
+    }
+
+    // 4. Staging mode (before property submission): hold file in state
+    setActiveUploadingKey(key);
+    onChange({
+      ...documents,
+      [key]: {
+        key,
+        status: 'UPLOADING',
+        file,
+        fileName: file.name,
+        fileSize: file.size,
+        fileType: file.type,
+        uploadProgress: 40,
+      },
+    });
 
     setTimeout(() => {
       onChange({
@@ -94,15 +198,29 @@ export default function DocumentChecklistUploader({
         [key]: {
           key,
           status: 'UPLOADED',
+          file,
           fileName: file.name,
           fileSize: file.size,
           fileType: file.type,
           uploadProgress: 100,
-          uploadedAt: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          uploadedAt: new Date().toLocaleTimeString([], {
+            hour: '2-digit',
+            minute: '2-digit',
+          }),
+          errorMessage: undefined,
         },
       });
       setActiveUploadingKey(null);
-    }, 550);
+    }, 250);
+  };
+
+  const handleRetry = (key: DocumentKey) => {
+    const existing = documents[key];
+    if (existing?.file) {
+      handleFileSelect(key, existing.file);
+    } else {
+      handleTriggerFileInput(key);
+    }
   };
 
   const handleRemove = (key: DocumentKey) => {
@@ -119,7 +237,7 @@ export default function DocumentChecklistUploader({
     }
   };
 
-  // Quick helper to fill sample mock documents for testing
+  // Quick helper to fill sample documents for testing
   const handlePrepopulateMockDocs = () => {
     const samplePack: Record<string, DocumentUploadItem> = {};
     VERIFIED_13_DOCS.forEach((doc, idx) => {
@@ -127,12 +245,18 @@ export default function DocumentChecklistUploader({
       if (doc.isGpa) return;
 
       const ext = idx % 2 === 0 ? 'pdf' : 'jpg';
+      const dummyContent = `%PDF-1.4\n% Sample verification document for ${doc.key}`;
+      const dummyFile = new File([dummyContent], `${doc.key.toLowerCase()}_copy.${ext}`, {
+        type: ext === 'pdf' ? 'application/pdf' : 'image/jpeg',
+      });
+
       samplePack[doc.key] = {
         key: doc.key,
         status: 'UPLOADED',
-        fileName: `${doc.key.toLowerCase()}_copy.${ext}`,
-        fileSize: 1024 * 1024 * (1.2 + idx * 0.4),
-        fileType: ext === 'pdf' ? 'application/pdf' : 'image/jpeg',
+        file: dummyFile,
+        fileName: dummyFile.name,
+        fileSize: dummyFile.size,
+        fileType: dummyFile.type,
         uploadProgress: 100,
         uploadedAt: 'Just now',
       };
@@ -213,6 +337,7 @@ export default function DocumentChecklistUploader({
 
           const isUploading = docState.status === 'UPLOADING';
           const isUploaded = docState.status === 'UPLOADED' || docState.status === 'VERIFIED';
+          const isFailed = docState.status === 'FAILED';
           const isOptional = doc.isGpa;
 
           // Check if document is tailored for land vs flat
@@ -226,6 +351,8 @@ export default function DocumentChecklistUploader({
               className={`p-4 rounded-xl border transition-all duration-200 bg-white ${
                 isUploaded
                   ? 'border-emerald-200 bg-emerald-50/20 shadow-xs'
+                  : isFailed
+                  ? 'border-rose-200 bg-rose-50/30'
                   : 'border-slate-200 hover:border-slate-300'
               }`}
             >
@@ -253,6 +380,8 @@ export default function DocumentChecklistUploader({
                     className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
                       isUploaded
                         ? 'bg-emerald-100 text-emerald-800'
+                        : isFailed
+                        ? 'bg-rose-100 text-rose-800'
                         : 'bg-slate-100 text-slate-700'
                     }`}
                   >
@@ -292,6 +421,14 @@ export default function DocumentChecklistUploader({
                     <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
                       {isTe ? doc.descTe : doc.descEn}
                     </p>
+
+                    {/* Error display if upload failed */}
+                    {isFailed && docState.errorMessage && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-rose-700 font-medium">
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                        <span>{docState.errorMessage}</span>
+                      </div>
+                    )}
 
                     {/* Uploaded File summary or progress */}
                     {isUploading && (
@@ -335,7 +472,7 @@ export default function DocumentChecklistUploader({
 
                 {/* Right Actions — self-start on mobile so they don't stretch */}
                 <div className="flex items-center gap-2 self-start min-[560px]:self-center shrink-0">
-                  {!isUploaded && !isUploading && (
+                  {!isUploaded && !isUploading && !isFailed && (
                     <button
                       type="button"
                       onClick={() => handleTriggerFileInput(doc.key)}
@@ -344,6 +481,35 @@ export default function DocumentChecklistUploader({
                       <Upload className="w-3.5 h-3.5" />
                       <span>{uploaderDict.btnChooseFile}</span>
                     </button>
+                  )}
+
+                  {isFailed && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 text-xs font-bold">
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                        <span>{uploaderDict.statusFailed || 'Upload Failed'}</span>
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRetry(doc.key)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors tap-target"
+                        title={uploaderDict.btnRetry || 'Retry'}
+                      >
+                        <RefreshCw className="w-3.5 h-3.5" />
+                        <span>{uploaderDict.btnRetry || 'Retry'}</span>
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleRemove(doc.key)}
+                        className="p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-slate-100 transition-colors tap-target flex items-center justify-center"
+                        title={uploaderDict.btnRemove}
+                        aria-label={uploaderDict.btnRemove}
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   )}
 
                   {isUploaded && (

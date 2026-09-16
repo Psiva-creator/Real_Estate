@@ -4,13 +4,16 @@ export type PropertyType = 'LAND' | 'FLAT';
 
 export interface DocumentUploadItem {
   key: DocumentKey;
-  status: DocumentStatus;
+  status: DocumentStatus | 'FAILED';
+  file?: File;
+  fileUrl?: string;
   fileName?: string;
   fileSize?: number;
   fileType?: string;
   uploadProgress?: number;
   uploadedAt?: string;
   rejectionReason?: string;
+  errorMessage?: string;
 }
 
 export interface SellerFormData {

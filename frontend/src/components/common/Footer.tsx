@@ -120,7 +120,7 @@ export default function Footer({ locale }: FooterProps) {
               </li>
               <li>
                 <Link
-                  href="/dashboard/properties"
+                  href={`/${locale}/login`}
                   className="text-slate-400 hover:text-white transition-colors"
                 >
                   {dict.nav.teamLogin}

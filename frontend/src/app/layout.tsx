@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import { Inter, Noto_Sans_Telugu } from 'next/font/google';
 import '@/styles/globals.css';
+import AppProviders from '@/components/providers/AppProviders';
 
 const inter = Inter({
   subsets: ['latin'],
@@ -57,7 +58,7 @@ export default function RootLayout({
       className={`h-full scroll-smooth ${inter.variable} ${notoSansTelugu.variable}`}
     >
       <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-emerald-200 selection:text-emerald-900 font-sans">
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

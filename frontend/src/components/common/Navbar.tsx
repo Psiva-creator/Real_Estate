@@ -3,8 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Shield, PlusCircle, Building2, MapPin, UserCheck } from 'lucide-react';
+import { Menu, X, Shield, PlusCircle, Building2, MapPin, UserCheck, Users2, LogOut } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
+import { useAuth } from '@/lib/auth-context';
 import LanguageToggle from './LanguageToggle';
 
 interface NavbarProps {
@@ -16,6 +17,9 @@ export default function Navbar({ locale }: NavbarProps) {
   const [isScrolled, setIsScrolled] = useState(false);
   const pathname = usePathname();
   const dict = getDictionary(locale);
+  const { user, isAuthenticated, isSeller, logout } = useAuth();
+
+  const dashboardHref = isSeller ? '/dashboard/seller' : '/dashboard/properties';
 
   // Close mobile drawer on route change
   useEffect(() => {
@@ -98,15 +102,46 @@ export default function Navbar({ locale }: NavbarProps) {
               <span>{dict.nav.listProperty}</span>
             </Link>
 
-            {/* Team / Agent Dashboard Link */}
-            <Link
-              href="/dashboard/properties"
-              className="p-2 text-slate-500 hover:text-emerald-800 hover:bg-slate-100 rounded-lg transition-colors"
-              title={dict.nav.teamLogin}
-              aria-label={dict.nav.teamLogin}
-            >
-              <UserCheck className="w-5 h-5" />
-            </Link>
+            {/* Team / Account Login or Dashboard Entry */}
+            {isAuthenticated && user ? (
+              /* ── Authenticated state ─────────────────────────────────────── */
+              <div className="flex items-center gap-1.5 pl-3 border-l border-slate-200">
+                <Link
+                  href={dashboardHref}
+                  className="group inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-900 border border-emerald-200 text-xs font-semibold transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600 focus-visible:ring-offset-1"
+                  title={isSeller ? dict.nav.sellerDashboard || 'Seller Dashboard' : dict.nav.adminDashboard || 'Dashboard'}
+                >
+                  <UserCheck className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                  <span className="max-w-[96px] truncate">{user.name}</span>
+                  <span className="text-[10px] px-1.5 py-0.5 rounded-md bg-emerald-700 text-white font-bold tracking-wide shrink-0">
+                    {user.role}
+                  </span>
+                </Link>
+                <button
+                  type="button"
+                  onClick={() => logout()}
+                  className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-red-500"
+                  title={dict.nav.logout || 'Log Out'}
+                  aria-label={dict.nav.logout || 'Log Out'}
+                >
+                  <LogOut className="w-4 h-4" />
+                </button>
+              </div>
+            ) : (
+              /* ── Unauthenticated: premium login CTA ──────────────────────── */
+              <Link
+                href={`/${locale}/login`}
+                className="group inline-flex items-center gap-2.5 px-4 py-[9px] rounded-lg bg-emerald-800 text-white text-sm font-semibold shadow-sm ring-1 ring-emerald-700/60 hover:bg-emerald-900 hover:shadow-md transition-all duration-150 active:scale-[0.98] focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 focus-visible:ring-offset-white"
+                title={dict.nav.teamLogin}
+                aria-label={dict.nav.teamLogin}
+              >
+                {/* Icon badge */}
+                <span className="flex items-center justify-center w-[22px] h-[22px] rounded-md bg-emerald-700 group-hover:bg-emerald-800 transition-colors shrink-0">
+                  <Users2 className="w-3.5 h-3.5 text-emerald-200" />
+                </span>
+                <span className="whitespace-nowrap leading-none">{dict.nav.teamLogin}</span>
+              </Link>
+            )}
           </div>
 
           {/* Mobile Menu Button & Language Toggle on Mobile */}
@@ -128,7 +163,6 @@ export default function Navbar({ locale }: NavbarProps) {
       {/* Mobile Drawer */}
       {isMobileMenuOpen && (
         <div className="lg:hidden border-t border-slate-200 bg-white shadow-xl animate-in slide-in-from-top-2 duration-150">
-          {/* max-h so drawer never pushes content off-screen on 360px phones */}
           <div className="max-w-7xl mx-auto px-4 py-5 space-y-4 max-h-[80vh] overflow-y-auto">
             <nav className="flex flex-col space-y-1" aria-label="Mobile Navigation">
               {navLinks.map((link) => {
@@ -162,14 +196,48 @@ export default function Navbar({ locale }: NavbarProps) {
                 <span>{dict.nav.listProperty}</span>
               </Link>
 
-              <Link
-                href="/dashboard/properties"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl border border-slate-300 text-slate-700 font-medium hover:bg-slate-50 tap-target text-sm"
-              >
-                <UserCheck className="w-4 h-4 text-slate-500 shrink-0" />
-                <span>{dict.nav.teamLogin}</span>
-              </Link>
+              {isAuthenticated && user ? (
+                /* ── Mobile authenticated state ───────────────────────────── */
+                <div className="space-y-2">
+                  <Link
+                    href={dashboardHref}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="flex items-center justify-between w-full px-4 py-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 font-semibold tap-target text-sm"
+                  >
+                    <div className="flex items-center gap-2">
+                      <UserCheck className="w-4 h-4 text-emerald-700" />
+                      <span>{user.name}</span>
+                    </div>
+                    <span className="text-xs px-2 py-0.5 rounded bg-emerald-200/70 text-emerald-900 font-bold">
+                      {user.role}
+                    </span>
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      logout();
+                      setIsMobileMenuOpen(false);
+                    }}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-2.5 rounded-xl border border-red-200 text-red-700 font-medium hover:bg-red-50 text-sm"
+                  >
+                    <LogOut className="w-4 h-4" />
+                    <span>{dict.nav.logout || 'Log Out'}</span>
+                  </button>
+                </div>
+              ) : (
+                /* ── Mobile unauthenticated: premium login CTA ─────────────── */
+                <Link
+                  href={`/${locale}/login`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 rounded-xl bg-emerald-800 text-white font-semibold tap-target text-sm shadow-sm hover:bg-emerald-900 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-600"
+                >
+                  <span className="flex items-center justify-center w-6 h-6 rounded-md bg-emerald-700 shrink-0">
+                    <Users2 className="w-3.5 h-3.5 text-emerald-200" />
+                  </span>
+                  <span>{dict.nav.teamLogin}</span>
+                </Link>
+              )}
             </div>
           </div>
         </div>

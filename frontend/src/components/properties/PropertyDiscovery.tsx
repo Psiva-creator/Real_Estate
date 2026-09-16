@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useTransition, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -21,7 +21,8 @@ import {
   ChevronDown,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
-import { MockProperty, MOCK_PROPERTIES, PropertyType } from '@/lib/mockData';
+import { MockProperty, MOCK_PROPERTIES } from '@/lib/mockData';
+import { getProperties } from '@/lib/api';
 import PropertyCard from './PropertyCard';
 import MapView from './MapView';
 
@@ -85,6 +86,31 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     orrDistance: initialParams.distance || 'ALL',
     verificationStatus: initialParams.verification || 'ALL',
   });
+
+  // Backend-fetched properties (falls back to MOCK_PROPERTIES)
+  const [allProperties, setAllProperties] = useState<MockProperty[]>(MOCK_PROPERTIES);
+  const [isFetchingBackend, setIsFetchingBackend] = useState(true);
+
+  // Fetch real properties from backend on mount
+  useEffect(() => {
+    let cancelled = false;
+    setIsFetchingBackend(true);
+    getProperties({ limit: 100 })
+      .then(({ properties }) => {
+        if (!cancelled) {
+          setAllProperties(properties);
+        }
+      })
+      .catch(() => {
+        // Silently use mock fallback already set as default state
+      })
+      .finally(() => {
+        if (!cancelled) setIsFetchingBackend(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // UI view states
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
@@ -163,9 +189,9 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     }, 200);
   };
 
-  // Actual filtering of mock properties based on appliedFilters
+  // Actual filtering based on appliedFilters (uses backend data or mock fallback)
   const filteredProperties = useMemo(() => {
-    return MOCK_PROPERTIES.filter((prop) => {
+    return allProperties.filter((prop) => {
       // 1. Property Type
       if (appliedFilters.type !== 'ALL' && prop.type !== appliedFilters.type) {
         return false;
@@ -293,16 +319,16 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
       return true;
     });
-  }, [appliedFilters]);
+  }, [appliedFilters, allProperties]);
 
-  // Counts for quick tabs
+  // Counts for quick tabs — derived from whichever source is active
   const landsCount = useMemo(
-    () => MOCK_PROPERTIES.filter((p) => p.type === 'LAND').length,
-    []
+    () => allProperties.filter((p) => p.type === 'LAND').length,
+    [allProperties]
   );
   const flatsCount = useMemo(
-    () => MOCK_PROPERTIES.filter((p) => p.type === 'FLAT').length,
-    []
+    () => allProperties.filter((p) => p.type === 'FLAT').length,
+    [allProperties]
   );
 
   return (
@@ -346,7 +372,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
                   : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
               }`}
             >
-              {isTe ? 'అన్నీ' : 'All Listings'} ({MOCK_PROPERTIES.length})
+              {isTe ? 'అన్నీ' : 'All Listings'} ({allProperties.length})
             </button>
             <button
               type="button"
@@ -519,7 +545,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
               ? `${filteredProperties.length} ధృవీకరించిన ప్రాపర్టీలు అందుబాటులో ఉన్నాయి`
               : `Showing ${filteredProperties.length} verified listings`}
           </span>
-          {isLoading && (
+          {(isLoading || isFetchingBackend) && (
             <span className="inline-flex items-center text-xs text-emerald-700 font-normal animate-pulse">
               ({dict.filters.loadingProperties})
             </span>
