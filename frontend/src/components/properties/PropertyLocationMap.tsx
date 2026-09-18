@@ -1,36 +1,169 @@
-import React from 'react';
-import { MapPin, Navigation, Compass, ExternalLink, Info, CheckCircle2 } from 'lucide-react';
+'use client';
+
+import React, { useEffect, useRef } from 'react';
+import { Navigation, Compass, ExternalLink, Info, MapPin } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
 import { formatOrrDistance } from '@/lib/formatters';
+import { useGoogleMaps } from '@/lib/useGoogleMaps';
+import MapStatusFallback from './MapStatusFallback';
 
 interface PropertyLocationMapProps {
   property: MockProperty;
   locale: Locale;
 }
 
-// Coordinates by property ID for Telangana & ORR radial layout
-const PROPERTY_COORDINATES: Record<string, { top: string; left: string }> = {
-  'PROP-HYD-001': { top: '25%', left: '22%' }, // Kokapet (West)
-  'PROP-HYD-002': { top: '38%', left: '12%' }, // Mokila (Far West)
-  'PROP-HYD-003': { top: '68%', left: '48%' }, // Shamshabad (South)
-  'PROP-HYD-004': { top: '20%', left: '38%' }, // Kollur (North West)
-  'PROP-HYD-005': { top: '35%', left: '30%' }, // Nallagandla (West Inner)
-  'PROP-HYD-006': { top: '28%', left: '80%' }, // Yadagirigutta (North East)
-};
+const HYDERABAD_CENTER = { lat: 17.4065, lng: 78.4772 };
+const DEFAULT_ZOOM = 14;
+
+const LIGHT_MAP_STYLES: google.maps.MapTypeStyle[] = [
+  { elementType: 'geometry', stylers: [{ color: '#f5f1ea' }] },
+  { elementType: 'labels.text.stroke', stylers: [{ color: '#ffffff' }] },
+  { elementType: 'labels.text.fill', stylers: [{ color: '#574f48' }] },
+  {
+    featureType: 'administrative.locality',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#191512' }],
+  },
+  {
+    featureType: 'poi',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#8c827a' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry',
+    stylers: [{ color: '#ffffff' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#e8e2d9' }],
+  },
+  {
+    featureType: 'road',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#574f48' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry',
+    stylers: [{ color: '#eddac2' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'geometry.stroke',
+    stylers: [{ color: '#d8c2a8' }],
+  },
+  {
+    featureType: 'road.highway',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#8c653e' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'geometry',
+    stylers: [{ color: '#d2e3f0' }],
+  },
+  {
+    featureType: 'water',
+    elementType: 'labels.text.fill',
+    stylers: [{ color: '#6889a7' }],
+  },
+];
 
 export default function PropertyLocationMap({ property, locale }: PropertyLocationMapProps) {
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
 
-  const pos = PROPERTY_COORDINATES[property.id] || { top: '45%', left: '45%' };
-  const landmark = isTe && property.location.landmarkTe
-    ? property.location.landmarkTe
-    : property.location.landmark;
+  const { isLoaded, status } = useGoogleMaps();
+  const mapContainerRef = useRef<HTMLDivElement | null>(null);
+  const mapInstanceRef = useRef<google.maps.Map | null>(null);
+  const markerRef = useRef<google.maps.Marker | null>(null);
 
-  const googleMapsQuery = encodeURIComponent(
-    `${property.location.village}, ${property.location.mandal}, ${property.location.district}, Telangana`
-  );
+  const lat = property.location.latitude;
+  const lng = property.location.longitude;
+  const hasValidCoordinates =
+    typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng);
+
+  const landmark =
+    isTe && property.location.landmarkTe
+      ? property.location.landmarkTe
+      : property.location.landmark;
+
+  // Build external Google Maps search URL with exact coordinates when available
+  const googleMapsQuery = hasValidCoordinates
+    ? `${lat},${lng}`
+    : encodeURIComponent(
+        `${property.location.village}, ${property.location.mandal}, ${property.location.district}, Telangana`
+      );
+
+  // Initialize and update single property map
+  useEffect(() => {
+    if (!isLoaded || !mapContainerRef.current) return;
+
+    let isCancelled = false;
+
+    const initOrUpdateMap = async () => {
+      try {
+        const { Map } = await google.maps.importLibrary('maps');
+        if (isCancelled || !mapContainerRef.current) return;
+
+        const center = hasValidCoordinates ? { lat: lat!, lng: lng! } : HYDERABAD_CENTER;
+        const zoom = hasValidCoordinates ? DEFAULT_ZOOM : 11;
+
+        if (!mapInstanceRef.current) {
+          mapInstanceRef.current = new Map(mapContainerRef.current, {
+            center,
+            zoom,
+            styles: LIGHT_MAP_STYLES,
+            mapTypeControl: false,
+            streetViewControl: false,
+            fullscreenControl: true,
+            zoomControl: true,
+          });
+        } else {
+          mapInstanceRef.current.setCenter(center);
+          mapInstanceRef.current.setZoom(zoom);
+        }
+
+        // Set or update marker
+        if (markerRef.current) {
+          markerRef.current.setMap(null);
+          markerRef.current = null;
+        }
+
+        if (hasValidCoordinates && mapInstanceRef.current) {
+          markerRef.current = new google.maps.Marker({
+            position: center,
+            map: mapInstanceRef.current,
+            title: `${property.location.village}, ${property.location.mandal}`,
+            icon: {
+              path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
+              fillColor: '#8C653E',
+              fillOpacity: 1,
+              strokeColor: '#FFFFFF',
+              strokeWeight: 2,
+              scale: 1.8,
+              anchor: typeof google !== 'undefined' && google.maps?.Point ? new google.maps.Point(12, 22) : undefined,
+            },
+          });
+        }
+      } catch (err) {
+        console.error('Failed to initialize Google Map in PropertyLocationMap:', err);
+      }
+    };
+
+    initOrUpdateMap();
+
+    return () => {
+      isCancelled = true;
+      if (markerRef.current) {
+        markerRef.current.setMap(null);
+        markerRef.current = null;
+      }
+    };
+  }, [isLoaded, hasValidCoordinates, lat, lng, property.location.village, property.location.mandal]);
 
   return (
     <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] shadow-sm space-y-6">
@@ -92,62 +225,42 @@ export default function PropertyLocationMap({ property, locale }: PropertyLocati
         <div className="p-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] text-xs text-[#61584F] flex items-center gap-2.5">
           <Compass className="w-4 h-4 text-[#8C653E] shrink-0" />
           <span>
-            <strong className="font-semibold text-[#191512]">{dict.propertyDetail.landmark}:</strong> {landmark}
+            <strong className="font-semibold text-[#191512]">{dict.propertyDetail.landmark}:</strong>{' '}
+            {landmark}
           </span>
         </div>
       )}
 
       {/* Single Property Map Presentation Surface */}
-      <div className="relative h-72 sm:h-84 w-full rounded-2xl bg-[#141210] overflow-hidden border border-[#2A241F] flex items-center justify-center shadow-inner">
-        {/* Subtle grid pattern */}
-        <div 
-          className="absolute inset-0 opacity-10 pointer-events-none"
-          style={{
-            backgroundImage: `radial-gradient(#C5A880 1px, transparent 1px)`,
-            backgroundSize: '24px 24px'
-          }}
-        />
-
-        {/* Outer Ring Road (ORR) Visual Ring */}
-        <div className="absolute w-72 h-72 sm:w-80 sm:h-80 rounded-full border-2 border-dashed border-[#8C653E]/40 pointer-events-none flex items-center justify-center">
-          <span className="text-[9px] font-mono uppercase tracking-widest text-[#C5A880]/70 -rotate-45">
-            ORR 158 km Radial Belt
-          </span>
-        </div>
-
-        {/* Hyderabad Core Marker */}
-        <div className="absolute flex flex-col items-center pointer-events-none">
-          <div className="w-3.5 h-3.5 rounded-full bg-[#8C653E]/60 border border-[#C5A880]/80" />
-          <span className="text-[10px] text-[#A39A8F] font-serif mt-1">Hyderabad Core</span>
-        </div>
-
-        {/* Target Property Marker with pulsating beacon */}
-        <div
-          style={{ position: 'absolute', top: pos.top, left: pos.left }}
-          className="transform -translate-x-1/2 -translate-y-1/2 z-20 flex flex-col items-center"
-        >
-          <div className="relative flex items-center justify-center">
-            <span className="absolute w-8 h-8 rounded-full bg-[#C5A880]/30 animate-ping" />
-            <div className="relative flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#C5A880] text-[#141210] font-serif font-bold text-xs shadow-2xl ring-4 ring-[#C5A880]/30">
-              <MapPin className="w-3.5 h-3.5 text-[#141210]" />
-              <span className="whitespace-nowrap">{property.location.village}</span>
-            </div>
-          </div>
-        </div>
+      <div className="relative h-72 sm:h-84 md:h-96 w-full rounded-2xl bg-[#141210] overflow-hidden border border-[#2A241F] shadow-inner">
+        {status !== 'loaded' ? (
+          <MapStatusFallback status={status} theme="dark" />
+        ) : (
+          <div ref={mapContainerRef} className="w-full h-full" />
+        )}
 
         {/* Bottom Coordinates Overlay */}
-        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-[#C5BDB5] bg-[#191512]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10">
-          <span className="flex items-center gap-2">
-            <CheckCircle2 className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>
-              {property.location.village}, {property.location.mandal} • {formatOrrDistance(property.location.distanceFromOrrKm)}
+        <div className="absolute bottom-3 left-3 right-3 flex items-center justify-between text-[11px] text-[#C5BDB5] bg-[#191512]/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-white/10 pointer-events-none">
+          <span className="flex items-center gap-2 truncate">
+            <MapPin className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
+            <span className="truncate">
+              {property.location.village}, {property.location.mandal}
+              {property.location.distanceFromOrrKm !== undefined
+                ? ` • ${formatOrrDistance(property.location.distanceFromOrrKm)}`
+                : ''}
             </span>
           </span>
-          <span className="font-mono text-[#C5A880] text-[10px]">Survey Verified</span>
+          <span className="font-mono text-[#C5A880] text-[10px] shrink-0 ml-2">
+            {hasValidCoordinates
+              ? `${lat?.toFixed(4)}, ${lng?.toFixed(4)}`
+              : isTe
+              ? 'సాధారణ లొకేషన్'
+              : 'General Location'}
+          </span>
         </div>
       </div>
 
-      {/* Google Maps fallback notice */}
+      {/* Google Maps notice */}
       <p className="text-[11px] text-[#8C827A] leading-normal italic flex items-center gap-1.5">
         <Info className="w-3.5 h-3.5 text-[#8C827A] shrink-0" />
         <span>{dict.propertyDetail.googleMapsNotice}</span>

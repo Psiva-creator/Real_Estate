@@ -224,6 +224,8 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
       tier: bp.location.tier,
       landmark: bp.location.landmark,
       landmarkTe: bp.location.landmarkTe,
+      latitude: bp.location.latitude,
+      longitude: bp.location.longitude,
     },
     pricing: {
       totalPrice: bp.pricing.totalPrice,

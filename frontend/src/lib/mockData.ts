@@ -11,6 +11,8 @@ export interface LocationDetails {
   tier: ServiceTier;
   landmark?: string;
   landmarkTe?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface LandDetails {
@@ -84,6 +86,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: 'Near Neopolis Financial SEZ, Exit 1',
       landmarkTe: 'నియోపోలిస్ ఫైనాన్షియల్ సెజ్ సమీపంలో, ఎగ్జిట్ 1',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.3986,
+      longitude: 78.3245,
     },
     pricing: {
       totalPrice: 28500000, // ₹2.85 Cr
@@ -129,6 +134,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: 'Near ICFAI University Campus',
       landmarkTe: 'ఐసీఎఫ్‌ఏఐ యూనివర్సిటీ క్యాంపస్ సమీపంలో',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.4258,
+      longitude: 78.1882,
     },
     pricing: {
       totalPrice: 6800000, // ₹68 Lakhs
@@ -172,6 +180,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: '8 mins to Rajiv Gandhi International Airport',
       landmarkTe: 'రాజీవ్ గాంధీ అంతర్జాతీయ విమానాశ్రయం నుండి 8 నిమిషాలు',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.2580,
+      longitude: 78.4610,
     },
     pricing: {
       totalPrice: 33750000, // ₹3.375 Cr
@@ -214,6 +225,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: 'Beside ORR Exit 2, Tellapur Extension',
       landmarkTe: 'ORR ఎగ్జిట్ 2 పక్కన, తెల్లాపూర్ ఎక్స్‌టెన్షన్',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.4728,
+      longitude: 78.2491,
     },
     pricing: {
       totalPrice: 9200000, // ₹92 Lakhs
@@ -258,6 +272,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_1',
       landmark: 'Near Citizens Hospital & Lingampally MMTS',
       landmarkTe: 'సిటిజన్స్ హాస్పిటల్ & లింగంపల్లి ఎంఎంటిఎస్ సమీపంలో',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.4780,
+      longitude: 78.3120,
     },
     pricing: {
       totalPrice: 112000000, // ₹11.2 Cr
@@ -300,6 +317,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_3',
       landmark: '10 mins to Sri Lakshmi Narasimha Swamy Temple',
       landmarkTe: 'లక్ష్మీ నరసింహ స్వామి ఆలయానికి 10 నిమిషాలు',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.5840,
+      longitude: 78.9320,
     },
     pricing: {
       totalPrice: 2200000, // ₹22 Lakhs
