@@ -657,6 +657,7 @@ export interface AuthUser {
   phone: string;
   email?: string;
   role: UserRole;
+  sellerId?: string;
   whatsapp?: string;
   isActive?: boolean;
 }
