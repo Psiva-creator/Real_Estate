@@ -187,9 +187,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       waterAvailable: true,
       electricityAvailable: true,
     },
-    mainImage: 'https://images.unsplash.com/photo-1592417817098-8f3d69102353?auto=format&fit=crop&w=1000&q=80',
+    mainImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
     galleryImages: [
-      'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=800&q=80',
     ],
     verifiedDocsCount: 13,
     totalDocsRequired: 13,
