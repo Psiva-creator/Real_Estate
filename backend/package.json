@@ -8,11 +8,12 @@
     "build": "tsc",
     "start": "node dist/backend/src/server.js",
     "test": "npm run test:unit",
-    "test:unit": "tsc && node --test dist/backend/tests/auth.test.js dist/backend/tests/documents.test.js dist/backend/tests/enquiries.test.js dist/backend/tests/maps.test.js dist/backend/tests/properties.test.js dist/backend/tests/docs.test.js",
+    "test:unit": "tsc && node --test dist/backend/tests/auth.test.js dist/backend/tests/documents.test.js dist/backend/tests/enquiries.test.js dist/backend/tests/maps.test.js dist/backend/tests/properties.test.js dist/backend/tests/docs.test.js dist/backend/tests/cors.test.js",
     "test:integration": "tsc && node --test dist/backend/tests/postgres.integration.test.js",
     "test:all": "npm run test:unit && npm run test:integration",
     "seed": "tsx src/db/seeds/seed.ts",
     "migrate": "tsx src/db/migrate.ts",
+    "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },
   "dependencies": {

@@ -20,11 +20,31 @@ async function startServer() {
     await runSeeds();
   }
 
-  const server = app.listen(config.port, () => {
-    console.log(`🚀 Server ready at http://localhost:${config.port}`);
-    console.log(`📡 Health check: http://localhost:${config.port}/api/health`);
-    console.log(`🔍 Public properties: http://localhost:${config.port}/api/properties`);
+  const server = app.listen(config.port, config.host, () => {
+    const displayHost = config.host === '0.0.0.0' ? 'localhost' : config.host;
+    console.log(`🚀 Server ready at http://${displayHost}:${config.port} (bound to ${config.host}:${config.port})`);
+    console.log(`📡 Health check: http://${displayHost}:${config.port}/api/health`);
+    console.log(`🔍 Public properties: http://${displayHost}:${config.port}/api/properties`);
   });
+
+  const shutdown = async (signal: string) => {
+    console.log(`Received ${signal}. Gracefully shutting down...`);
+    server.close(async () => {
+      console.log('HTTP server closed.');
+      try {
+        await db.getPool().end();
+      } catch {}
+      process.exit(0);
+    });
+
+    setTimeout(() => {
+      console.error('Forceful shutdown after timeout');
+      process.exit(1);
+    }, 10000).unref();
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 
   return server;
 }

@@ -14,20 +14,13 @@ import { requireAuth, requireRole, optionalAuth } from './middleware/auth.js';
 import swaggerUi from 'swagger-ui-express';
 import { openApiSpec } from './docs/openapi.js';
 
+import { getCorsOptions } from './config/cors.js';
+
 export const app = express();
 app.disable('x-powered-by');
 
 // Global Middlewares
-app.use(
-  cors({
-    origin: config.nodeEnv === 'production'
-      ? [config.frontendUrl]
-      : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+app.use(cors(getCorsOptions()));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
@@ -41,14 +34,16 @@ app.get('/api/docs.json', (_req: Request, res: Response) => {
 app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
 
 // --- HEALTH CHECK ---
-app.get('/api/health', (_req: Request, res: Response) => {
+const handleHealthCheck = (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     service: 'Telangana Real-Estate Brokerage Backend',
     version: '1.0.0',
   });
-});
+};
+app.get('/api/health', handleHealthCheck);
+app.get('/health', handleHealthCheck);
 
 // --- AUTH ROUTES ---
 const authRouter = express.Router();
@@ -189,8 +184,9 @@ app.use('/api/admin', adminRouter);
 // Centralized error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled API Error:', err);
+  const isProduction = config.nodeEnv === 'production';
   res.status(500).json({
     error: 'Internal Server Error',
-    message: err.message,
+    message: isProduction ? 'An unexpected internal error occurred' : err.message,
   });
 });
