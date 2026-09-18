@@ -662,7 +662,7 @@ export interface AuthUser {
 }
 
 export interface AuthResponse {
-  message: string;
+  message?: string;
   user: AuthUser;
   token: string;
 }
