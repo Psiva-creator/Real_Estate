@@ -1,7 +1,8 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
 import { isValidLocale, Locale } from '@/lib/i18n';
-import { MOCK_PROPERTIES } from '@/lib/mockData';
+import { MOCK_PROPERTIES, MockProperty } from '@/lib/mockData';
+import { getProperties } from '@/lib/api';
 import HeroSection from '@/components/home/HeroSection';
 import ArchitectureStorySection from '@/components/home/ArchitectureStorySection';
 import FeaturedSection from '@/components/home/FeaturedSection';
@@ -16,13 +17,23 @@ interface HomePageProps {
   };
 }
 
-export default function HomePage({ params }: HomePageProps) {
+export default async function HomePage({ params }: HomePageProps) {
   if (!isValidLocale(params.locale)) {
     notFound();
   }
 
   const locale = params.locale as Locale;
   const isTe = locale === 'te';
+
+  // Fetch verified properties once from backend API for both FeaturedSection and MapView
+  let properties: MockProperty[] = [];
+  try {
+    const res = await getProperties({ limit: 50 });
+    properties = res.properties && res.properties.length > 0 ? res.properties : MOCK_PROPERTIES;
+  } catch (err) {
+    console.error('[HomePage] Error loading backend properties, falling back to mock:', err);
+    properties = MOCK_PROPERTIES;
+  }
 
   return (
     <div className="space-y-0 bg-[#FAF8F5]">
@@ -33,7 +44,8 @@ export default function HomePage({ params }: HomePageProps) {
       <ArchitectureStorySection locale={locale} />
 
       {/* 3. Magazine-Style Featured Properties Showcase */}
-      <FeaturedSection locale={locale} />
+      <FeaturedSection locale={locale} initialProperties={properties} />
+
 
       {/* 4. The Fiduciary Diligence & 13-Document Verification Gate */}
       <TrustSection locale={locale} />
@@ -62,7 +74,7 @@ export default function HomePage({ params }: HomePageProps) {
           </div>
 
           <div className="rounded-3xl border border-[#2C2520] overflow-hidden shadow-2xl">
-            <MapView properties={MOCK_PROPERTIES} locale={locale} />
+            <MapView properties={properties} locale={locale} />
           </div>
         </div>
       </section>
