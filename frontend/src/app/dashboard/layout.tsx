@@ -69,6 +69,19 @@ export default function DashboardLayout({
     },
   ];
 
+  const agentTabs = [
+    {
+      href: '/dashboard/properties',
+      label: 'Properties',
+      icon: Building2,
+    },
+    {
+      href: '/dashboard/enquiries',
+      label: 'Enquiries',
+      icon: Users,
+    },
+  ];
+
   const sellerTabs = [
     {
       href: '/dashboard/seller',
@@ -82,14 +95,21 @@ export default function DashboardLayout({
     },
   ];
 
-  const tabs = isSeller ? sellerTabs : adminTabs;
+  const tabs = isSeller ? sellerTabs : isAdmin ? adminTabs : agentTabs;
 
-  // Prevent seller from accessing internal back-office tabs
-  const isAccessRestricted =
+  // Prevent unauthorized access:
+  // 1. Sellers blocked from internal broker desks and reviewer
+  const isSellerAccessViolation =
     isSeller &&
     (pathname.startsWith('/dashboard/properties') ||
       pathname.startsWith('/dashboard/enquiries') ||
       pathname.startsWith('/dashboard/verification'));
+
+  // 2. Agents blocked from Admin-only verification reviewer
+  const isAgentAccessViolation =
+    isAgent && pathname.startsWith('/dashboard/verification');
+
+  const isAccessRestricted = isSellerAccessViolation || isAgentAccessViolation;
 
   return (
     <div className="min-h-screen bg-slate-100 flex flex-col">
