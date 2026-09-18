@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next';
-import { Inter, Noto_Sans_Telugu } from 'next/font/google';
+import { Inter, Noto_Sans_Telugu, Cormorant_Garamond } from 'next/font/google';
 import '@/styles/globals.css';
 import AppProviders from '@/components/providers/AppProviders';
 
@@ -14,6 +14,13 @@ const notoSansTelugu = Noto_Sans_Telugu({
   weight: ['400', '500', '600', '700'],
   display: 'swap',
   variable: '--font-noto-telugu',
+});
+
+const cormorantGaramond = Cormorant_Garamond({
+  subsets: ['latin'],
+  weight: ['400', '500', '600', '700'],
+  display: 'swap',
+  variable: '--font-cormorant',
 });
 
 export const metadata: Metadata = {
@@ -44,7 +51,7 @@ export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
   maximumScale: 5,
-  themeColor: '#14532d',
+  themeColor: '#191512',
 };
 
 export default function RootLayout({
@@ -55,9 +62,9 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`h-full scroll-smooth ${inter.variable} ${notoSansTelugu.variable}`}
+      className={`h-full scroll-smooth ${inter.variable} ${notoSansTelugu.variable} ${cormorantGaramond.variable}`}
     >
-      <body className="min-h-full flex flex-col bg-slate-50 text-slate-900 antialiased selection:bg-emerald-200 selection:text-emerald-900 font-sans">
+      <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#191512] antialiased selection:bg-[#B9825A]/20 selection:text-[#191512] font-sans">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>

@@ -54,52 +54,53 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
   };
 
   return (
-    <div className="group bg-white rounded-xl border border-slate-200/90 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col overflow-hidden hover:border-emerald-300/80">
+    <div className="group bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] hover:shadow-[0_16px_40px_-8px_rgba(25,21,18,0.09)] hover:border-[#8C653E]/40 transition-all duration-300 flex flex-col overflow-hidden">
       {/* Media & Badges */}
-      <div className="relative aspect-[16/10] w-full overflow-hidden bg-slate-100">
+      <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F5F1EA]">
         <Image
           src={imgSrc}
           alt={title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-          className="object-cover group-hover:scale-105 transition-transform duration-300"
+          className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
           onError={() => {
             // Fallback to local placeholder
             setImgSrc('/images/property-placeholder.svg');
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
 
         {/* Top Badges */}
-        <div className="absolute top-3 left-3 right-3 flex items-center justify-between pointer-events-none">
+        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none">
           {/* Property Type Badge */}
           <span
-            className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider shadow-sm pointer-events-auto ${
+            className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider shadow-sm pointer-events-auto backdrop-blur-sm ${
               property.type === 'LAND'
-                ? 'bg-amber-800 text-amber-50'
-                : 'bg-emerald-800 text-emerald-50'
+                ? 'bg-[#8C653E]/90 text-white border border-[#8C653E]/50'
+                : 'bg-[#191512]/90 text-[#FAF8F5] border border-white/20'
             }`}
           >
             {property.type === 'LAND'
               ? isTe
                 ? 'భూమి / ప్లాట్'
-                : 'Land / Plot'
+                : 'Land Parcel'
               : isTe
               ? 'ఫ్లాట్ / అపార్ట్‌మెంట్'
-              : 'Apartment / Flat'}
+              : 'Residence / Flat'}
           </span>
 
           {/* 13-Doc Verification Shield */}
-          <div className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-900/90 backdrop-blur-sm text-emerald-300 text-xs font-semibold shadow-sm pointer-events-auto border border-emerald-500/30">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[#191512] text-[11px] font-semibold shadow-sm pointer-events-auto border border-[#E8E2D9]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
             <span>{isTe ? '13 డాక్స్ వెరిఫైడ్' : '13-Doc Verified'}</span>
           </div>
         </div>
 
         {/* Bottom Bar on Image: ORR Distance */}
         {property.location.distanceFromOrrKm !== undefined && (
-          <div className="absolute bottom-2.5 left-3 pointer-events-none">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-900/80 backdrop-blur-sm text-white text-[11px] font-medium">
-              <Compass className="w-3 h-3 text-emerald-400" />
+          <div className="absolute bottom-3 left-3.5 pointer-events-none">
+            <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-black/65 backdrop-blur-sm text-[#FAF8F5] text-[11px] font-medium border border-white/10">
+              <Compass className="w-3 h-3 text-[#C5A880]" />
               <span>{formatOrrDistance(property.location.distanceFromOrrKm)}</span>
             </span>
           </div>
@@ -107,11 +108,11 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
       </div>
 
       {/* Card Body */}
-      <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
+      <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
           {/* Location Line */}
-          <div className="flex items-center gap-1.5 text-xs text-slate-500 mb-1">
-            <MapPin className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+          <div className="flex items-center gap-1.5 text-xs text-[#8C827A] mb-1.5">
+            <MapPin className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
             <span className="truncate">
               {property.location.village}, {property.location.mandal},{' '}
               {property.location.district}
@@ -119,45 +120,45 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
           </div>
 
           {/* Title */}
-          <Link href={`/${locale}/properties/${property.id}`} className="block group-hover:text-emerald-800 transition-colors">
-            <h3 className="text-base font-bold text-slate-900 leading-snug line-clamp-2">
+          <Link href={`/${locale}/properties/${property.id}`} className="block group-hover:text-[#8C653E] transition-colors">
+            <h3 className="font-serif text-lg font-bold text-[#191512] leading-snug line-clamp-2">
               {title}
             </h3>
           </Link>
 
           {/* Landmark / Subtext */}
           {landmark && (
-            <p className="text-xs text-slate-500 mt-1 line-clamp-1 italic">
+            <p className="text-xs text-[#574F48] mt-1 line-clamp-1 italic font-serif">
               {landmark}
             </p>
           )}
 
           {/* Key Specs Row */}
-          <div className="mt-3 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-700">
+          <div className="mt-3.5 pt-3.5 border-t border-[#E8E2D9]/70 flex items-center justify-between text-xs text-[#574F48]">
             <div className="flex items-center gap-1.5 font-medium">
               {property.type === 'LAND' ? (
-                <Layers className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <Layers className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
               ) : (
-                <Home className="w-3.5 h-3.5 text-emerald-700 shrink-0" />
+                <Home className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
               )}
               <span>{getAreaString()}</span>
             </div>
 
-            <div className="flex items-center gap-1.5 text-emerald-800 font-semibold bg-emerald-50 px-2 py-0.5 rounded">
-              <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+            <div className="flex items-center gap-1.5 text-[#5C4026] font-semibold bg-[#F5F1EA] px-2.5 py-0.5 rounded-full border border-[#E8E2D9]">
+              <CheckCircle2 className="w-3 h-3 text-[#8C653E]" />
               <span>{property.location.zone.split(' ')[0]} Zone</span>
             </div>
           </div>
         </div>
 
         {/* Pricing & CTAs */}
-        <div className="pt-3 border-t border-slate-100 space-y-3">
+        <div className="pt-3.5 border-t border-[#E8E2D9]/70 space-y-3.5">
           <div className="flex items-baseline justify-between">
             <div>
-              <span className="text-[10px] uppercase font-bold text-slate-400 tracking-wider block">
-                {isTe ? 'మొత్తం ధర' : 'Total Price'}
+              <span className="text-[9px] uppercase font-bold text-[#8C827A] tracking-[0.18em] block">
+                {isTe ? 'మొత్తం ధర' : 'Investment'}
               </span>
-              <span className="text-lg sm:text-xl font-extrabold text-slate-900">
+              <span className="font-serif text-xl sm:text-2xl font-bold text-[#191512]">
                 {formatINR(property.pricing.totalPrice)}
               </span>
             </div>
@@ -165,17 +166,17 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
             {/* Sub-rate */}
             <div className="text-right">
               {property.pricing.pricePerAcre && (
-                <span className="text-xs text-slate-500 block">
+                <span className="text-xs text-[#8C827A] block font-mono">
                   {formatINR(property.pricing.pricePerAcre)} / Acre
                 </span>
               )}
               {property.pricing.pricePerSqft && (
-                <span className="text-xs text-slate-500 block">
+                <span className="text-xs text-[#8C827A] block font-mono">
                   ₹{property.pricing.pricePerSqft.toLocaleString('en-IN')} / sq.ft
                 </span>
               )}
               {property.pricing.pricePerSqYard && (
-                <span className="text-xs text-slate-500 block">
+                <span className="text-xs text-[#8C827A] block font-mono">
                   ₹{property.pricing.pricePerSqYard.toLocaleString('en-IN')} / sq.yd
                 </span>
               )}
@@ -186,18 +187,18 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
           <div className="grid grid-cols-2 gap-2">
             <Link
               href={`/${locale}/properties/${property.id}`}
-              className="px-3 py-2.5 rounded-lg border border-slate-300 text-slate-700 hover:bg-slate-50 text-xs font-semibold text-center transition-colors tap-target flex items-center justify-center"
+              className="px-3 py-2.5 rounded-full border border-[#E8E2D9] text-[#191512] hover:bg-[#F5F1EA] text-xs font-semibold tracking-wider uppercase text-center transition-colors tap-target flex items-center justify-center"
             >
-              {isTe ? 'వివరాలు చూడండి' : 'View Details'}
+              {isTe ? 'వివరాలు' : 'Details'}
             </Link>
 
             <button
               type="button"
               onClick={handleBookVisit}
-              className="px-3 py-2.5 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold shadow-sm transition-all text-center tap-target flex items-center justify-center gap-1 active:scale-[0.98]"
+              className="px-3 py-2.5 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] text-xs font-semibold tracking-wider uppercase shadow-sm transition-all text-center tap-target flex items-center justify-center gap-1.5 active:scale-[0.98]"
             >
-              <Calendar className="w-3.5 h-3.5 text-emerald-200 shrink-0" />
-              <span>{isTe ? 'సైట్ విజిట్' : 'Book Visit'}</span>
+              <Calendar className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
+              <span>{isTe ? 'సైట్ విజిట్' : 'Site Visit'}</span>
             </button>
           </div>
         </div>

@@ -332,14 +332,14 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
   );
 
   return (
-    <div className="w-full max-w-full space-y-6 overflow-hidden">
+    <div className="w-full max-w-full space-y-8 overflow-hidden">
       {/* Search & Main Filter Card */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 sm:p-5 space-y-4 overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] p-5 sm:p-6 space-y-5 overflow-hidden">
         {/* Top Row: Search Input & Quick Type Tabs */}
-        <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+        <div className="flex flex-col md:flex-row gap-3.5 items-stretch md:items-center justify-between">
           {/* Search Input Bar */}
           <div className="relative flex-1">
-            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C827A]" />
             <input
               type="text"
               value={filters.query}
@@ -348,13 +348,13 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
                 if (e.key === 'Enter') handleApplyFilters();
               }}
               placeholder={dict.filters.searchPlaceholder}
-              className="w-full h-11 pl-10 pr-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700"
+              className="w-full h-11 pl-11 pr-4 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-2 focus:ring-[#8C653E]"
             />
             {filters.query && (
               <button
                 type="button"
                 onClick={() => setFilters({ ...filters, query: '' })}
-                className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 p-0.5"
+                className="absolute right-3.5 top-1/2 -translate-y-1/2 text-[#8C827A] hover:text-[#191512] p-1"
               >
                 <X className="w-4 h-4" />
               </button>
@@ -366,10 +366,10 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
             <button
               type="button"
               onClick={() => handleTypeTabClick('ALL')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
                 appliedFilters.type === 'ALL'
-                  ? 'bg-emerald-800 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
               }`}
             >
               {isTe ? 'అన్నీ' : 'All Listings'} ({allProperties.length})
@@ -377,10 +377,10 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
             <button
               type="button"
               onClick={() => handleTypeTabClick('LAND')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
                 appliedFilters.type === 'LAND'
-                  ? 'bg-emerald-800 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
               }`}
             >
               {dict.nav.lands} ({landsCount})
@@ -388,10 +388,10 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
             <button
               type="button"
               onClick={() => handleTypeTabClick('FLAT')}
-              className={`px-3.5 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors whitespace-nowrap ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
                 appliedFilters.type === 'FLAT'
-                  ? 'bg-emerald-800 text-white shadow-sm'
-                  : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
               }`}
             >
               {dict.nav.flats} ({flatsCount})
@@ -400,18 +400,17 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
         </div>
 
         {/* Multi-Criteria Filter Dropdowns (Location, Price, Area, ORR Distance, Verification) */}
-        <div className="pt-3 border-t border-slate-100">
-          {/* Filter dropdowns — 1 col on xs, 2 on sm, 5 on lg */}
-          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5 gap-3">
+        <div className="pt-4 border-t border-[#E8E2D9]">
+          <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5 gap-3.5">
             {/* 1. Location / Mandal Filter */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.location}
               </label>
               <select
                 value={filters.location}
                 onChange={(e) => setFilters({ ...filters, location: e.target.value })}
-                className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+                className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
               >
                 {MANDAL_OPTIONS.map((opt) => (
                   <option key={opt.value} value={opt.value}>
@@ -423,13 +422,13 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 2. Price Range Filter */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.priceRange}
               </label>
               <select
                 value={filters.priceRange}
                 onChange={(e) => setFilters({ ...filters, priceRange: e.target.value })}
-                className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+                className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
               >
                 <option value="ALL">{dict.filters.allPrices}</option>
                 <option value="UNDER_50L">{dict.filters.under50L}</option>
@@ -442,13 +441,13 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 3. Area / Acreage Filter */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.acres}
               </label>
               <select
                 value={filters.areaRange}
                 onChange={(e) => setFilters({ ...filters, areaRange: e.target.value })}
-                className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+                className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
               >
                 <option value="ALL">{dict.filters.allAreas}</option>
                 <option value="PLOT_UNDER_1_ACRE">{dict.filters.plotUnder1Acre}</option>
@@ -461,13 +460,13 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 4. ORR Distance Filter */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.distanceOrr}
               </label>
               <select
                 value={filters.orrDistance}
                 onChange={(e) => setFilters({ ...filters, orrDistance: e.target.value })}
-                className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+                className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
               >
                 <option value="ALL">{dict.filters.allDistances}</option>
                 <option value="WITHIN_2KM">{dict.filters.within2Km}</option>
@@ -479,13 +478,13 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 5. Verification Status Filter */}
             <div>
-              <label className="block text-[11px] font-bold text-slate-600 uppercase tracking-wider mb-1.5">
+              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.verificationStatus}
               </label>
               <select
                 value={filters.verificationStatus}
                 onChange={(e) => setFilters({ ...filters, verificationStatus: e.target.value })}
-                className="w-full h-10 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
+                className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
               >
                 <option value="ALL">{dict.filters.allVerified}</option>
                 <option value="DOCS_13">{dict.filters.doc13Verified}</option>
@@ -497,38 +496,38 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
           </div>
 
           {/* Action Row: Apply & Clear Buttons */}
-          <div className="mt-4 pt-3 border-t border-slate-100 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
+          <div className="mt-5 pt-4 border-t border-[#E8E2D9] flex flex-wrap items-center justify-between gap-3.5">
+            <div className="flex items-center gap-2.5">
               <button
                 type="button"
                 onClick={handleApplyFilters}
-                className="px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all flex items-center gap-2 active:scale-[0.98]"
+                className="px-6 py-2.5 rounded-full bg-[#191512] hover:bg-[#8C653E] text-white font-semibold text-xs tracking-wider uppercase shadow-sm transition-all flex items-center gap-2 active:scale-[0.98]"
               >
-                <Check className="w-4 h-4" />
+                <Check className="w-3.5 h-3.5 text-[#C5A880]" />
                 <span>{dict.filters.applyFilters}</span>
               </button>
 
               <button
                 type="button"
                 onClick={handleClearFilters}
-                className="px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold text-xs sm:text-sm transition-colors flex items-center gap-1.5"
+                className="px-5 py-2.5 rounded-full border border-[#E8E2D9] hover:bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] font-semibold text-xs tracking-wider uppercase transition-colors flex items-center gap-1.5"
               >
-                <RotateCcw className="w-3.5 h-3.5 text-slate-500" />
+                <RotateCcw className="w-3.5 h-3.5 text-[#8C827A]" />
                 <span>{dict.filters.clearFilters}</span>
               </button>
             </div>
 
             {/* Filter Count & Active Badges indicator */}
-            <div className="text-xs text-slate-500 font-medium">
+            <div className="text-xs text-[#8C827A] font-medium">
               {activeFilterCount > 0 ? (
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 text-emerald-800 font-semibold">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F1EA] text-[#8C653E] border border-[#E8E2D9] font-semibold text-xs">
                   <Filter className="w-3.5 h-3.5" />
                   <span>
                     {activeFilterCount} {dict.filters.filterCount}
                   </span>
                 </span>
               ) : (
-                <span className="text-slate-400">
+                <span className="text-[#8C827A]">
                   {isTe ? 'అన్ని ఫిల్టర్‌లు డిఫాల్ట్‌గా ఉన్నాయి' : 'Default filters applied'}
                 </span>
               )}
@@ -539,28 +538,28 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
       {/* Results Header & Mobile Toggle */}
       <div className="flex flex-col min-[480px]:flex-row items-stretch min-[480px]:items-center justify-between gap-3">
-        <div className="text-sm font-semibold text-slate-700 flex items-center gap-2">
+        <div className="font-serif text-base text-[#191512] flex items-center gap-2">
           <span>
             {isTe
               ? `${filteredProperties.length} ధృవీకరించిన ప్రాపర్టీలు అందుబాటులో ఉన్నాయి`
               : `Showing ${filteredProperties.length} verified listings`}
           </span>
           {(isLoading || isFetchingBackend) && (
-            <span className="inline-flex items-center text-xs text-emerald-700 font-normal animate-pulse">
+            <span className="inline-flex items-center text-xs font-sans text-[#8C653E] font-normal animate-pulse">
               ({dict.filters.loadingProperties})
             </span>
           )}
         </div>
 
         {/* Mobile List / Map Toggle (visible only on < lg screens) */}
-        <div className="flex lg:hidden items-center self-start min-[480px]:self-auto bg-slate-100 p-1 rounded-xl border border-slate-200">
+        <div className="flex lg:hidden items-center self-start min-[480px]:self-auto bg-[#F5F1EA] p-1 rounded-full border border-[#E8E2D9]">
           <button
             type="button"
             onClick={() => setMobileView('list')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
               mobileView === 'list'
-                ? 'bg-white text-emerald-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                : 'text-[#574F48] hover:text-[#191512]'
             }`}
           >
             <List className="w-3.5 h-3.5" />
@@ -569,10 +568,10 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
           <button
             type="button"
             onClick={() => setMobileView('map')}
-            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all ${
+            className={`flex items-center gap-1.5 px-4 py-1.5 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
               mobileView === 'map'
-                ? 'bg-white text-emerald-900 shadow-sm'
-                : 'text-slate-600 hover:text-slate-900'
+                ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                : 'text-[#574F48] hover:text-[#191512]'
             }`}
           >
             <MapIcon className="w-3.5 h-3.5" />
@@ -591,30 +590,30 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
         >
           {/* Lightweight Loading Skeleton State */}
           {isLoading ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {[1, 2, 3, 4].map((n) => (
                 <div
                   key={n}
-                  className="bg-white rounded-xl border border-slate-200 p-4 space-y-3 animate-pulse"
+                  className="bg-white rounded-2xl border border-[#E8E2D9] p-5 space-y-3.5 animate-pulse"
                 >
-                  <div className="aspect-[16/10] w-full bg-slate-200 rounded-lg" />
-                  <div className="h-4 bg-slate-200 rounded w-3/4" />
-                  <div className="h-3 bg-slate-200 rounded w-1/2" />
-                  <div className="pt-2 border-t border-slate-100 flex justify-between">
-                    <div className="h-6 bg-slate-200 rounded w-1/3" />
-                    <div className="h-8 bg-slate-200 rounded w-1/3" />
+                  <div className="aspect-[16/10] w-full bg-[#F5F1EA] rounded-xl" />
+                  <div className="h-4 bg-[#F5F1EA] rounded w-3/4" />
+                  <div className="h-3 bg-[#F5F1EA] rounded w-1/2" />
+                  <div className="pt-2 border-t border-[#E8E2D9] flex justify-between">
+                    <div className="h-6 bg-[#F5F1EA] rounded w-1/3" />
+                    <div className="h-8 bg-[#F5F1EA] rounded w-1/3" />
                   </div>
                 </div>
               ))}
             </div>
           ) : filteredProperties.length > 0 ? (
             /* Property Cards Grid */
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {filteredProperties.map((prop) => (
                 <div
                   key={prop.id}
                   onMouseEnter={() => setSelectedPropertyId(prop.id)}
-                  className="transition-transform duration-150"
+                  className="transition-transform duration-200"
                 >
                   <PropertyCard property={prop} locale={locale} />
                 </div>
@@ -622,15 +621,15 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
             </div>
           ) : (
             /* Proper Empty State when no properties match */
-            <div className="bg-white rounded-2xl border border-slate-200 p-8 sm:p-12 text-center space-y-4 shadow-sm">
-              <div className="w-16 h-16 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center mx-auto">
+            <div className="bg-white rounded-2xl border border-[#E8E2D9] p-10 sm:p-14 text-center space-y-4 shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-[#F5F1EA] text-[#8C653E] border border-[#E8E2D9] flex items-center justify-center mx-auto">
                 <SearchX className="w-8 h-8" />
               </div>
-              <div className="max-w-md mx-auto space-y-1.5">
-                <h3 className="text-lg sm:text-xl font-extrabold text-slate-900">
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#191512]">
                   {dict.filters.noResultsTitle}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600">
+                <p className="text-xs sm:text-sm text-[#574F48] leading-relaxed">
                   {dict.filters.noResultsDesc}
                 </p>
               </div>
@@ -638,9 +637,9 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
                 <button
                   type="button"
                   onClick={handleClearFilters}
-                  className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm shadow-sm transition-all active:scale-[0.98]"
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#191512] hover:bg-[#8C653E] text-white font-semibold text-xs tracking-wider uppercase shadow-sm transition-all active:scale-[0.98]"
                 >
-                  <RotateCcw className="w-4 h-4" />
+                  <RotateCcw className="w-3.5 h-3.5 text-[#C5A880]" />
                   <span>{dict.filters.clearFiltersAction}</span>
                 </button>
               </div>

@@ -43,18 +43,18 @@ export default function ProcessSection({ locale }: ProcessSectionProps) {
   ];
 
   return (
-    <section className="py-16 sm:py-24 bg-slate-50 border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section className="py-20 sm:py-28 bg-[#FAF8F5] border-b border-[#E8E2D9]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         <div className="text-center max-w-3xl mx-auto space-y-3">
-          <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
+          <span className="text-xs font-semibold tracking-[0.2em] uppercase text-[#8C653E]">
             {isTe ? 'పారదర్శక విధానం' : 'The Mediation Process'}
           </span>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-5xl font-normal text-[#191512] tracking-tight">
             {isTe
               ? 'మేము డీల్‌ను ఎలా సురక్షితంగా నిర్వహిస్తాము?'
-              : 'How Our Safe Deal Brokerage Works'}
+              : 'Our Four-Pillar Mediation Journey'}
           </h2>
-          <p className="text-sm sm:text-base text-slate-600">
+          <p className="text-sm sm:text-base text-[#574F48] leading-relaxed">
             {isTe
               ? 'అనుమానాస్పద లిస్టింగ్‌లు లేవు. ప్రతి రూపాయికి పూర్తి చట్టబద్ధమైన స్పష్టత.'
               : 'Zero unverified listings. Total legal transparency from first phone call to final registration deed.'}
@@ -65,16 +65,16 @@ export default function ProcessSection({ locale }: ProcessSectionProps) {
           {steps.map((step, idx) => (
             <div
               key={idx}
-              className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm relative flex flex-col justify-between"
+              className="bg-white rounded-2xl p-7 border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] relative flex flex-col justify-between group hover:border-[#8C653E]/40 hover:shadow-[0_12px_32px_-6px_rgba(25,21,18,0.08)] transition-all duration-300"
             >
               <div className="space-y-4">
-                <span className="text-3xl font-black text-emerald-900/20 font-mono block">
+                <span className="font-serif text-3xl sm:text-4xl font-normal text-[#C5A880] block">
                   {step.num}
                 </span>
-                <h3 className="text-base font-bold text-slate-900 leading-snug">
+                <h3 className="font-serif text-base sm:text-lg font-bold text-[#191512] leading-snug">
                   {step.title}
                 </h3>
-                <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                <p className="text-xs sm:text-sm text-[#574F48] leading-relaxed">
                   {step.desc}
                 </p>
               </div>
@@ -82,23 +82,27 @@ export default function ProcessSection({ locale }: ProcessSectionProps) {
           ))}
         </div>
 
-        <div className="bg-emerald-900 text-white rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6 shadow-xl">
-          <div className="space-y-2 text-center md:text-left">
-            <h3 className="text-lg sm:text-2xl font-bold">
+        {/* Concierge Seller Invitation Banner */}
+        <div className="bg-[#141210] text-[#FAF8F5] rounded-3xl p-8 sm:p-10 border border-[#2C2520] flex flex-col md:flex-row items-center justify-between gap-8 shadow-xl">
+          <div className="space-y-2.5 text-center md:text-left">
+            <span className="text-[10px] uppercase font-bold tracking-[0.2em] text-[#8C653E] block">
+              {isTe ? 'సెల్లర్ ఆహ్వానం' : 'Concierge Seller Representation'}
+            </span>
+            <h3 className="font-serif text-2xl sm:text-3xl font-normal text-[#FAF8F5]">
               {isTe ? 'మీరు మీ ఆస్తిని అమ్మాలనుకుంటున్నారా?' : 'Are you a Land or Flat Owner?'}
             </h3>
-            <p className="text-xs sm:text-sm text-emerald-200 max-w-xl">
+            <p className="text-xs sm:text-sm text-[#A89F95] max-w-xl leading-relaxed">
               {isTe
                 ? 'మీ ఆస్తి వివరాలు మరియు పత్రాలను సమర్పించండి. మా టీమ్ వెరిఫికేషన్ పూర్తి చేసి అర్హులైన కొనుగోలుదారులను కనెక్ట్ చేస్తుంది.'
-                : 'Submit your property for our 13-document verification gate and access verified buyers without broker spam.'}
+                : 'Submit your property for our 13-document verification gate and access vetted, high-net-worth buyers without public marketplace spam.'}
             </p>
           </div>
           <Link
             href={`/${locale}/list-property`}
-            className="px-6 py-3.5 rounded-xl bg-white text-emerald-950 font-bold text-sm shadow-md hover:bg-emerald-50 transition-all shrink-0 tap-target flex items-center gap-2"
+            className="px-8 py-4 rounded-full bg-[#FAF8F5] hover:bg-[#EFE9E0] text-[#191512] font-semibold text-xs tracking-wider uppercase transition-all shrink-0 tap-target flex items-center gap-2.5 shadow-lg active:scale-[0.98]"
           >
             <span>{dict.hero.ctaList}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-[#8C653E]" />
           </Link>
         </div>
       </div>

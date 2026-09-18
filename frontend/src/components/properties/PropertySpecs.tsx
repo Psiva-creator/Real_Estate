@@ -89,14 +89,14 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
   };
 
   return (
-    <div className="bg-white rounded-2xl p-5 sm:p-6 border border-slate-200 shadow-sm space-y-6">
+    <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] shadow-sm space-y-6">
       {/* Header */}
-      <div className="border-b border-slate-100 pb-4">
-        <h2 className="text-lg sm:text-xl font-extrabold text-slate-900 flex items-center gap-2">
+      <div className="border-b border-[#E8E2D9] pb-4">
+        <h2 className="text-xl sm:text-2xl font-serif font-normal text-[#191512] flex items-center gap-2.5">
           {isLand ? (
-            <Layers className="w-5 h-5 text-emerald-700" />
+            <Layers className="w-5 h-5 text-[#8C653E]" />
           ) : (
-            <Building className="w-5 h-5 text-emerald-700" />
+            <Building className="w-5 h-5 text-[#8C653E]" />
           )}
           <span>
             {isLand ? dict.propertyDetail.landSpecs : dict.propertyDetail.flatSpecs}
@@ -109,11 +109,11 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
         <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
           {/* Total Acres */}
           {land.totalAcres !== undefined && (
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.totalAcres}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
                 {formatAcreage(land.totalAcres)}
               </span>
             </div>
@@ -121,11 +121,11 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
 
           {/* Sq. Yards */}
           {land.sqYards !== undefined && (
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.sqYards}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
                 {land.sqYards.toLocaleString('en-IN')} Sq.Yds
               </span>
             </div>
@@ -133,11 +133,11 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
 
           {/* Survey Numbers */}
           {land.surveyNumbers && land.surveyNumbers.length > 0 && (
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.surveyNumbers}
               </span>
-              <span className="text-sm font-extrabold font-mono text-emerald-800 mt-1 block truncate">
+              <span className="text-sm font-mono font-bold text-[#8C653E] mt-1 block truncate">
                 {land.surveyNumbers.join(', ')}
               </span>
             </div>
@@ -145,11 +145,11 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
 
           {/* Approach Road Width */}
           {land.roadWidthFt !== undefined && (
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.roadWidth}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
                 {land.roadWidthFt} Feet
               </span>
             </div>
@@ -157,11 +157,11 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
 
           {/* Soil Type */}
           {land.soilType && (
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.soilType}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-sm font-serif font-semibold text-[#191512] mt-1 block">
                 {getSoilTypeText(land.soilType)}
               </span>
             </div>
@@ -169,47 +169,47 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
 
           {/* Development Status */}
           {land.developmentLevel && (
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.developmentLevel}
               </span>
-              <span className="text-sm font-extrabold text-slate-900 mt-1 block truncate">
+              <span className="text-sm font-medium text-[#191512] mt-1 block truncate">
                 {getDevLevelText(land.developmentLevel)}
               </span>
             </div>
           )}
 
           {/* Water Availability */}
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.waterAvailable}
               </span>
-              <span className="text-sm font-bold text-slate-900 mt-0.5 block">
+              <span className="text-sm font-medium text-[#191512] mt-0.5 block">
                 {land.waterAvailable ? dict.propertyDetail.yes : dict.propertyDetail.no}
               </span>
             </div>
             {land.waterAvailable ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-[#8C653E] shrink-0" />
             ) : (
-              <XCircle className="w-5 h-5 text-slate-400 shrink-0" />
+              <XCircle className="w-5 h-5 text-[#C5BDB5] shrink-0" />
             )}
           </div>
 
           {/* Electricity Connection */}
-          <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 flex items-center justify-between">
+          <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] flex items-center justify-between">
             <div>
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.electricityAvailable}
               </span>
-              <span className="text-sm font-bold text-slate-900 mt-0.5 block">
+              <span className="text-sm font-medium text-[#191512] mt-0.5 block">
                 {land.electricityAvailable ? dict.propertyDetail.yes : dict.propertyDetail.no}
               </span>
             </div>
             {land.electricityAvailable ? (
-              <CheckCircle2 className="w-5 h-5 text-emerald-600 shrink-0" />
+              <CheckCircle2 className="w-5 h-5 text-[#8C653E] shrink-0" />
             ) : (
-              <XCircle className="w-5 h-5 text-slate-400 shrink-0" />
+              <XCircle className="w-5 h-5 text-[#C5BDB5] shrink-0" />
             )}
           </div>
         </div>
@@ -220,71 +220,71 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
         <div className="space-y-5">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {/* Bedrooms */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.bedrooms}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
                 {flat.bedrooms} BHK
               </span>
             </div>
 
             {/* Super Builtup Area */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.superBuiltup}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
                 {flat.sqft.toLocaleString('en-IN')} sq.ft
               </span>
             </div>
 
             {/* Bathrooms */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.bathrooms}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
                 {flat.bathrooms} Baths
               </span>
             </div>
 
             {/* Floor Level */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.floorNumber}
               </span>
-              <span className="text-base font-extrabold text-slate-900 mt-1 block">
+              <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
                 {flat.floor} of {flat.totalFloors}
               </span>
             </div>
 
             {/* Possession Status */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.possessionStatus}
               </span>
-              <span className="text-sm font-extrabold text-emerald-800 mt-1 block truncate">
+              <span className="text-sm font-medium text-[#8C653E] mt-1 block truncate">
                 {getPossessionText(flat.possessionStatus)}
               </span>
             </div>
 
             {/* Furnishing Status */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.furnishingStatus}
               </span>
-              <span className="text-sm font-extrabold text-slate-900 mt-1 block truncate">
+              <span className="text-sm font-medium text-[#191512] mt-1 block truncate">
                 {getFurnishingText(flat.furnishingStatus)}
               </span>
             </div>
 
             {/* Master Plan Zone */}
-            <div className="p-3.5 rounded-xl bg-slate-50 border border-slate-100 col-span-2">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider block">
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] col-span-2">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
                 {dict.propertyDetail.zoning}
               </span>
-              <span className="text-sm font-extrabold text-slate-900 mt-1 block truncate">
+              <span className="text-sm font-serif font-semibold text-[#191512] mt-1 block truncate">
                 {property.location.zone}
               </span>
             </div>
@@ -292,17 +292,17 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
 
           {/* Flat Amenities Chips */}
           {flat.amenities && flat.amenities.length > 0 && (
-            <div className="pt-3 border-t border-slate-100 space-y-2">
-              <span className="text-xs font-bold text-slate-700 block">
+            <div className="pt-4 border-t border-[#E8E2D9] space-y-2.5">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#8C827A] block">
                 {dict.propertyDetail.amenities}
               </span>
               <div className="flex flex-wrap gap-2">
                 {flat.amenities.map((amenity, idx) => (
                   <span
                     key={idx}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200/60 text-emerald-900 text-xs font-semibold"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F5] border border-[#E8E2D9] text-[#191512] text-xs font-medium"
                   >
-                    <Check className="w-3.5 h-3.5 text-emerald-600" />
+                    <Check className="w-3.5 h-3.5 text-[#8C653E]" />
                     <span>{amenity}</span>
                   </span>
                 ))}

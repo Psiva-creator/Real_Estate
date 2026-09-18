@@ -35,27 +35,27 @@ export default function LanguageToggle({ currentLocale, className = '' }: Langua
     <div
       role="group"
       aria-label="Language selection"
-      className={`inline-flex items-center rounded-lg bg-slate-100 p-1 border border-slate-200 text-sm font-medium ${className}`}
+      className={`inline-flex items-center rounded-full bg-[#F5F1EA] p-0.5 border border-[#E8E2D9] text-xs font-medium ${className}`}
     >
       <button
         type="button"
         onClick={() => handleLanguageSwitch('en')}
-        className={`px-3 py-1.5 rounded-md transition-all duration-200 text-xs sm:text-sm font-semibold ${
+        className={`px-3 py-1 rounded-full transition-all duration-200 text-xs font-semibold ${
           currentLocale === 'en'
-            ? 'bg-white text-emerald-800 shadow-sm'
-            : 'text-slate-600 hover:text-slate-900'
+            ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+            : 'text-[#574F48] hover:text-[#191512]'
         }`}
         aria-pressed={currentLocale === 'en'}
       >
-        English
+        EN
       </button>
       <button
         type="button"
         onClick={() => handleLanguageSwitch('te')}
-        className={`px-3 py-1.5 rounded-md transition-all duration-200 text-xs sm:text-sm font-medium ${
+        className={`px-3 py-1 rounded-full transition-all duration-200 text-xs font-medium font-telugu ${
           currentLocale === 'te'
-            ? 'bg-emerald-700 text-white shadow-sm'
-            : 'text-slate-600 hover:text-slate-900'
+            ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+            : 'text-[#574F48] hover:text-[#191512]'
         }`}
         aria-pressed={currentLocale === 'te'}
       >

@@ -60,23 +60,23 @@ export default function TrustSection({ locale }: TrustSectionProps) {
   ];
 
   return (
-    <section className="py-16 sm:py-24 bg-slate-50 border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
+    <section className="py-20 sm:py-28 bg-[#FAF8F5] border-b border-[#E8E2D9]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-16">
         {/* Section Header */}
-        <div className="text-center max-w-3xl mx-auto space-y-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-semibold">
-            <Sparkles className="w-3.5 h-3.5 text-emerald-700" />
-            <span>{isTe ? 'నమ్మకం & చట్టపరమైన భద్రత' : 'The Brokerage Advantage'}</span>
+        <div className="text-center max-w-3xl mx-auto space-y-4">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#F5F1EA] text-[#8C653E] border border-[#E8E2D9] text-xs font-semibold tracking-wider uppercase">
+            <Sparkles className="w-3.5 h-3.5 text-[#8C653E]" />
+            <span>{isTe ? 'నమ్మకం & చట్టపరమైన భద్రత' : 'The Fiduciary Advantage'}</span>
           </div>
-          <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="font-serif text-3xl sm:text-5xl font-normal text-[#191512] tracking-tight">
             {isTe
               ? 'మేము సాధారణ క్లాసిఫైడ్స్ సైట్ కాదు — నిజమైన డీల్ మీడియేటర్స్'
               : 'Not an Open Classifieds Board. A Certified Deal Mediator.'}
           </h2>
-          <p className="text-sm sm:text-base text-slate-600 leading-relaxed">
+          <p className="text-sm sm:text-base text-[#574F48] leading-relaxed max-w-2xl mx-auto">
             {isTe
               ? 'తెలంగాణలో భూమి లేదా ఫ్లాట్ కొనుగోలు చేసేటప్పుడు ఎదురయ్యే చట్టపరమైన చిక్కులను నివారించడానికి మా 13-పాయింట్ల వెరిఫికేషన్ ప్రక్రియ మీకు సంపూర్ణ రక్షణనిస్తుంది.'
-              : 'Real estate transactions in Telangana require deep revenue and title diligence. We bridge sellers and buyers with certified legal checks and ground presence.'}
+              : 'High-value real estate transactions in Telangana require deep revenue and title diligence. We bridge sellers and buyers with certified legal checks and ground presence.'}
           </p>
         </div>
 
@@ -84,26 +84,32 @@ export default function TrustSection({ locale }: TrustSectionProps) {
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {trustPillars.map((pillar, idx) => {
             const Icon = pillar.icon;
+            const indexStr = String(idx + 1).padStart(2, '0');
             return (
               <div
                 key={idx}
-                className="bg-white rounded-2xl p-6 border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between"
+                className="bg-white rounded-2xl p-7 border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] hover:shadow-[0_12px_32px_-6px_rgba(25,21,18,0.08)] hover:border-[#8C653E]/40 transition-all duration-300 flex flex-col justify-between group"
               >
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <div className="flex items-center justify-between">
-                    <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-100">
-                      <Icon className="w-6 h-6" />
+                    <div className="w-12 h-12 rounded-full bg-[#F5F1EA] text-[#8C653E] border border-[#E8E2D9] flex items-center justify-center group-hover:bg-[#191512] group-hover:text-[#FAF8F5] transition-colors duration-300">
+                      <Icon className="w-5 h-5" />
                     </div>
-                    <span className="text-[11px] font-bold uppercase tracking-wider text-slate-500 bg-slate-100 px-2.5 py-1 rounded-full">
-                      {pillar.badge}
+                    <span className="font-serif text-2xl font-normal text-[#E8E2D9] group-hover:text-[#C5A880] transition-colors">
+                      {indexStr}
                     </span>
                   </div>
 
-                  <h3 className="text-lg font-bold text-slate-900 leading-snug">
-                    {pillar.title}
-                  </h3>
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-[0.18em] text-[#8C653E] block mb-1">
+                      {pillar.badge}
+                    </span>
+                    <h3 className="font-serif text-lg sm:text-xl font-bold text-[#191512] leading-snug">
+                      {pillar.title}
+                    </h3>
+                  </div>
 
-                  <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+                  <p className="text-xs sm:text-sm text-[#574F48] leading-relaxed">
                     {pillar.desc}
                   </p>
                 </div>

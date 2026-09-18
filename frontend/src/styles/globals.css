@@ -3,16 +3,18 @@
 @tailwind utilities;
 
 :root {
-  --primary-50: #eef8f3;
-  --primary-100: #d6efe2;
-  --primary-500: #15803d;
-  --primary-600: #166534;
-  --primary-700: #14532d;
-  --secondary-500: #b45309;
-  --secondary-600: #92400e;
+  --primary-50: #f7f4ee;
+  --primary-100: #ede6da;
+  --primary-500: #8c653e;
+  --primary-600: #755231;
+  --primary-700: #5c4026;
+  --secondary-500: #a67c52;
+  --secondary-600: #8c653e;
   --verified-green: #059669;
   --surface: #ffffff;
-  --bg-slate: #f8fafc;
+  --bg-ivory: #FAF8F5;
+  --bg-slate: #FAF8F5;
+  --luxury-border: #E8E2D9;
 }
 
 @layer base {
@@ -25,8 +27,8 @@
   }
 
   body {
-    background-color: var(--bg-slate);
-    color: #0f172a;
+    background-color: var(--bg-ivory);
+    color: #191512;
     font-feature-settings: "cv02", "cv03", "cv04", "cv11";
     /* Prevent horizontal overflow on mobile */
     overflow-x: hidden;
@@ -42,11 +44,19 @@
   embed {
     max-width: 100%;
   }
+
+  h1, h2, h3, .editorial-heading {
+    letter-spacing: -0.02em;
+  }
 }
 
-/* Custom utility classes */
+/* Custom luxury utility classes */
 .shield-badge {
-  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200/80;
+  @apply inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#F5F1EA] text-[#5C4026] border border-[#E8E2D9];
+}
+
+.luxury-card {
+  @apply bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_20px_-4px_rgba(25,21,18,0.04)] transition-all duration-300;
 }
 
 .tap-target {
@@ -61,9 +71,9 @@
 
 /* Dashboard status badges */
 .badge-verified   { @apply px-2.5 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold text-xs; }
-.badge-live       { @apply px-2.5 py-0.5 rounded-full bg-blue-100 text-blue-800 font-bold text-xs; }
+.badge-live       { @apply px-2.5 py-0.5 rounded-full bg-[#EDE6DA] text-[#5C4026] font-bold text-xs; }
 .badge-review     { @apply px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-800 font-bold text-xs; }
-.badge-draft      { @apply px-2.5 py-0.5 rounded-full bg-slate-100 text-slate-600 font-bold text-xs; }
+.badge-draft      { @apply px-2.5 py-0.5 rounded-full bg-stone-100 text-stone-600 font-bold text-xs; }
 .badge-sold       { @apply px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-xs; }
-.badge-new        { @apply px-2.5 py-0.5 rounded-full bg-violet-100 text-violet-800 font-bold text-xs; }
+.badge-new        { @apply px-2.5 py-0.5 rounded-full bg-[#EFE9E0] text-[#191512] font-bold text-xs; }
 

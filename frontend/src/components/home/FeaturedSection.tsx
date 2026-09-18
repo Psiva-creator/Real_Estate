@@ -43,35 +43,35 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
   };
 
   return (
-    <section className="py-16 sm:py-24 bg-white border-b border-slate-200">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+    <section className="py-20 sm:py-28 bg-[#FAF8F5] border-b border-[#E8E2D9]">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-12">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-          <div className="space-y-2 max-w-2xl">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-800">
-              {isTe ? 'ధృవీకరించబడిన ప్రాపర్టీలు' : 'Verified Listings'}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
+          <div className="space-y-3 max-w-2xl">
+            <span className="text-xs font-semibold tracking-[0.2em] uppercase text-[#8C653E]">
+              {isTe ? 'ధృవీకరించబడిన ప్రాపర్టీలు' : 'Curated Portfolio'}
             </span>
-            <h2 className="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight">
+            <h2 className="font-serif text-3xl sm:text-5xl font-normal text-[#191512] tracking-tight">
               {isTe
                 ? 'హైదరాబాద్ & తెలంగాణలో ప్రముఖ ప్రాపర్టీలు'
-                : 'Curated Land Parcels & Verified Apartments'}
+                : 'Prime Land Ventures & Architectural Flats'}
             </h2>
-            <p className="text-sm sm:text-base text-slate-600">
+            <p className="text-sm sm:text-base text-[#574F48] leading-relaxed">
               {isTe
                 ? 'ప్రతి లిస్టింగ్ 13 రికార్డులతో లీగల్ చెక్ చేయబడి, సైట్ విజిట్ కోసం సిద్ధంగా ఉన్నవి.'
-                : '100% verified legal clearance with Dharani portal records and HMDA sanctions.'}
+                : '100% verified title clearance with Dharani portal records and HMDA sanctioned layouts.'}
             </p>
           </div>
 
           {/* Filter Tabs */}
-          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-100 rounded-xl border border-slate-200 self-start md:self-auto">
+          <div className="flex flex-wrap items-center gap-1.5 p-1 bg-[#F5F1EA] rounded-full border border-[#E8E2D9] self-start md:self-auto">
             <button
               type="button"
               onClick={() => setActiveFilter('ALL')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all tap-target ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all tap-target ${
                 activeFilter === 'ALL'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
               {isTe ? 'అన్నీ' : 'All Listings'}
@@ -79,10 +79,10 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
             <button
               type="button"
               onClick={() => setActiveFilter('LAND')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all tap-target ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all tap-target ${
                 activeFilter === 'LAND'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
               {isTe ? 'భూములు / ప్లాట్లు' : 'Land & Plots'}
@@ -90,10 +90,10 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
             <button
               type="button"
               onClick={() => setActiveFilter('FLAT')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all tap-target ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all tap-target ${
                 activeFilter === 'FLAT'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
               {isTe ? 'అపార్ట్‌మెంట్లు' : 'Flats'}
@@ -101,10 +101,10 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
             <button
               type="button"
               onClick={() => setActiveFilter('ORR')}
-              className={`px-3.5 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-all tap-target ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all tap-target ${
                 activeFilter === 'ORR'
-                  ? 'bg-white text-emerald-900 shadow-sm'
-                  : 'text-slate-600 hover:text-slate-900'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
               {isTe ? 'ORR కారిడార్' : 'ORR Corridor'}
@@ -113,7 +113,7 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
         </div>
 
         {/* Properties Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
           {filteredProperties.slice(0, 6).map((property) => (
             <PropertyCard
               key={property.id}
@@ -125,72 +125,79 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
         </div>
 
         {/* View All Button */}
-        <div className="text-center pt-6">
+        <div className="text-center pt-8">
           <Link
             href={`/${locale}/properties`}
-            className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl bg-emerald-900 hover:bg-emerald-800 text-white text-sm sm:text-base font-bold shadow-md hover:shadow-lg transition-all tap-target active:scale-[0.98]"
+            className="inline-flex items-center gap-2.5 px-8 py-4 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] text-xs font-semibold tracking-widest uppercase shadow-md hover:shadow-xl transition-all tap-target active:scale-[0.98]"
           >
             <span>{isTe ? 'అన్ని లిస్టింగ్‌లు చూడండి' : 'Browse All Verified Properties'}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-[#C5A880]" />
           </Link>
         </div>
       </div>
 
       {/* Quick Site Visit Booking Modal */}
       {selectedVisitProperty && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/60 backdrop-blur-sm p-4 overflow-y-auto">
-          <div className="relative w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-slate-200 overflow-hidden my-8">
-            <div className="px-6 py-4 bg-emerald-900 text-white flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Calendar className="w-5 h-5 text-emerald-300" />
-                <h3 className="text-base font-bold">
-                  {isTe ? 'ఉచిత సైట్ విజిట్ బుక్ చేసుకోండి' : 'Schedule Free Ground Site Visit'}
-                </h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
+          <div className="relative w-full max-w-lg bg-[#FAF8F5] rounded-2xl shadow-2xl border border-[#E8E2D9] overflow-hidden my-8">
+            <div className="px-6 py-5 bg-[#141210] text-[#FAF8F5] border-b border-[#2C2520] flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-[#1E1B18] border border-[#8C653E]/50 flex items-center justify-center">
+                  <Calendar className="w-5 h-5 text-[#C5A880]" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold tracking-wide">
+                    {isTe ? 'ఉచిత సైట్ విజిట్ బుక్ చేసుకోండి' : 'Schedule Accompanied Site Visit'}
+                  </h3>
+                  <p className="text-xs text-[#A89F95]">
+                    {isTe ? 'సర్టిఫైడ్ డీల్ ఏజెంట్ సమక్షంలో' : 'Accompanied by licensed field advisor'}
+                  </p>
+                </div>
               </div>
               <button
                 type="button"
                 onClick={() => setSelectedVisitProperty(null)}
-                className="p-1 rounded-lg text-emerald-200 hover:text-white hover:bg-emerald-800"
+                className="p-1.5 rounded-full text-[#A89F95] hover:text-[#FAF8F5] hover:bg-[#1E1B18] transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
             <div className="p-6 space-y-4">
-              <div className="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
-                <span className="font-bold text-emerald-800 block">
+              <div className="bg-[#F5F1EA] p-4 rounded-xl border border-[#E8E2D9] text-xs">
+                <span className="font-mono text-[#8C653E] font-bold block">
                   {selectedVisitProperty.id} • {selectedVisitProperty.location.village}
                 </span>
-                <p className="text-slate-800 font-semibold mt-0.5">
+                <p className="font-serif text-sm font-bold text-[#191512] mt-1">
                   {isTe && selectedVisitProperty.titleTe ? selectedVisitProperty.titleTe : selectedVisitProperty.title}
                 </p>
               </div>
 
               {visitSubmitted ? (
                 <div className="text-center py-6 space-y-3">
-                  <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto">
-                    <CheckCircle2 className="w-8 h-8" />
+                  <div className="w-12 h-12 rounded-full bg-[#F5F1EA] text-[#8C653E] border border-[#E8E2D9] flex items-center justify-center mx-auto">
+                    <CheckCircle2 className="w-7 h-7" />
                   </div>
-                  <h4 className="text-lg font-bold text-slate-900">
-                    {isTe ? 'సైట్ విజిట్ అభ్యర్థన అందింది!' : 'Site Visit Request Received!'}
+                  <h4 className="font-serif text-xl font-bold text-[#191512]">
+                    {isTe ? 'సైట్ విజిట్ అభ్యర్థన అందింది!' : 'Site Visit Request Confirmed'}
                   </h4>
-                  <p className="text-xs text-slate-600 max-w-xs mx-auto">
+                  <p className="text-xs text-[#574F48] max-w-xs mx-auto leading-relaxed">
                     {isTe
                       ? 'మా సర్టిఫైడ్ డీల్ ఏజెంట్ మీకు కాల్ చేసి సమయాన్ని ఖరారు చేస్తారు.'
-                      : 'Our designated field brokerage agent will call you within 2 business hours with route map and visit confirmation.'}
+                      : 'Our designated field brokerage advisor will call you within 2 business hours with route guidance and visit schedule.'}
                   </p>
                   <button
                     type="button"
                     onClick={() => setSelectedVisitProperty(null)}
-                    className="mt-4 px-5 py-2.5 rounded-lg bg-emerald-800 text-white text-xs font-semibold hover:bg-emerald-700"
+                    className="mt-4 px-6 py-2.5 rounded-full bg-[#191512] hover:bg-[#8C653E] text-white text-xs font-semibold tracking-wide uppercase"
                   >
                     {isTe ? 'ముగించు' : 'Done'}
                   </button>
                 </div>
               ) : (
-                <form onSubmit={handleSubmitVisit} className="space-y-3.5">
+                <form onSubmit={handleSubmitVisit} className="space-y-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#191512] mb-1.5">
                       {isTe ? 'మీ పూర్తి పేరు' : 'Full Name'} *
                     </label>
                     <input
@@ -199,12 +206,12 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
                       value={buyerName}
                       onChange={(e) => setBuyerName(e.target.value)}
                       placeholder={isTe ? 'ఉదా. శ్రీకాంత్ రెడ్డి' : 'e.g. Srikant Reddy'}
-                      className="w-full h-11 px-3 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-11 px-3.5 rounded-xl border border-[#E8E2D9] bg-white text-xs sm:text-sm text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#191512] mb-1.5">
                       {isTe ? 'ఫోన్ లేదా వాట్సాప్ నంబర్' : 'Phone / WhatsApp Number'} *
                     </label>
                     <input
@@ -213,33 +220,33 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
                       value={buyerPhone}
                       onChange={(e) => setBuyerPhone(e.target.value)}
                       placeholder="9876543210"
-                      className="w-full h-11 px-3 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 font-mono"
+                      className="w-full h-11 px-3.5 rounded-xl border border-[#E8E2D9] bg-white text-xs sm:text-sm text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] font-mono"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#191512] mb-1.5">
                       {isTe ? 'సందర్శించదలిచిన తేదీ' : 'Preferred Visit Date'}
                     </label>
                     <input
                       type="date"
                       value={preferredDate}
                       onChange={(e) => setPreferredDate(e.target.value)}
-                      className="w-full h-11 px-3 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-11 px-3.5 rounded-xl border border-[#E8E2D9] bg-white text-xs sm:text-sm text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E]"
                     />
                   </div>
 
                   <div className="pt-2">
                     <button
                       type="submit"
-                      className="w-full h-12 bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl transition-all shadow-md active:scale-[0.98]"
+                      className="w-full h-12 bg-[#191512] hover:bg-[#8C653E] text-white font-semibold text-xs tracking-wider uppercase rounded-full transition-all shadow-md active:scale-[0.98]"
                     >
-                      {isTe ? 'సైట్ విజిట్ బుక్ చేయండి' : 'Confirm Free Site Visit'}
+                      {isTe ? 'సైట్ విజిట్ బుక్ చేయండి' : 'Confirm Ground Site Visit'}
                     </button>
-                    <p className="text-[11px] text-slate-500 text-center mt-2">
+                    <p className="text-[11px] text-[#8C827A] text-center mt-2.5">
                       {isTe
                         ? 'ఉచిత ప్రయాణ రవాణా & రెవెన్యూ నిపుణుల తోడు'
-                        : 'Free accompaniment by certified real estate field agent.'}
+                        : 'Free accompaniment by certified real estate advisory agent.'}
                     </p>
                   </div>
                 </form>
