@@ -102,27 +102,31 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
 
         // Optimistically set cached user to prevent layout flicker
+        let initialRole: string | null = null;
         if (storedUser) {
           try {
-            setUser(JSON.parse(storedUser));
+            const parsed = JSON.parse(storedUser);
+            setUser(parsed);
+            initialRole = parsed.role;
           } catch {
             // ignore JSON parse failure
           }
         }
         setToken(storedToken);
-        persistTokenCookie(storedToken);
+        persistAuthCookies(storedToken, initialRole);
 
         // Verify with real backend
         try {
           const liveUser = await getMeApi(storedToken);
           setUser(liveUser);
           localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(liveUser));
+          persistAuthCookies(storedToken, liveUser.role);
         } catch (error) {
           console.warn('[auth] Stored token invalid or expired:', error);
           // Token is invalid/expired
           localStorage.removeItem(TOKEN_STORAGE_KEY);
           localStorage.removeItem(USER_STORAGE_KEY);
-          persistTokenCookie(null);
+          persistAuthCookies(null, null);
           setToken(null);
           setUser(null);
         }
@@ -134,7 +138,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     initAuth();
-  }, [persistTokenCookie]);
+  }, [persistAuthCookies]);
 
   const login = async (identifier: string, password?: string) => {
     setIsLoading(true);
