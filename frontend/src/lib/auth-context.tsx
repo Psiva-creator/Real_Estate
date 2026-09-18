@@ -36,13 +36,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Sync token to cookie for SSR/middleware visibility
-  const persistTokenCookie = useCallback((t: string | null) => {
+  // Sync token and role to cookies for Edge SSR/middleware visibility
+  const persistAuthCookies = useCallback((t: string | null, r: string | null) => {
     if (typeof document === 'undefined') return;
-    if (t) {
-      document.cookie = `trh_token=${t}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+    if (t && r) {
+      document.cookie = `trh_token=${encodeURIComponent(t)}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
+      document.cookie = `trh_role=${encodeURIComponent(r)}; path=/; max-age=${7 * 24 * 60 * 60}; SameSite=Lax`;
     } else {
       document.cookie = 'trh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
+      document.cookie = 'trh_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT; SameSite=Lax';
     }
   }, []);
 
@@ -53,14 +55,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       if (newToken && newUser) {
         localStorage.setItem(TOKEN_STORAGE_KEY, newToken);
         localStorage.setItem(USER_STORAGE_KEY, JSON.stringify(newUser));
-        persistTokenCookie(newToken);
+        persistAuthCookies(newToken, newUser.role);
       } else {
         localStorage.removeItem(TOKEN_STORAGE_KEY);
         localStorage.removeItem(USER_STORAGE_KEY);
-        persistTokenCookie(null);
+        persistAuthCookies(null, null);
       }
     }
-  }, [persistTokenCookie]);
+  }, [persistAuthCookies]);
 
   const logout = useCallback(() => {
     setSession(null, null);
