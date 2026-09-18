@@ -199,17 +199,27 @@ export default function DashboardLayout({
               <Lock className="w-7 h-7" />
             </div>
             <div className="space-y-1">
-              <h2 className="text-xl font-bold text-slate-900">Access Restricted</h2>
+              <h2 className="text-xl font-bold text-slate-900">
+                {isAgentAccessViolation
+                  ? 'Lead Administrator Clearance Required'
+                  : 'Access Restricted'}
+              </h2>
               <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
-                This section is reserved for certified deal agents and legal administrators. Sellers have access to their own submissions and document management in the Seller Portal.
+                {isAgentAccessViolation
+                  ? 'The 13-Document Verification Reviewer and legal deed clearance console is restricted strictly to Lead Platform Administrators. Deal Agents can manage listings and enquiries under the Properties desk.'
+                  : 'This section is reserved for certified deal agents and platform administrators. Landowners and sellers have dedicated submission tools in the Seller Portal.'}
               </p>
             </div>
             <div className="pt-2">
               <Link
-                href="/dashboard/seller"
+                href={isAgentAccessViolation ? '/dashboard/properties' : '/dashboard/seller'}
                 className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-semibold text-xs transition-colors shadow-sm"
               >
-                <span>Go to Seller Dashboard</span>
+                <span>
+                  {isAgentAccessViolation
+                    ? 'Return to Properties Desk'
+                    : 'Go to Seller Dashboard'}
+                </span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </div>
