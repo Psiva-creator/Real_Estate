@@ -25,8 +25,48 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Dashboard routes are internal back-office and do not require locale prefix
+  // ─── Edge RBAC Protection for Back-Office Dashboard Routes ─────────────────
   if (pathname.startsWith('/dashboard')) {
+    const token = request.cookies.get('trh_token')?.value;
+    const role = request.cookies.get('trh_role')?.value;
+
+    // 1. Unauthenticated users cannot view any back-office dashboard
+    if (!token) {
+      const loginUrl = new URL(`/${DEFAULT_LOCALE}/login`, request.url);
+      loginUrl.searchParams.set('redirect', pathname);
+      return NextResponse.redirect(loginUrl);
+    }
+
+    // 2. Strict Admin Gate: Only ADMIN role can access the 13-Doc Verification Reviewer
+    if (pathname.startsWith('/dashboard/verification')) {
+      if (role && role !== 'ADMIN') {
+        const dest = role === 'SELLER' ? '/dashboard/seller' : '/dashboard/properties';
+        return NextResponse.redirect(new URL(dest, request.url));
+      }
+    }
+
+    // 3. Staff Gate: Sellers are blocked from general broker properties and enquiry management
+    if (pathname.startsWith('/dashboard/properties') || pathname.startsWith('/dashboard/enquiries')) {
+      if (role === 'SELLER') {
+        return NextResponse.redirect(new URL('/dashboard/seller', request.url));
+      }
+    }
+
+    // 4. Seller Gate: Non-sellers (Admins and Agents) are guided to properties workspace
+    if (pathname === '/dashboard/seller') {
+      if (role === 'ADMIN' || role === 'AGENT') {
+        return NextResponse.redirect(new URL('/dashboard/properties', request.url));
+      }
+    }
+
+    // 5. Root Dashboard dispatcher
+    if (pathname === '/dashboard') {
+      let target = '/dashboard/properties';
+      if (role === 'SELLER') target = '/dashboard/seller';
+      else if (role === 'ADMIN') target = '/dashboard/verification';
+      return NextResponse.redirect(new URL(target, request.url));
+    }
+
     return NextResponse.next();
   }
 
