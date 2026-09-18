@@ -217,6 +217,12 @@ function LoginFormContent({ params }: LoginPageProps) {
       idPlaceholder: isTe ? 'మొబైల్ నంబర్ (ఉదా. 9848011223) లేదా ఈమెయిల్' : 'Mobile (e.g. 9848011223) or Email',
       idType: 'tel/email',
       allowRegister: true,
+      accentBorder: 'border-[#2D6A4F]/40',
+      accentBg: 'bg-[#F2F7F4]',
+      accentBadge: 'bg-[#E8F2EC] text-[#1B4332] border-[#C2DBCB]',
+      accentText: 'text-[#1B4332]',
+      dotBg: 'bg-[#2D6A4F]',
+      btnBg: 'bg-[#191512] hover:bg-[#2D6A4F]',
     },
     AGENT: {
       title: isTe ? 'రియల్టీ ఏజెంట్ & ఫీల్డ్ అడ్వైజర్' : 'Realty Agent & Field Advisor',
@@ -229,6 +235,12 @@ function LoginFormContent({ params }: LoginPageProps) {
       idPlaceholder: isTe ? 'కార్పొరేట్ ఈమెయిల్ (suresh.reddy@telanganarealty.in)' : 'Work Email (suresh.reddy@telanganarealty.in)',
       idType: 'email',
       allowRegister: false,
+      accentBorder: 'border-[#1D4E89]/40',
+      accentBg: 'bg-[#F0F4F9]',
+      accentBadge: 'bg-[#E5EDF6] text-[#0F2D54] border-[#BFD3E8]',
+      accentText: 'text-[#0F2D54]',
+      dotBg: 'bg-[#1D4E89]',
+      btnBg: 'bg-[#191512] hover:bg-[#1D4E89]',
     },
     ADMIN: {
       title: isTe ? 'లీడ్ డైరెక్టర్ & ఎగ్జిక్యూటివ్ అడ్మిన్' : 'Executive Director & Compliance Admin',
@@ -241,24 +253,36 @@ function LoginFormContent({ params }: LoginPageProps) {
       idPlaceholder: isTe ? 'అడ్మిన్ ఈమెయిల్ (admin@telanganarealty.in)' : 'Master Admin Email (admin@telanganarealty.in)',
       idType: 'email',
       allowRegister: false,
+      accentBorder: 'border-[#8C653E]/40',
+      accentBg: 'bg-[#FAF5EE]',
+      accentBadge: 'bg-[#F5ECE0] text-[#5C4026] border-[#E5D2BC]',
+      accentText: 'text-[#5C4026]',
+      dotBg: 'bg-[#8C653E]',
+      btnBg: 'bg-[#191512] hover:bg-[#8C653E]',
     },
   };
 
   const activeMeta = roleConfig[selectedRole];
 
   return (
-    <div className="min-h-screen bg-slate-900/5 py-10 sm:py-16 px-4 sm:px-6 lg:px-8 flex flex-col justify-center selection:bg-emerald-200">
-      <div className="max-w-lg w-full mx-auto space-y-6">
+    <div className="min-h-screen bg-[#FAF8F5] text-[#191512] py-12 sm:py-20 px-4 sm:px-6 lg:px-8 flex flex-col justify-center relative overflow-hidden">
+      {/* Subtle atmospheric architectural texture */}
+      <div className="absolute inset-0 opacity-[0.03] bg-[radial-gradient(#191512_1px,transparent_1px)] [background-size:32px_32px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] rounded-full bg-[#EFE9E0]/50 blur-3xl pointer-events-none -z-10" />
+
+      <div className="max-w-xl w-full mx-auto space-y-8 relative z-10">
         {/* Brand Header */}
-        <div className="text-center space-y-2.5">
-          <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold shadow-xs mx-auto">
-            <Shield className="w-4 h-4 text-emerald-700" />
+        <div className="text-center space-y-3.5">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5F1EA] border border-[#E8E2D9] text-[#8C653E] text-[11px] font-semibold tracking-[0.2em] uppercase shadow-xs mx-auto">
+            <Shield className="w-3.5 h-3.5 text-[#8C653E]" />
             <span>{isTe ? '100% చట్టబద్ధమైన రెవెన్యూ ధృవీకరణ పోర్టల్' : '100% Legally Verified Brokerage Portal'}</span>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+
+          <h1 className="font-serif text-3xl sm:text-4xl lg:text-5xl font-normal text-[#191512] tracking-tight">
             {dict.auth?.portalTitle || 'Telangana Realty Hub'}
           </h1>
-          <p className="text-xs sm:text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+
+          <p className="text-xs sm:text-sm text-[#574F48] max-w-md mx-auto leading-relaxed">
             {dict.auth?.portalSubtitle ||
               'Unified role-based authentication for Verified Land & Apartment Sellers, Deal Agents, and Directors.'}
           </p>
@@ -266,19 +290,19 @@ function LoginFormContent({ params }: LoginPageProps) {
 
         {/* If already authenticated */}
         {isAuthenticated && user && !authLoading ? (
-          <div className="bg-white rounded-2xl p-6 sm:p-8 shadow-sm border border-slate-200 text-center space-y-5">
-            <div className="w-14 h-14 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto shadow-inner">
-              <CheckCircle2 className="w-7 h-7" />
+          <div className="bg-white rounded-3xl p-8 sm:p-10 shadow-[0_12px_40px_-10px_rgba(25,21,18,0.08)] border border-[#E8E2D9] text-center space-y-6">
+            <div className="w-16 h-16 rounded-full bg-[#FAF5EE] text-[#8C653E] border border-[#E8E2D9] flex items-center justify-center mx-auto shadow-inner">
+              <CheckCircle2 className="w-8 h-8" />
             </div>
-            <div className="space-y-1">
-              <h3 className="text-lg font-bold text-slate-900">
+            <div className="space-y-1.5">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#191512]">
                 {isTe ? 'మీరు ఇప్పటికే లాగిన్ అయి ఉన్నారు' : 'Active Session Verified'}
               </h3>
-              <p className="text-sm font-medium text-slate-700">{user.name}</p>
-              <p className="text-xs text-slate-500 font-mono">{user.email || user.phone}</p>
+              <p className="text-sm font-semibold text-[#191512]">{user.name}</p>
+              <p className="text-xs text-[#8C827A] font-mono">{user.email || user.phone}</p>
               <div className="pt-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
-                  <UserCheck className="w-3.5 h-3.5" />
+                <span className="inline-flex items-center gap-1.5 px-4 py-1 rounded-full text-xs font-semibold bg-[#FAF8F5] text-[#5C4026] border border-[#E8E2D9]">
+                  <UserCheck className="w-3.5 h-3.5 text-[#8C653E]" />
                   <span>
                     {user.role === 'SELLER'
                       ? isTe
@@ -300,33 +324,35 @@ function LoginFormContent({ params }: LoginPageProps) {
               <button
                 type="button"
                 onClick={() => handleRoleRedirect(user.role)}
-                className="w-full inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-sm font-semibold shadow-sm transition-all"
+                className="w-full inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider shadow-sm transition-all active:scale-[0.98]"
               >
                 <span>{isTe ? 'నా వర్క్‌స్పేస్‌కి వెళ్లండి' : 'Open My Workspace'}</span>
-                <ArrowRight className="w-4 h-4" />
+                <ArrowRight className="w-4 h-4 text-[#C5A880]" />
               </button>
               <button
                 type="button"
                 onClick={() => logout()}
-                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-4 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 text-sm font-medium transition-colors"
+                className="w-full sm:w-auto inline-flex items-center justify-center gap-1.5 px-6 py-3.5 rounded-full border border-[#E8E2D9] text-[#574F48] hover:text-[#191512] hover:bg-[#FAF8F5] text-xs font-semibold uppercase tracking-wider transition-colors"
               >
-                <LogOut className="w-4 h-4" />
+                <LogOut className="w-3.5 h-3.5" />
                 <span>{dict.nav?.logout || 'Log Out'}</span>
               </button>
             </div>
           </div>
         ) : (
           /* Authentication Container */
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-200/90 overflow-hidden">
-            {/* 1. Role Selection Grid */}
-            <div className="p-3 bg-slate-50/80 border-b border-slate-200">
-              <div className="text-[11px] font-bold uppercase tracking-wider text-slate-500 mb-2 px-1 flex items-center justify-between">
+          <div className="bg-white rounded-3xl shadow-[0_12px_40px_-10px_rgba(25,21,18,0.08)] border border-[#E8E2D9] overflow-hidden">
+            
+            {/* 1. Role Selection Grid (3 Roles) */}
+            <div className="p-4 sm:p-5 bg-[#FAF8F5] border-b border-[#E8E2D9]">
+              <div className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[#8C827A] mb-3 px-1 flex items-center justify-between">
                 <span>{isTe ? 'మీ పాత్రను ఎంచుకోండి' : 'Select Access Portal'}</span>
-                <span className="text-[10px] font-medium text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  RBAC Enabled
+                <span className="text-[10px] font-mono font-semibold text-[#8C653E] bg-[#F5F1EA] px-2.5 py-0.5 rounded-full border border-[#E8E2D9]">
+                  RBAC Protocol
                 </span>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
+                
                 {/* Seller Option */}
                 <button
                   type="button"
@@ -334,22 +360,22 @@ function LoginFormContent({ params }: LoginPageProps) {
                     setSelectedRole('SELLER');
                     setErrorMessage(null);
                   }}
-                  className={`p-2.5 rounded-xl border text-left transition-all relative ${
+                  className={`p-3 rounded-2xl border text-left transition-all duration-200 relative ${
                     selectedRole === 'SELLER'
-                      ? 'border-emerald-600 bg-emerald-50/70 text-emerald-950 shadow-xs'
-                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                      ? 'border-[#2D6A4F]/60 bg-[#F2F7F4] text-[#1B4332] shadow-xs ring-1 ring-[#2D6A4F]/20'
+                      : 'border-[#E8E2D9] bg-white hover:bg-[#FAF8F5] text-[#574F48]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <Building2
-                      className={`w-4 h-4 ${selectedRole === 'SELLER' ? 'text-emerald-700' : 'text-slate-400'}`}
+                      className={`w-4 h-4 ${selectedRole === 'SELLER' ? 'text-[#2D6A4F]' : 'text-[#8C827A]'}`}
                     />
                     {selectedRole === 'SELLER' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-600" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#2D6A4F]" />
                     )}
                   </div>
-                  <div className="text-xs font-bold mt-1.5">{isTe ? 'విక్రేత' : 'Seller'}</div>
-                  <div className="text-[10px] text-slate-500 truncate">Land & Flat</div>
+                  <div className="text-xs font-bold mt-2 font-serif">{isTe ? 'విక్రేత' : 'Seller'}</div>
+                  <div className="text-[10px] text-[#8C827A] font-mono truncate">Land & Flat</div>
                 </button>
 
                 {/* Agent Option */}
@@ -360,22 +386,22 @@ function LoginFormContent({ params }: LoginPageProps) {
                     setMode('login');
                     setErrorMessage(null);
                   }}
-                  className={`p-2.5 rounded-xl border text-left transition-all relative ${
+                  className={`p-3 rounded-2xl border text-left transition-all duration-200 relative ${
                     selectedRole === 'AGENT'
-                      ? 'border-blue-600 bg-blue-50/70 text-blue-950 shadow-xs'
-                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                      ? 'border-[#1D4E89]/60 bg-[#F0F4F9] text-[#0F2D54] shadow-xs ring-1 ring-[#1D4E89]/20'
+                      : 'border-[#E8E2D9] bg-white hover:bg-[#FAF8F5] text-[#574F48]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <Briefcase
-                      className={`w-4 h-4 ${selectedRole === 'AGENT' ? 'text-blue-700' : 'text-slate-400'}`}
+                      className={`w-4 h-4 ${selectedRole === 'AGENT' ? 'text-[#1D4E89]' : 'text-[#8C827A]'}`}
                     />
                     {selectedRole === 'AGENT' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-blue-600" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#1D4E89]" />
                     )}
                   </div>
-                  <div className="text-xs font-bold mt-1.5">{isTe ? 'ఏజెంట్' : 'Agent'}</div>
-                  <div className="text-[10px] text-slate-500 truncate">Advisor</div>
+                  <div className="text-xs font-bold mt-2 font-serif">{isTe ? 'ఏజెంట్' : 'Agent'}</div>
+                  <div className="text-[10px] text-[#8C827A] font-mono truncate">Advisor</div>
                 </button>
 
                 {/* Admin Option */}
@@ -386,68 +412,54 @@ function LoginFormContent({ params }: LoginPageProps) {
                     setMode('login');
                     setErrorMessage(null);
                   }}
-                  className={`p-2.5 rounded-xl border text-left transition-all relative ${
+                  className={`p-3 rounded-2xl border text-left transition-all duration-200 relative ${
                     selectedRole === 'ADMIN'
-                      ? 'border-amber-600 bg-amber-50/70 text-amber-950 shadow-xs'
-                      : 'border-slate-200 bg-white hover:bg-slate-50 text-slate-700'
+                      ? 'border-[#8C653E]/60 bg-[#FAF5EE] text-[#5C4026] shadow-xs ring-1 ring-[#8C653E]/20'
+                      : 'border-[#E8E2D9] bg-white hover:bg-[#FAF8F5] text-[#574F48]'
                   }`}
                 >
                   <div className="flex items-center justify-between">
                     <ShieldCheck
-                      className={`w-4 h-4 ${selectedRole === 'ADMIN' ? 'text-amber-700' : 'text-slate-400'}`}
+                      className={`w-4 h-4 ${selectedRole === 'ADMIN' ? 'text-[#8C653E]' : 'text-[#8C827A]'}`}
                     />
                     {selectedRole === 'ADMIN' && (
-                      <span className="w-1.5 h-1.5 rounded-full bg-amber-600" />
+                      <span className="w-1.5 h-1.5 rounded-full bg-[#8C653E]" />
                     )}
                   </div>
-                  <div className="text-xs font-bold mt-1.5">{isTe ? 'డైరెక్టర్' : 'Director'}</div>
-                  <div className="text-[10px] text-slate-500 truncate">Admin Gate</div>
+                  <div className="text-xs font-bold mt-2 font-serif">{isTe ? 'డైరెక్టర్' : 'Director'}</div>
+                  <div className="text-[10px] text-[#8C827A] font-mono truncate">Admin Gate</div>
                 </button>
               </div>
             </div>
 
-            {/* 2. Role Banner */}
-            <div
-              className={`px-6 py-4 border-b ${
-                selectedRole === 'SELLER'
-                  ? 'bg-emerald-50/40 border-emerald-100'
-                  : selectedRole === 'AGENT'
-                  ? 'bg-blue-50/40 border-blue-100'
-                  : 'bg-amber-50/40 border-amber-100'
-              }`}
-            >
-              <div className="flex items-start gap-3">
+            {/* 2. Role Description Banner */}
+            <div className={`px-6 sm:px-8 py-4 border-b border-[#E8E2D9] ${activeMeta.accentBg}`}>
+              <div className="flex items-start gap-3.5">
                 <div
-                  className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 ${
-                    selectedRole === 'SELLER'
-                      ? 'bg-emerald-100 text-emerald-800'
-                      : selectedRole === 'AGENT'
-                      ? 'bg-blue-100 text-blue-800'
-                      : 'bg-amber-100 text-amber-800'
-                  }`}
+                  className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 border ${activeMeta.accentBorder} bg-white shadow-xs`}
                 >
-                  <activeMeta.icon className="w-4 h-4" />
+                  <activeMeta.icon className={`w-4 h-4 ${activeMeta.accentText}`} />
                 </div>
                 <div>
-                  <h2 className="text-sm font-bold text-slate-900">{activeMeta.title}</h2>
-                  <p className="text-xs text-slate-600 mt-0.5 leading-snug">{activeMeta.subtitle}</p>
+                  <h2 className="text-sm font-serif font-bold text-[#191512]">{activeMeta.title}</h2>
+                  <p className="text-xs text-[#574F48] mt-0.5 leading-relaxed">{activeMeta.subtitle}</p>
                 </div>
               </div>
             </div>
 
             {/* 3. Mode Switcher (For Sellers: Sign In vs Register) */}
             {activeMeta.allowRegister && (
-              <div className="flex border-b border-slate-200 text-xs font-semibold">
+              <div className="flex border-b border-[#E8E2D9] text-xs font-semibold">
                 <button
                   type="button"
                   onClick={() => {
                     setMode('login');
                     setErrorMessage(null);
                   }}
-                  className={`flex-1 py-3 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-3.5 text-center transition-colors border-b-2 flex items-center justify-center gap-2 ${
                     mode === 'login'
-                      ? 'border-emerald-700 text-emerald-800 bg-white'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 bg-slate-50/50'
+                      ? 'border-[#191512] text-[#191512] bg-white font-bold'
+                      : 'border-transparent text-[#8C827A] hover:text-[#191512] bg-[#FAF8F5]/60'
                   }`}
                 >
                   <KeyRound className="w-3.5 h-3.5" />
@@ -459,10 +471,10 @@ function LoginFormContent({ params }: LoginPageProps) {
                     setMode('register');
                     setErrorMessage(null);
                   }}
-                  className={`flex-1 py-3 text-center transition-colors border-b-2 flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 py-3.5 text-center transition-colors border-b-2 flex items-center justify-center gap-2 ${
                     mode === 'register'
-                      ? 'border-emerald-700 text-emerald-800 bg-white'
-                      : 'border-transparent text-slate-500 hover:text-slate-800 bg-slate-50/50'
+                      ? 'border-[#191512] text-[#191512] bg-white font-bold'
+                      : 'border-transparent text-[#8C827A] hover:text-[#191512] bg-[#FAF8F5]/60'
                   }`}
                 >
                   <Building2 className="w-3.5 h-3.5" />
@@ -472,17 +484,17 @@ function LoginFormContent({ params }: LoginPageProps) {
             )}
 
             {/* 4. Form Content */}
-            <div className="p-6 sm:p-7 space-y-4">
+            <div className="p-6 sm:p-8 space-y-5">
               {/* Alert Feedback */}
               {errorMessage && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-800 flex items-start gap-2.5 animate-fadeIn">
-                  <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                <div className="p-3.5 rounded-2xl bg-rose-50 border border-rose-200 text-xs text-rose-800 flex items-start gap-2.5 animate-fadeIn">
+                  <AlertCircle className="w-4 h-4 text-rose-600 shrink-0 mt-0.5" />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
               {successMessage && (
-                <div className="p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2.5 animate-fadeIn">
+                <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-xs text-emerald-800 flex items-start gap-2.5 animate-fadeIn">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
                   <span>{successMessage}</span>
                 </div>
@@ -492,7 +504,7 @@ function LoginFormContent({ params }: LoginPageProps) {
               {mode === 'login' ? (
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
                   <div className="space-y-1.5">
-                    <label className="block text-xs font-semibold text-slate-700">
+                    <label className="block text-xs font-semibold text-[#191512]">
                       {selectedRole === 'SELLER'
                         ? isTe
                           ? 'ఫోన్ నంబర్ లేదా ఈమెయిల్'
@@ -500,10 +512,10 @@ function LoginFormContent({ params }: LoginPageProps) {
                         : isTe
                         ? 'కార్పొరేట్ ఈమెయిల్ చిరునామా'
                         : 'Official Corporate Email'}
-                      <span className="text-red-500 ml-0.5">*</span>
+                      <span className="text-[#8C653E] ml-0.5">*</span>
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C827A]">
                         {selectedRole === 'SELLER' ? (
                           <Phone className="w-4 h-4" />
                         ) : (
@@ -515,7 +527,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         value={loginIdentifier}
                         onChange={(e) => setLoginIdentifier(e.target.value)}
                         placeholder={activeMeta.idPlaceholder}
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white transition-all"
                         required
                         disabled={isSubmitting}
                       />
@@ -524,9 +536,9 @@ function LoginFormContent({ params }: LoginPageProps) {
 
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-semibold text-slate-700">
+                      <label className="block text-xs font-semibold text-[#191512]">
                         {dict.auth?.passwordLabel || 'Password / Access Code'}
-                        <span className="text-red-500 ml-0.5">*</span>
+                        <span className="text-[#8C653E] ml-0.5">*</span>
                       </label>
                       <button
                         type="button"
@@ -537,13 +549,13 @@ function LoginFormContent({ params }: LoginPageProps) {
                               : 'For password recovery, please contact the Lead Director at advisory@telanganarealty.in or +91 94400 12345.'
                           )
                         }
-                        className="text-[11px] font-medium text-emerald-700 hover:underline"
+                        className="text-[11px] font-medium text-[#8C653E] hover:underline"
                       >
                         {isTe ? 'సహాయం కావాలా?' : 'Need Help?'}
                       </button>
                     </div>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C827A]">
                         <Lock className="w-4 h-4" />
                       </div>
                       <input
@@ -551,14 +563,14 @@ function LoginFormContent({ params }: LoginPageProps) {
                         value={loginPassword}
                         onChange={(e) => setLoginPassword(e.target.value)}
                         placeholder={isTe ? 'పాస్‌వర్డ్ నమోదు చేయండి' : 'Enter your password'}
-                        className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600 focus:border-transparent transition-all"
+                        className="w-full pl-10 pr-11 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white transition-all"
                         disabled={isSubmitting}
                         required
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#8C827A] hover:text-[#191512]"
                         tabIndex={-1}
                         aria-label="Toggle password visibility"
                       >
@@ -569,35 +581,30 @@ function LoginFormContent({ params }: LoginPageProps) {
 
                   {/* Remember Me & Security Status */}
                   <div className="flex items-center justify-between pt-1 text-xs">
-                    <label className="inline-flex items-center gap-2 cursor-pointer text-slate-600">
+                    <label className="inline-flex items-center gap-2 cursor-pointer text-[#574F48]">
                       <input
                         type="checkbox"
                         checked={rememberMe}
                         onChange={(e) => setRememberMe(e.target.checked)}
-                        className="rounded border-slate-300 text-emerald-700 focus:ring-emerald-500"
+                        className="rounded border-[#E8E2D9] text-[#191512] focus:ring-[#8C653E]"
                       />
                       <span>{isTe ? 'నన్ను గుర్తుంచుకో' : 'Remember this workstation'}</span>
                     </label>
-                    <span className="text-slate-400 text-[11px] flex items-center gap-1">
-                      <Lock className="w-3 h-3 text-emerald-600" />
+                    <span className="text-[#8C827A] text-[11px] flex items-center gap-1 font-mono">
+                      <Lock className="w-3 h-3 text-[#8C653E]" />
                       <span>256-Bit SSL</span>
                     </span>
                   </div>
 
+                  {/* Sign-In Submit Button */}
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className={`w-full py-3 px-4 rounded-xl text-white font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 ${
-                      selectedRole === 'SELLER'
-                        ? 'bg-emerald-800 hover:bg-emerald-700'
-                        : selectedRole === 'AGENT'
-                        ? 'bg-blue-800 hover:bg-blue-700'
-                        : 'bg-slate-900 hover:bg-slate-800'
-                    }`}
+                    className={`w-full py-3.5 px-6 rounded-full text-white font-semibold text-xs uppercase tracking-widest shadow-sm transition-all duration-200 flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98] ${activeMeta.btnBg}`}
                   >
                     {isSubmitting ? (
                       <div className="flex items-center gap-2">
-                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />
                         <span>{isTe ? 'ప్రామాణీకరిస్తోంది...' : 'Authenticating Credentials...'}</span>
                       </div>
                     ) : (
@@ -607,21 +614,21 @@ function LoginFormContent({ params }: LoginPageProps) {
                             ? `${selectedRole} పోర్టల్‌లోకి లాగిన్ అవ్వండి`
                             : `Sign In to ${selectedRole} Portal`}
                         </span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3.5 h-3.5 text-[#C5A880]" />
                       </>
                     )}
                   </button>
                 </form>
               ) : (
                 /* Registration Form for Sellers */
-                <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
+                <form onSubmit={handleRegisterSubmit} className="space-y-4">
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
+                    <label className="block text-xs font-semibold text-[#191512]">
                       {isTe ? 'పూర్తి పేరు (సేల్ డీడ్ ప్రకారం)' : 'Full Legal Name (as per Sale Deed)'}{' '}
-                      <span className="text-red-500">*</span>
+                      <span className="text-[#8C653E]">*</span>
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C827A]">
                         <User className="w-4 h-4" />
                       </div>
                       <input
@@ -629,7 +636,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
                         placeholder="e.g. K. Venkateshwara Rao"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white"
                         required
                         disabled={isSubmitting}
                       />
@@ -637,12 +644,12 @@ function LoginFormContent({ params }: LoginPageProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
+                    <label className="block text-xs font-semibold text-[#191512]">
                       {isTe ? 'మొబైల్ నంబర్ (OTP ధృవీకరణ కోసం)' : 'Mobile Phone (for Verification)'}{' '}
-                      <span className="text-red-500">*</span>
+                      <span className="text-[#8C653E]">*</span>
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C827A]">
                         <Phone className="w-4 h-4" />
                       </div>
                       <input
@@ -650,7 +657,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         value={regPhone}
                         onChange={(e) => setRegPhone(e.target.value)}
                         placeholder="10-digit mobile number"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white font-mono"
                         required
                         disabled={isSubmitting}
                       />
@@ -658,11 +665,11 @@ function LoginFormContent({ params }: LoginPageProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
+                    <label className="block text-xs font-semibold text-[#191512]">
                       {isTe ? 'ఈమెయిల్ చిరునామా (ఐచ్ఛికం)' : 'Email Address (Optional)'}
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C827A]">
                         <Mail className="w-4 h-4" />
                       </div>
                       <input
@@ -670,19 +677,19 @@ function LoginFormContent({ params }: LoginPageProps) {
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
                         placeholder="seller@example.com"
-                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white"
                         disabled={isSubmitting}
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-slate-700">
+                    <label className="block text-xs font-semibold text-[#191512]">
                       {dict.auth?.passwordLabel || 'Account Password'}{' '}
-                      <span className="text-red-500">*</span>
+                      <span className="text-[#8C653E]">*</span>
                     </label>
                     <div className="relative">
-                      <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-slate-400">
+                      <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C827A]">
                         <Lock className="w-4 h-4" />
                       </div>
                       <input
@@ -690,14 +697,14 @@ function LoginFormContent({ params }: LoginPageProps) {
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
                         placeholder="Create a secure password"
-                        className="w-full pl-9 pr-10 py-2.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                        className="w-full pl-10 pr-11 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white"
                         required
                         disabled={isSubmitting}
                       />
                       <button
                         type="button"
                         onClick={() => setShowPassword(!showPassword)}
-                        className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-600"
+                        className="absolute inset-y-0 right-0 pr-3.5 flex items-center text-[#8C827A] hover:text-[#191512]"
                         tabIndex={-1}
                       >
                         {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
@@ -705,8 +712,8 @@ function LoginFormContent({ params }: LoginPageProps) {
                     </div>
                   </div>
 
-                  <div className="p-3 bg-emerald-50/50 rounded-xl border border-emerald-200 text-xs text-emerald-900 flex items-center gap-2">
-                    <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+                  <div className="p-3.5 bg-[#FAF5EE] rounded-2xl border border-[#E8E2D9] text-xs text-[#5C4026] flex items-center gap-2.5">
+                    <CheckCircle2 className="w-4 h-4 text-[#8C653E] shrink-0" />
                     <span>
                       {isTe
                         ? 'ఖాతా పూర్తయిన వెంటనే 13 డాక్యుమెంట్ల అప్‌లోడ్ పోర్టల్ ప్రారంభమవుతుంది.'
@@ -717,14 +724,14 @@ function LoginFormContent({ params }: LoginPageProps) {
                   <button
                     type="submit"
                     disabled={isSubmitting}
-                    className="w-full py-3 px-4 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-semibold text-sm shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    className="w-full py-3.5 px-6 rounded-full bg-[#191512] hover:bg-[#8C653E] text-white font-semibold text-xs uppercase tracking-widest shadow-sm transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-[0.98]"
                   >
                     {isSubmitting ? (
                       <span>{isTe ? 'నమోదు అవుతోంది...' : 'Creating Seller Account...'}</span>
                     ) : (
                       <>
                         <span>{isTe ? 'సెల్లర్ ఖాతా సృష్టించండి' : 'Register Seller Account'}</span>
-                        <ArrowRight className="w-4 h-4" />
+                        <ArrowRight className="w-3.5 h-3.5 text-[#C5A880]" />
                       </>
                     )}
                   </button>
@@ -732,53 +739,53 @@ function LoginFormContent({ params }: LoginPageProps) {
               )}
 
               {/* 5. Production 1-Click Fast-Fill Testing Station */}
-              <div className="pt-4 border-t border-slate-100">
-                <div className="flex items-center justify-between mb-2.5">
-                  <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-500" />
+              <div className="pt-6 border-t border-[#E8E2D9]">
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-mono font-bold uppercase tracking-[0.2em] text-[#8C827A] flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#8C653E]" />
                     <span>{isTe ? 'త్వరిత డెమో యాక్సెస్' : '1-Click Role Fast-Fill'}</span>
                   </span>
-                  <span className="text-[10px] text-slate-400 font-mono">Password: Admin@1234</span>
+                  <span className="text-[10px] text-[#8C827A] font-mono">Password: Admin@1234</span>
                 </div>
 
-                <div className="grid grid-cols-3 gap-2">
+                <div className="grid grid-cols-3 gap-2.5">
                   {/* Admin Fast-Fill */}
                   <button
                     type="button"
                     onClick={() => fillRoleCredentials('ADMIN')}
-                    className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-amber-50/80 hover:border-amber-300 text-left transition-all group"
+                    className="p-3 rounded-2xl border border-[#E8E2D9] bg-[#FAF8F5] hover:bg-[#FAF5EE] hover:border-[#8C653E]/40 text-left transition-all group shadow-xs"
                   >
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 group-hover:text-amber-900">
-                      <ShieldCheck className="w-3.5 h-3.5 text-amber-600" />
+                    <div className="flex items-center gap-1 text-xs font-serif font-bold text-[#191512] group-hover:text-[#5C4026]">
+                      <ShieldCheck className="w-3.5 h-3.5 text-[#8C653E]" />
                       <span>Director</span>
                     </div>
-                    <div className="text-[9px] text-slate-500 truncate mt-0.5">Siva (Admin)</div>
+                    <div className="text-[10px] text-[#8C827A] font-mono truncate mt-0.5">Siva (Admin)</div>
                   </button>
 
                   {/* Agent Fast-Fill */}
                   <button
                     type="button"
                     onClick={() => fillRoleCredentials('AGENT')}
-                    className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/80 hover:border-blue-300 text-left transition-all group"
+                    className="p-3 rounded-2xl border border-[#E8E2D9] bg-[#FAF8F5] hover:bg-[#F0F4F9] hover:border-[#1D4E89]/40 text-left transition-all group shadow-xs"
                   >
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 group-hover:text-blue-900">
-                      <Briefcase className="w-3.5 h-3.5 text-blue-600" />
+                    <div className="flex items-center gap-1 text-xs font-serif font-bold text-[#191512] group-hover:text-[#0F2D54]">
+                      <Briefcase className="w-3.5 h-3.5 text-[#1D4E89]" />
                       <span>Advisor</span>
                     </div>
-                    <div className="text-[9px] text-slate-500 truncate mt-0.5">Suresh (Agent)</div>
+                    <div className="text-[10px] text-[#8C827A] font-mono truncate mt-0.5">Suresh (Agent)</div>
                   </button>
 
                   {/* Seller Fast-Fill */}
                   <button
                     type="button"
                     onClick={() => fillRoleCredentials('SELLER')}
-                    className="p-2.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-emerald-50/80 hover:border-emerald-300 text-left transition-all group"
+                    className="p-3 rounded-2xl border border-[#E8E2D9] bg-[#FAF8F5] hover:bg-[#F2F7F4] hover:border-[#2D6A4F]/40 text-left transition-all group shadow-xs"
                   >
-                    <div className="flex items-center gap-1 text-[11px] font-bold text-slate-800 group-hover:text-emerald-900">
-                      <Building2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="flex items-center gap-1 text-xs font-serif font-bold text-[#191512] group-hover:text-[#1B4332]">
+                      <Building2 className="w-3.5 h-3.5 text-[#2D6A4F]" />
                       <span>Seller</span>
                     </div>
-                    <div className="text-[9px] text-slate-500 truncate mt-0.5">Rao (Owner)</div>
+                    <div className="text-[10px] text-[#8C827A] font-mono truncate mt-0.5">Rao (Owner)</div>
                   </button>
                 </div>
               </div>
@@ -786,16 +793,16 @@ function LoginFormContent({ params }: LoginPageProps) {
           </div>
         )}
 
-        {/* Legal Trust Footer */}
-        <div className="text-center space-y-2">
-          <div className="flex items-center justify-center gap-4 text-xs text-slate-500">
-            <span className="flex items-center gap-1">
-              <FileCheck2 className="w-3.5 h-3.5 text-emerald-600" />
+        {/* Legal Trust Footer & Return Link */}
+        <div className="text-center space-y-3 pt-2">
+          <div className="flex items-center justify-center gap-4 text-xs text-[#8C827A] font-mono">
+            <span className="flex items-center gap-1.5">
+              <FileCheck2 className="w-3.5 h-3.5 text-[#8C653E]" />
               <span>Dharani & HMDA Vetted</span>
             </span>
             <span>•</span>
-            <span className="flex items-center gap-1">
-              <Landmark className="w-3.5 h-3.5 text-emerald-600" />
+            <span className="flex items-center gap-1.5">
+              <Landmark className="w-3.5 h-3.5 text-[#8C653E]" />
               <span>Telangana SRO Compliant</span>
             </span>
           </div>
@@ -803,7 +810,7 @@ function LoginFormContent({ params }: LoginPageProps) {
           <div className="pt-1">
             <Link
               href={`/${locale}`}
-              className="text-xs font-semibold text-slate-500 hover:text-emerald-800 transition-colors inline-flex items-center gap-1"
+              className="text-xs font-semibold text-[#574F48] hover:text-[#8C653E] transition-colors inline-flex items-center gap-1.5 uppercase tracking-wider"
             >
               <span>← {isTe ? 'ప్రజా వెబ్‌సైట్‌కి తిరిగి వెళ్లండి' : 'Return to Public Marketplace'}</span>
             </Link>
@@ -818,10 +825,10 @@ export default function CommonPortalLoginPage({ params }: LoginPageProps) {
   return (
     <Suspense
       fallback={
-        <div className="min-h-screen bg-slate-100 py-14 flex items-center justify-center p-4">
-          <div className="flex flex-col items-center gap-3 text-slate-500">
-            <div className="w-8 h-8 border-2 border-emerald-700 border-t-transparent rounded-full animate-spin" />
-            <span className="text-xs font-semibold">Loading Role Portal...</span>
+        <div className="min-h-screen bg-[#FAF8F5] py-14 flex items-center justify-center p-4">
+          <div className="flex flex-col items-center gap-3 text-[#574F48]">
+            <div className="w-8 h-8 border-2 border-[#8C653E] border-t-transparent rounded-full animate-spin" />
+            <span className="text-xs font-semibold tracking-wider uppercase font-mono">Loading Portal...</span>
           </div>
         </div>
       }
