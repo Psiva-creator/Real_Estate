@@ -658,6 +658,7 @@ export interface AuthUser {
   email?: string;
   role: UserRole;
   whatsapp?: string;
+  isActive?: boolean;
 }
 
 export interface AuthResponse {
