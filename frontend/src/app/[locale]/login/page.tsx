@@ -84,11 +84,11 @@ function LoginFormContent({ params }: LoginPageProps) {
     if (redirectUrl && redirectUrl.startsWith('/dashboard')) {
       // Role permission guard on redirect
       if (role === 'SELLER' && !redirectUrl.startsWith('/dashboard/seller')) {
-        router.replace(`/${locale}/dashboard/seller`);
+        router.replace('/dashboard/seller');
         return;
       }
       if (role === 'AGENT' && redirectUrl.startsWith('/dashboard/seller')) {
-        router.replace(`/${locale}/dashboard/properties`);
+        router.replace('/dashboard/properties');
         return;
       }
       router.replace(redirectUrl);
@@ -96,11 +96,11 @@ function LoginFormContent({ params }: LoginPageProps) {
     }
 
     if (role === 'SELLER') {
-      router.replace(`/${locale}/dashboard/seller`);
+      router.replace('/dashboard/seller');
     } else if (role === 'ADMIN') {
-      router.replace(`/${locale}/dashboard/verification`);
+      router.replace('/dashboard/verification');
     } else {
-      router.replace(`/${locale}/dashboard/properties`);
+      router.replace('/dashboard/properties');
     }
   };
 

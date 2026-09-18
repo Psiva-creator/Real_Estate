@@ -15,6 +15,16 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // Handle /{locale}/dashboard routes by redirecting to /dashboard
+  for (const loc of LOCALES) {
+    if (pathname.startsWith(`/${loc}/dashboard`)) {
+      const strippedPath = pathname.replace(`/${loc}`, '');
+      const redirectUrl = new URL(strippedPath, request.url);
+      redirectUrl.search = request.nextUrl.search;
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
   // Dashboard routes are internal back-office and do not require locale prefix
   if (pathname.startsWith('/dashboard')) {
     return NextResponse.next();
