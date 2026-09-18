@@ -85,7 +85,7 @@ function DocProgress({ verified, total }: { verified: number; total: number }) {
 // ─── Main page ────────────────────────────────────────────────────────────────
 
 export default function DashboardVerificationPage() {
-  const { token, isStaff } = useAuth();
+  const { token, isAdmin } = useAuth();
 
   const [queue, setQueue] = useState<QueueProperty[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -111,13 +111,13 @@ export default function DashboardVerificationPage() {
     loadQueue();
   }, [loadQueue]);
 
-  if (!isStaff) {
+  if (!isAdmin) {
     return (
       <div className="bg-white rounded-2xl p-8 border border-slate-200 shadow-sm text-center max-w-md mx-auto space-y-3">
         <XCircle className="w-10 h-10 text-rose-500 mx-auto" />
-        <h2 className="text-lg font-bold text-slate-900">Access Restricted</h2>
+        <h2 className="text-lg font-bold text-slate-900">Lead Admin Clearance Required</h2>
         <p className="text-sm text-slate-600">
-          Only Admin and Agent users can access the verification review queue.
+          Only Lead Platform Administrators are authorized to review and verify legal property documents.
         </p>
       </div>
     );
