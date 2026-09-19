@@ -74,11 +74,19 @@ export default function LeafletPropertyMap({
 
   // Helper to create tile layer based on mode (Zero watermarks, high performance)
   const getTileLayer = (L: any, mode: MapLayerMode) => {
+    const tilePerfOptions = {
+      updateWhenZooming: false, // Never request new tiles mid-animation (eliminates zoom lag)
+      updateWhenIdle: true,     // Only fetch tiles when camera is steady
+      keepBuffer: 6,           // Keep existing tiles in GPU memory
+      maxNativeZoom: 19,
+    };
+
     if (mode === 'satellite') {
       // High-Definition Satellite Hybrid (Aerial photo + crisp road labels, No API key, No watermark)
       return L.tileLayer(
         'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
         {
+          ...tilePerfOptions,
           maxZoom: 20,
           subdomains: ['0', '1', '2', '3'],
         }
@@ -88,6 +96,7 @@ export default function LeafletPropertyMap({
       return L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
         {
+          ...tilePerfOptions,
           maxZoom: 19,
         }
       );
@@ -96,6 +105,7 @@ export default function LeafletPropertyMap({
       return L.tileLayer(
         'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
+          ...tilePerfOptions,
           maxZoom: 19,
           subdomains: ['a', 'b', 'c'],
         }
@@ -122,7 +132,7 @@ export default function LeafletPropertyMap({
 
       const initialZoom = singlePropertyMode ? 15 : 11;
 
-      // Initialize map with attributionControl: false (clean, zero watermarks)
+      // Initialize map with GPU canvas acceleration and smooth zoom controls
       const map = L.map(mapContainerRef.current, {
         center: initialCenter,
         zoom: initialZoom,
@@ -130,6 +140,11 @@ export default function LeafletPropertyMap({
         maxZoom: 20,
         zoomControl: false,
         attributionControl: false,
+        preferCanvas: true, // Render polylines & vector circles directly on GPU Canvas (eliminates SVG DOM lag)
+        wheelPxPerZoomLevel: 100, // Buttery smooth scroll wheel zooming
+        zoomAnimation: true,
+        fadeAnimation: true,
+        markerZoomAnimation: true,
       });
 
       // Add Zoom control to top-right
@@ -147,12 +162,12 @@ export default function LeafletPropertyMap({
       markersGroupRef.current = markersGroup;
       orrLayerRef.current = orrGroup;
 
-      // Render 158km Outer Ring Road (ORR)
+      // Render 158km Outer Ring Road (ORR) on hardware-accelerated canvas
       const orrPolyline = L.polyline(ORR_LOOP_COORDINATES, {
         color: '#F59E0B', // Glowing Golden Amber
-        weight: 4,
+        weight: 3.5,
         opacity: 0.9,
-        dashArray: '10, 6',
+        dashArray: '8, 6',
       });
       orrPolyline.bindTooltip(
         '<div class="font-bold text-xs" style="color:#D97706;">Hyderabad 158km Outer Ring Road (ORR)</div>',
@@ -160,25 +175,25 @@ export default function LeafletPropertyMap({
       );
       orrGroup.addLayer(orrPolyline);
 
-      // Add Key ORR Exit Markers
+      // Add Key ORR Exit Markers with GPU-friendly CSS (no heavy backdrop-filter)
       ORR_EXITS.forEach((exit) => {
         const exitIcon = L.divIcon({
           className: 'custom-exit-marker',
           html: `
             <div style="
-              background: rgba(25, 21, 18, 0.92);
-              backdrop-filter: blur(4px);
+              background: #191512;
               color: #FBBF24;
               border: 1.5px solid #F59E0B;
               border-radius: 9999px;
               padding: 2px 7px;
               font-size: 10px;
               font-weight: 700;
-              box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+              box-shadow: 0 2px 5px rgba(0,0,0,0.3);
               white-space: nowrap;
               display: flex;
               align-items: center;
               gap: 3px;
+              will-change: transform;
             ">
               <span style="background:#F59E0B;color:#191512;border-radius:4px;padding:0 3px;font-size:9px;">E${exit.exitNo}</span>
               <span>${exit.nameEn.split('/')[0]}</span>
