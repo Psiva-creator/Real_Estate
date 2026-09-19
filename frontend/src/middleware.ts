@@ -25,6 +25,11 @@ export function middleware(request: NextRequest) {
     }
   }
 
+  // Convenience shortcuts for staff/admin entry
+  if (pathname === '/admin' || pathname === '/admin/login' || pathname === '/staff') {
+    return NextResponse.redirect(new URL(`/${DEFAULT_LOCALE}/admin/login`, request.url));
+  }
+
   // ─── Edge RBAC Protection for Back-Office Dashboard Routes ─────────────────
   if (pathname.startsWith('/dashboard')) {
     const token = request.cookies.get('trh_token')?.value;
@@ -32,7 +37,14 @@ export function middleware(request: NextRequest) {
 
     // 1. Unauthenticated users cannot view any back-office dashboard
     if (!token) {
-      const loginUrl = new URL(`/${DEFAULT_LOCALE}/login`, request.url);
+      const isStaffRoute =
+        pathname.startsWith('/dashboard/verification') ||
+        pathname.startsWith('/dashboard/properties') ||
+        pathname.startsWith('/dashboard/enquiries');
+      const loginTarget = isStaffRoute
+        ? `/${DEFAULT_LOCALE}/admin/login`
+        : `/${DEFAULT_LOCALE}/login`;
+      const loginUrl = new URL(loginTarget, request.url);
       loginUrl.searchParams.set('redirect', pathname);
       return NextResponse.redirect(loginUrl);
     }
