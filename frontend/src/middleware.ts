@@ -96,10 +96,9 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(new URL('/dashboard/properties', request.url));
       }
 
-      // Root /dashboard dispatcher
+      // Root /dashboard dispatcher: allow staff to view Executive Command Center
       if (pathname === '/dashboard') {
-        const target = role === 'ADMIN' ? '/dashboard/verification' : '/dashboard/properties';
-        return NextResponse.redirect(new URL(target, request.url));
+        return NextResponse.next();
       }
 
       return NextResponse.next();
