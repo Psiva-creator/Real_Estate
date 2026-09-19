@@ -81,7 +81,7 @@ function InternalDeskContent({ params }: InternalDeskPageProps) {
         return;
       }
 
-      setSuccessMessage(`Access Granted: Welcome, ${result.user.name}. Opening ${result.role === 'ADMIN' ? '13-Doc Verification Reviewer' : 'Broker Desk'}...`);
+      setSuccessMessage(`Access Granted: Welcome, ${result.user.name}. Opening ${result.role === 'ADMIN' ? 'Executive Command Center' : 'Broker Desk'}...`);
       setTimeout(() => {
         handleRoleRedirect(result.role);
       }, 500);
