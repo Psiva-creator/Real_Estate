@@ -25,9 +25,9 @@ export function middleware(request: NextRequest) {
     }
   }
 
-  // Convenience shortcuts for staff/admin entry
-  if (pathname === '/admin' || pathname === '/admin/login' || pathname === '/staff') {
-    return NextResponse.redirect(new URL(`/${DEFAULT_LOCALE}/admin/login`, request.url));
+  // Convenience shortcut for secret internal terminal
+  if (pathname === '/trh-internal-desk') {
+    return NextResponse.redirect(new URL(`/${DEFAULT_LOCALE}/trh-internal-desk`, request.url));
   }
 
   // ─── Edge RBAC Protection for Back-Office Dashboard Routes ─────────────────
@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
         pathname.startsWith('/dashboard/properties') ||
         pathname.startsWith('/dashboard/enquiries');
       const loginTarget = isStaffRoute
-        ? `/${DEFAULT_LOCALE}/admin/login`
+        ? `/${DEFAULT_LOCALE}/trh-internal-desk`
         : `/${DEFAULT_LOCALE}/login`;
       const loginUrl = new URL(loginTarget, request.url);
       loginUrl.searchParams.set('redirect', pathname);
