@@ -14,6 +14,8 @@ import {
   ArrowRight,
   Maximize2,
   ChevronRight,
+  Globe,
+  Map,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
@@ -48,9 +50,11 @@ export default function LeafletPropertyMap({
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
   // Leaflet map instance ref
   const mapInstanceRef = useRef<any>(null);
+  const tileLayerRef = useRef<any>(null);
   const markersGroupRef = useRef<any>(null);
   const orrLayerRef = useRef<any>(null);
 
+  const [mapMode, setMapMode] = useState<'street' | 'satellite'>('street');
   const [activeCorridor, setActiveCorridor] = useState<string>('all');
   const [showOrrLayer, setShowOrrLayer] = useState<boolean>(true);
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<'ALL' | 'LAND' | 'FLAT'>('ALL');
@@ -86,27 +90,29 @@ export default function LeafletPropertyMap({
 
       const initialZoom = singlePropertyMode ? 14 : 11;
 
+      // Initialize map with attributionControl: false to remove all watermarks/bars
       const map = L.map(mapContainerRef.current, {
         center: initialCenter,
         zoom: initialZoom,
         minZoom: 8,
-        maxZoom: 18,
+        maxZoom: 19,
         zoomControl: false,
+        attributionControl: false, // Disables any watermark or attribution bar
       });
 
       // Add Zoom control to top-right
       L.control.zoom({ position: 'topright' }).addTo(map);
 
-      // Fast, beautiful, zero-API-key tile layer (CartoDB Voyager)
-      L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+      // Clean, 100% Watermark-Free OpenStreetMap Standard Tile Layer
+      const baseLayer = L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
         {
-          attribution:
-            '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-          subdomains: 'abcd',
-          maxZoom: 20,
+          maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
         }
       ).addTo(map);
+
+      tileLayerRef.current = baseLayer;
 
       // Create Layer Groups
       const orrGroup = L.layerGroup().addTo(map);
@@ -177,6 +183,37 @@ export default function LeafletPropertyMap({
       }
     };
   }, [singlePropertyMode]);
+
+  // Handle Street vs Satellite Layer Switching (Zero watermarks on both)
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return;
+
+    import('leaflet').then((LModule) => {
+      const L = LModule.default;
+      if (tileLayerRef.current) {
+        mapInstanceRef.current.removeLayer(tileLayerRef.current);
+      }
+
+      if (mapMode === 'satellite') {
+        // High-resolution Esri World Satellite Imagery (Clean, No watermark, No API key)
+        tileLayerRef.current = L.tileLayer(
+          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+          {
+            maxZoom: 19,
+          }
+        ).addTo(mapInstanceRef.current);
+      } else {
+        // Clean OpenStreetMap standard tiles (Clean, No watermark, No API key)
+        tileLayerRef.current = L.tileLayer(
+          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+          {
+            maxZoom: 19,
+            subdomains: ['a', 'b', 'c'],
+          }
+        ).addTo(mapInstanceRef.current);
+      }
+    });
+  }, [mapMode, isMapReady]);
 
   // Update Property Markers on Map
   useEffect(() => {
@@ -324,20 +361,55 @@ export default function LeafletPropertyMap({
 
   return (
     <div className={`relative flex flex-col w-full rounded-2xl overflow-hidden border border-[#E8E2D9] bg-white shadow-sm ${className}`}>
-      {/* Top Corridor Quick-Jump Bar (Only in Multi-Property View) */}
-      {!singlePropertyMode && (
-        <div className="bg-[#191512] text-white p-3 sm:p-4 border-b border-white/10 flex flex-col gap-3">
-          <div className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-              <h3 className="font-bold text-xs sm:text-sm tracking-wide flex items-center gap-1.5 text-white">
-                <Compass className="w-4 h-4 text-emerald-400" />
-                <span>{isTe ? 'తెలంగాణ రియల్ ఎస్టేట్ మాస్టర్ మ్యాప్' : 'Telangana Real Estate Master Map'}</span>
-              </h3>
+      {/* Top Corridor & View Controls Bar */}
+      <div className="bg-[#191512] text-white p-3 sm:p-4 border-b border-white/10 flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+            <h3 className="font-bold text-xs sm:text-sm tracking-wide flex items-center gap-1.5 text-white">
+              <Compass className="w-4 h-4 text-emerald-400" />
+              <span>
+                {singlePropertyMode
+                  ? isTe ? 'ఆస్తి సర్వే లొకేషన్ మ్యాప్' : 'Property Location & Survey Map'
+                  : isTe ? 'తెలంగాణ రియల్ ఎస్టేట్ మాస్టర్ మ్యాప్' : 'Telangana Real Estate Master Map'}
+              </span>
+            </h3>
+          </div>
+
+          {/* Layer & Mode Controls */}
+          <div className="flex items-center gap-2 text-xs">
+            {/* Street / Satellite Mode Toggle */}
+            <div className="flex items-center bg-white/10 rounded-lg p-0.5 border border-white/10">
+              <button
+                type="button"
+                onClick={() => setMapMode('street')}
+                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors flex items-center gap-1 ${
+                  mapMode === 'street'
+                    ? 'bg-white text-slate-900 shadow-xs'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+                title="Street Map View"
+              >
+                <Map className="w-3 h-3" />
+                <span>Street</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setMapMode('satellite')}
+                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors flex items-center gap-1 ${
+                  mapMode === 'satellite'
+                    ? 'bg-emerald-600 text-white shadow-xs'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+                title="Satellite Drone View"
+              >
+                <Globe className="w-3 h-3" />
+                <span>Satellite</span>
+              </button>
             </div>
 
-            {/* Layer Controls */}
-            <div className="flex items-center gap-2 text-xs">
+            {/* ORR 158km Layer Toggle (in multi-mode) */}
+            {!singlePropertyMode && (
               <button
                 type="button"
                 onClick={() => setShowOrrLayer(!showOrrLayer)}
@@ -351,8 +423,10 @@ export default function LeafletPropertyMap({
                 <Layers className="w-3 h-3" />
                 <span>ORR 158km</span>
               </button>
+            )}
 
-              {/* Property Type Toggles */}
+            {/* Property Type Toggles */}
+            {!singlePropertyMode && (
               <div className="hidden sm:flex items-center bg-white/10 rounded-lg p-0.5">
                 {(['ALL', 'LAND', 'FLAT'] as const).map((type) => (
                   <button
@@ -369,10 +443,12 @@ export default function LeafletPropertyMap({
                   </button>
                 ))}
               </div>
-            </div>
+            )}
           </div>
+        </div>
 
-          {/* Corridor Selection Pills */}
+        {/* Corridor Selection Pills (Multi-Property Mode) */}
+        {!singlePropertyMode && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
             {TELANGANA_CORRIDORS.map((corridor) => (
               <button
@@ -389,8 +465,8 @@ export default function LeafletPropertyMap({
               </button>
             ))}
           </div>
-        </div>
-      )}
+        )}
+      </div>
 
       {/* Map Presentation Surface */}
       <div className="relative w-full h-[380px] sm:h-[480px] md:h-[560px] bg-[#FAF8F5]">
@@ -412,7 +488,7 @@ export default function LeafletPropertyMap({
           </div>
         </div>
 
-        {/* Top-Right Quick Native GPS Deep Link */}
+        {/* Top-Left Quick Native GPS Deep Link */}
         {singlePropertyMode && properties[0]?.location && (
           <div className="absolute top-3 left-3 z-[400]">
             <a
