@@ -79,3 +79,19 @@
 .badge-sold       { @apply px-2.5 py-0.5 rounded-full bg-rose-100 text-rose-800 font-bold text-xs; }
 .badge-new        { @apply px-2.5 py-0.5 rounded-full bg-[#EFE9E0] text-[#191512] font-bold text-xs; }
 
+/* Leaflet 60fps Hardware Acceleration & Smooth Zooming */
+.leaflet-tile {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.leaflet-zoom-animated {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
+.leaflet-marker-icon {
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+}
+
