@@ -16,6 +16,7 @@ import {
   ChevronRight,
   Globe,
   Map,
+  Eye,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
@@ -36,6 +37,8 @@ interface LeafletPropertyMapProps {
   singlePropertyMode?: boolean;
 }
 
+type MapLayerMode = 'satellite' | 'street' | 'imagery';
+
 export default function LeafletPropertyMap({
   properties,
   locale,
@@ -48,13 +51,14 @@ export default function LeafletPropertyMap({
   const isTe = locale === 'te';
 
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  // Leaflet map instance ref
   const mapInstanceRef = useRef<any>(null);
   const tileLayerRef = useRef<any>(null);
   const markersGroupRef = useRef<any>(null);
   const orrLayerRef = useRef<any>(null);
+  const singlePropertyCircleRef = useRef<any>(null);
 
-  const [mapMode, setMapMode] = useState<'street' | 'satellite'>('street');
+  // Default to High-Definition Satellite view
+  const [mapMode, setMapMode] = useState<MapLayerMode>('satellite');
   const [activeCorridor, setActiveCorridor] = useState<string>('all');
   const [showOrrLayer, setShowOrrLayer] = useState<boolean>(true);
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<'ALL' | 'LAND' | 'FLAT'>('ALL');
@@ -68,18 +72,46 @@ export default function LeafletPropertyMap({
     return properties.filter((p) => p.type === propertyTypeFilter);
   }, [properties, propertyTypeFilter, singlePropertyMode]);
 
+  // Helper to create tile layer based on mode (Zero watermarks, high performance)
+  const getTileLayer = (L: any, mode: MapLayerMode) => {
+    if (mode === 'satellite') {
+      // High-Definition Satellite Hybrid (Aerial photo + crisp road labels, No API key, No watermark)
+      return L.tileLayer(
+        'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
+        {
+          maxZoom: 20,
+          subdomains: ['0', '1', '2', '3'],
+        }
+      );
+    } else if (mode === 'imagery') {
+      // Pure Raw Drone/Satellite Imagery (Esri World Imagery)
+      return L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        {
+          maxZoom: 19,
+        }
+      );
+    } else {
+      // Clean OpenStreetMap Street Tiles
+      return L.tileLayer(
+        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+        {
+          maxZoom: 19,
+          subdomains: ['a', 'b', 'c'],
+        }
+      );
+    }
+  };
+
   // Initialize Leaflet Map on client side
   useEffect(() => {
     let isCancelled = false;
 
     async function initLeaflet() {
       if (typeof window === 'undefined' || !mapContainerRef.current) return;
-
-      // Avoid re-initialization
       if (mapInstanceRef.current) return;
 
       const L = (await import('leaflet')).default;
-
       if (isCancelled || !mapContainerRef.current) return;
 
       // Center on single property or Hyderabad metro center
@@ -88,31 +120,24 @@ export default function LeafletPropertyMap({
           ? [properties[0].location.latitude, properties[0].location.longitude]
           : [17.4200, 78.4300];
 
-      const initialZoom = singlePropertyMode ? 14 : 11;
+      const initialZoom = singlePropertyMode ? 15 : 11;
 
-      // Initialize map with attributionControl: false to remove all watermarks/bars
+      // Initialize map with attributionControl: false (clean, zero watermarks)
       const map = L.map(mapContainerRef.current, {
         center: initialCenter,
         zoom: initialZoom,
         minZoom: 8,
-        maxZoom: 19,
+        maxZoom: 20,
         zoomControl: false,
-        attributionControl: false, // Disables any watermark or attribution bar
+        attributionControl: false,
       });
 
       // Add Zoom control to top-right
       L.control.zoom({ position: 'topright' }).addTo(map);
 
-      // Clean, 100% Watermark-Free OpenStreetMap Standard Tile Layer
-      const baseLayer = L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-          maxZoom: 19,
-          subdomains: ['a', 'b', 'c'],
-        }
-      ).addTo(map);
-
-      tileLayerRef.current = baseLayer;
+      // Add default tile layer (Satellite Hybrid)
+      const initialTileLayer = getTileLayer(L, 'satellite').addTo(map);
+      tileLayerRef.current = initialTileLayer;
 
       // Create Layer Groups
       const orrGroup = L.layerGroup().addTo(map);
@@ -124,13 +149,13 @@ export default function LeafletPropertyMap({
 
       // Render 158km Outer Ring Road (ORR)
       const orrPolyline = L.polyline(ORR_LOOP_COORDINATES, {
-        color: '#D97706', // Warm Amber
-        weight: 3.5,
-        opacity: 0.85,
-        dashArray: '8, 6',
+        color: '#F59E0B', // Glowing Golden Amber
+        weight: 4,
+        opacity: 0.9,
+        dashArray: '10, 6',
       });
       orrPolyline.bindTooltip(
-        '<div class="font-bold text-xs">Hyderabad 158km Outer Ring Road (ORR)</div>',
+        '<div class="font-bold text-xs" style="color:#D97706;">Hyderabad 158km Outer Ring Road (ORR)</div>',
         { sticky: true }
       );
       orrGroup.addLayer(orrPolyline);
@@ -141,14 +166,15 @@ export default function LeafletPropertyMap({
           className: 'custom-exit-marker',
           html: `
             <div style="
-              background: #191512;
+              background: rgba(25, 21, 18, 0.92);
+              backdrop-filter: blur(4px);
               color: #FBBF24;
               border: 1.5px solid #F59E0B;
               border-radius: 9999px;
-              padding: 2px 6px;
+              padding: 2px 7px;
               font-size: 10px;
               font-weight: 700;
-              box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+              box-shadow: 0 4px 8px rgba(0,0,0,0.4);
               white-space: nowrap;
               display: flex;
               align-items: center;
@@ -170,6 +196,28 @@ export default function LeafletPropertyMap({
         orrGroup.addLayer(exitMarker);
       });
 
+      // If Single Property Mode: Draw a glowing boundary circle / survey plot highlight
+      if (singlePropertyMode && properties[0]?.location?.latitude && properties[0]?.location?.longitude) {
+        const pLat = properties[0].location.latitude;
+        const pLng = properties[0].location.longitude;
+
+        const surveyCircle = L.circle([pLat, pLng], {
+          radius: 180,
+          color: '#10B981',
+          fillColor: '#10B981',
+          fillOpacity: 0.22,
+          weight: 2,
+          dashArray: '4, 4',
+        }).addTo(map);
+
+        surveyCircle.bindTooltip(
+          '<div style="font-size:11px;font-weight:bold;color:#065F46;">📍 Verified Land Demarcation Zone</div>',
+          { sticky: true }
+        );
+
+        singlePropertyCircleRef.current = surveyCircle;
+      }
+
       setIsMapReady(true);
     }
 
@@ -184,7 +232,7 @@ export default function LeafletPropertyMap({
     };
   }, [singlePropertyMode]);
 
-  // Handle Street vs Satellite Layer Switching (Zero watermarks on both)
+  // Handle Layer Mode Switching (Satellite Hybrid vs Street vs Pure Aerial)
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return;
 
@@ -194,24 +242,9 @@ export default function LeafletPropertyMap({
         mapInstanceRef.current.removeLayer(tileLayerRef.current);
       }
 
-      if (mapMode === 'satellite') {
-        // High-resolution Esri World Satellite Imagery (Clean, No watermark, No API key)
-        tileLayerRef.current = L.tileLayer(
-          'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-          {
-            maxZoom: 19,
-          }
-        ).addTo(mapInstanceRef.current);
-      } else {
-        // Clean OpenStreetMap standard tiles (Clean, No watermark, No API key)
-        tileLayerRef.current = L.tileLayer(
-          'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-          {
-            maxZoom: 19,
-            subdomains: ['a', 'b', 'c'],
-          }
-        ).addTo(mapInstanceRef.current);
-      }
+      const newLayer = getTileLayer(L, mapMode);
+      newLayer.addTo(mapInstanceRef.current);
+      tileLayerRef.current = newLayer;
     });
   }, [mapMode, isMapReady]);
 
@@ -231,7 +264,7 @@ export default function LeafletPropertyMap({
 
         const isLand = property.type === 'LAND';
         const isSelected = selectedPropertyId === property.id;
-        const primaryColor = isLand ? '#059669' : '#2563EB'; // Emerald for Land, Blue for Flat
+        const primaryColor = isLand ? '#059669' : '#2563EB';
         const priceLabel = formatINR(property.pricing.totalPrice);
 
         const customIcon = L.divIcon({
@@ -239,7 +272,7 @@ export default function LeafletPropertyMap({
           html: `
             <div style="
               cursor: pointer;
-              transform: ${isSelected ? 'scale(1.15)' : 'scale(1)'};
+              transform: ${isSelected ? 'scale(1.18)' : 'scale(1)'};
               transition: transform 0.2s ease;
             ">
               <div style="
@@ -250,7 +283,7 @@ export default function LeafletPropertyMap({
                 padding: 4px 10px;
                 font-size: 11px;
                 font-weight: 700;
-                box-shadow: 0 4px 10px rgba(0,0,0,0.25);
+                box-shadow: 0 4px 12px rgba(0,0,0,0.35);
                 display: flex;
                 align-items: center;
                 gap: 5px;
@@ -269,15 +302,15 @@ export default function LeafletPropertyMap({
               "></div>
             </div>
           `,
-          iconSize: [90, 36],
-          iconAnchor: [45, 36],
+          iconSize: [95, 38],
+          iconAnchor: [47, 38],
         });
 
         const marker = L.marker([lat, lng], { icon: customIcon });
 
         // Popup Content
         const popupContent = `
-          <div style="font-family: system-ui, -apple-system, sans-serif; min-width: 220px; max-width: 260px; padding: 4px;">
+          <div style="font-family: system-ui, -apple-system, sans-serif; min-width: 230px; max-width: 270px; padding: 4px;">
             <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: ${primaryColor}; margin-bottom: 2px;">
               ${property.type} • ${property.location.district}
             </div>
@@ -370,45 +403,45 @@ export default function LeafletPropertyMap({
               <Compass className="w-4 h-4 text-emerald-400" />
               <span>
                 {singlePropertyMode
-                  ? isTe ? 'ఆస్తి సర్వే లొకేషన్ మ్యాప్' : 'Property Location & Survey Map'
-                  : isTe ? 'తెలంగాణ రియల్ ఎస్టేట్ మాస్టర్ మ్యాప్' : 'Telangana Real Estate Master Map'}
+                  ? isTe ? 'ఆస్తి శాటిలైట్ లొకేషన్ మ్యాప్' : 'Property Satellite Location Map'
+                  : isTe ? 'తెలంగాణ శాటిలైట్ మాస్టర్ మ్యాప్' : 'Telangana Satellite Master Map'}
               </span>
             </h3>
           </div>
 
           {/* Layer & Mode Controls */}
           <div className="flex items-center gap-2 text-xs">
-            {/* Street / Satellite Mode Toggle */}
+            {/* Satellite / Street / Aerial View Toggle */}
             <div className="flex items-center bg-white/10 rounded-lg p-0.5 border border-white/10">
-              <button
-                type="button"
-                onClick={() => setMapMode('street')}
-                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors flex items-center gap-1 ${
-                  mapMode === 'street'
-                    ? 'bg-white text-slate-900 shadow-xs'
-                    : 'text-slate-300 hover:text-white'
-                }`}
-                title="Street Map View"
-              >
-                <Map className="w-3 h-3" />
-                <span>Street</span>
-              </button>
               <button
                 type="button"
                 onClick={() => setMapMode('satellite')}
                 className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors flex items-center gap-1 ${
                   mapMode === 'satellite'
-                    ? 'bg-emerald-600 text-white shadow-xs'
+                    ? 'bg-emerald-600 text-white shadow-xs font-bold'
                     : 'text-slate-300 hover:text-white'
                 }`}
-                title="Satellite Drone View"
+                title="Satellite View with Road Names"
               >
                 <Globe className="w-3 h-3" />
                 <span>Satellite</span>
               </button>
+              <button
+                type="button"
+                onClick={() => setMapMode('street')}
+                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors flex items-center gap-1 ${
+                  mapMode === 'street'
+                    ? 'bg-white text-slate-900 shadow-xs font-bold'
+                    : 'text-slate-300 hover:text-white'
+                }`}
+                title="Street Vector Map"
+              >
+                <Map className="w-3 h-3" />
+                <span>Street</span>
+              </button>
             </div>
 
-            {/* ORR 158km Layer Toggle (in multi-mode) */}
+            {/* ORR 158km Layer Toggle */}
             {!singlePropertyMode && (
               <button
                 type="button"
@@ -469,21 +502,21 @@ export default function LeafletPropertyMap({
       </div>
 
       {/* Map Presentation Surface */}
-      <div className="relative w-full h-[380px] sm:h-[480px] md:h-[560px] bg-[#FAF8F5]">
+      <div className="relative w-full h-[380px] sm:h-[480px] md:h-[560px] bg-[#141210]">
         <div ref={mapContainerRef} className="w-full h-full z-0" />
 
         {/* Legend Overlay */}
         <div className="absolute bottom-3 left-3 z-[400] bg-[#191512]/90 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 text-[10px] sm:text-xs flex flex-wrap items-center gap-3 pointer-events-none shadow-lg">
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block" />
-            <span className="text-slate-300">{isTe ? 'వ్యవసాయ భూములు (ధరణి)' : 'Agricultural Land'}</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm" />
+            <span className="text-slate-200 font-medium">{isTe ? 'వ్యవసాయ భూములు (ధరణి)' : 'Agricultural Land'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block" />
-            <span className="text-slate-300">{isTe ? 'అపార్ట్‌మెంట్లు / ఫ్లాట్లు' : 'Flats & Villas'}</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block shadow-sm" />
+            <span className="text-slate-200 font-medium">{isTe ? 'అపార్ట్‌మెంట్లు / ఫ్లాట్లు' : 'Flats & Villas'}</span>
           </div>
           <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 bg-amber-500 inline-block rounded" />
+            <span className="w-3.5 h-1 bg-amber-500 inline-block rounded shadow-sm" />
             <span className="text-amber-400 font-semibold">158km ORR</span>
           </div>
         </div>
@@ -495,7 +528,7 @@ export default function LeafletPropertyMap({
               href={`https://www.google.com/maps/dir/?api=1&destination=${properties[0].location.latitude},${properties[0].location.longitude}`}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-1.5 bg-white text-slate-900 px-3 py-1.5 rounded-full shadow-md text-xs font-semibold hover:bg-slate-50 transition-colors border border-slate-200"
+              className="inline-flex items-center gap-1.5 bg-white/95 backdrop-blur-md text-slate-900 px-3.5 py-1.5 rounded-full shadow-lg text-xs font-bold hover:bg-white transition-colors border border-slate-200"
             >
               <Navigation className="w-3.5 h-3.5 text-emerald-700" />
               <span>{isTe ? 'గూగుల్ మ్యాప్స్‌లో నావిగేట్ చేయండి' : 'Open in Google Maps'}</span>
