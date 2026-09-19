@@ -53,11 +53,8 @@ function InternalDeskContent({ params }: InternalDeskPageProps) {
       return;
     }
 
-    if (role === 'ADMIN') {
-      router.replace('/dashboard/verification');
-    } else {
-      router.replace('/dashboard/properties');
-    }
+    // Direct staff to Executive Command Center
+    router.replace('/dashboard');
   };
 
   const handleSubmit = async (e: React.FormEvent) => {

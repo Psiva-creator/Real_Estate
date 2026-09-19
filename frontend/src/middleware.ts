@@ -203,10 +203,8 @@ export function middleware(request: NextRequest) {
 
     // Root /dashboard dispatcher
     if (pathname === '/dashboard') {
-      let target = '/dashboard/properties';
-      if (role === 'SELLER') target = '/dashboard/seller';
-      else if (role === 'ADMIN') target = '/dashboard/verification';
-      return NextResponse.redirect(new URL(target, request.url));
+      if (role === 'SELLER') return NextResponse.redirect(new URL('/dashboard/seller', request.url));
+      return NextResponse.next();
     }
 
     return NextResponse.next();
