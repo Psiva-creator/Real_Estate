@@ -65,8 +65,7 @@ export function middleware(request: NextRequest) {
     if (isRootOrAuthPath) {
       // If staff is already authenticated, send them straight to back-office dashboard
       if (isStaff) {
-        const targetDashboard = role === 'ADMIN' ? '/dashboard/verification' : '/dashboard/properties';
-        return NextResponse.redirect(new URL(targetDashboard, request.url));
+        return NextResponse.redirect(new URL('/dashboard', request.url));
       }
 
       // Otherwise, cleanly rewrite to internal desk without altering URL bar
