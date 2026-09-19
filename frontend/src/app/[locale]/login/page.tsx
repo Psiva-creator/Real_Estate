@@ -282,23 +282,7 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
             </div>
           )}
 
-          {/* Staff Tip if staff email is typed */}
-          {isStaffIdentifier && (
-            <div className="p-3.5 bg-amber-50 border border-amber-200 rounded-xl text-amber-900 text-xs flex items-start gap-2.5">
-              <Briefcase className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-              <div>
-                <span>Platform Director or Deal Advisor?</span>
-                <div className="mt-1">
-                  <Link
-                    href={`/${locale}/admin/login`}
-                    className="font-bold underline text-amber-900 hover:text-amber-800 inline-flex items-center gap-1"
-                  >
-                    <span>Sign in via Internal Staff Console &rarr;</span>
-                  </Link>
-                </div>
-              </div>
-            </div>
-          )}
+
 
           {/* Mode 1: Sign In */}
           {mode === 'login' ? (
