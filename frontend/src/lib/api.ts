@@ -282,7 +282,7 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
 
 /** Returns true if the API_BASE_URL is configured and points to the real backend. */
 function isRealBackend(): boolean {
@@ -1402,7 +1402,7 @@ export async function verifyPropertyDocumentApi(
  * or 'http://localhost:5000/api' -> 'http://localhost:5000'
  */
 export function getBackendRootUrl(): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
   return base.replace(/\/api\/?$/, '');
 }
 
