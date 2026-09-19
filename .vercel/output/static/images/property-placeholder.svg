@@ -1,0 +1,47 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#064e3b" />
+      <stop offset="50%" stop-color="#047857" />
+      <stop offset="100%" stop-color="#0f172a" />
+    </linearGradient>
+    <linearGradient id="cardGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="rgba(255,255,255,0.12)" />
+      <stop offset="100%" stop-color="rgba(255,255,255,0.03)" />
+    </linearGradient>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+    </pattern>
+  </defs>
+
+  <!-- Background -->
+  <rect width="800" height="500" fill="url(#bgGrad)" />
+  <rect width="800" height="500" fill="url(#grid)" />
+
+  <!-- Geometric Abstract Shapes -->
+  <circle cx="700" cy="100" r="180" fill="rgba(16, 185, 129, 0.1)" />
+  <circle cx="100" cy="400" r="140" fill="rgba(245, 158, 11, 0.08)" />
+
+  <!-- Center Card Illustration -->
+  <g transform="translate(250, 110)">
+    <rect x="0" y="0" width="300" height="260" rx="20" fill="url(#cardGrad)" stroke="rgba(255,255,255,0.15)" stroke-width="2" />
+    
+    <!-- Building / Land Icon -->
+    <path d="M 150 45 L 80 100 L 95 100 L 95 175 L 205 175 L 205 100 L 220 100 Z" fill="none" stroke="#34d399" stroke-width="5" stroke-linejoin="round" stroke-linecap="round" />
+    <path d="M 130 175 L 130 130 L 170 130 L 170 175" fill="none" stroke="#34d399" stroke-width="4" stroke-linejoin="round" />
+    <line x1="110" y1="120" x2="110" y2="135" stroke="#a7f3d0" stroke-width="4" stroke-linecap="round" />
+    <line x1="190" y1="120" x2="190" y2="135" stroke="#a7f3d0" stroke-width="4" stroke-linecap="round" />
+
+    <!-- 13-Doc Verified Shield Icon -->
+    <g transform="translate(110, 195)">
+      <path d="M 40 5 L 68 18 C 68 35 40 52 40 52 C 40 52 12 35 12 18 Z" fill="#047857" stroke="#6ee7b7" stroke-width="2" />
+      <path d="M 28 26 L 36 34 L 52 18" fill="none" stroke="#ffffff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" />
+    </g>
+
+    <text x="150" y="240" text-anchor="middle" fill="#ecfdf5" font-family="system-ui, -apple-system, sans-serif" font-size="14" font-weight="700" letter-spacing="1">13-DOC VERIFIED</text>
+  </g>
+
+  <!-- Watermark text -->
+  <text x="400" y="420" text-anchor="middle" fill="#94a3b8" font-family="system-ui, -apple-system, sans-serif" font-size="15" font-weight="600" letter-spacing="2">TELANGANA REALTY HUB</text>
+  <text x="400" y="445" text-anchor="middle" fill="#64748b" font-family="system-ui, -apple-system, sans-serif" font-size="12">Legal Clear Title Assured • Verified HMDA &amp; Dharani</text>
+</svg>

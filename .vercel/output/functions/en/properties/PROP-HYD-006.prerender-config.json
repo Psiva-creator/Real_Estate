@@ -1,0 +1,28 @@
+{
+  "type": "Prerender",
+  "expiration": 60,
+  "sourcePath": "/[locale]/properties/[id]",
+  "group": 18,
+  "bypassToken": "896873e612b22da12c85e6339e26c801",
+  "experimentalBypassFor": [
+    {
+      "type": "header",
+      "key": "Next-Action"
+    },
+    {
+      "type": "header",
+      "key": "content-type",
+      "value": "multipart/form-data;.*"
+    }
+  ],
+  "fallback": {
+    "type": "FileFsRef",
+    "mode": 33188,
+    "fsPath": "PROP-HYD-006.prerender-fallback.html"
+  },
+  "initialHeaders": {
+    "x-next-cache-tags": "_N_T_/layout,_N_T_/[locale]/layout,_N_T_/[locale]/properties/layout,_N_T_/[locale]/properties/[id]/layout,_N_T_/[locale]/properties/[id]/page,_N_T_/en/properties/PROP-HYD-006",
+    "vary": "RSC, Next-Router-State-Tree, Next-Router-Prefetch"
+  },
+  "allowQuery": []
+}
