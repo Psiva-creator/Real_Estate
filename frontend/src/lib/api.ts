@@ -740,6 +740,9 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   const cleanId = identifier.trim().toLowerCase();
 
   if (cleanId === 'admin@telanganarealty.in') {
+    if (password !== 'Director@Telangana2026!' && password !== 'Admin@1234') {
+      throw new Error('Invalid staff security credentials. Access denied.');
+    }
     return {
       token: 'mock-jwt-admin-token-2026',
       user: {
@@ -755,6 +758,9 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   }
 
   if (cleanId === 'suresh.reddy@telanganarealty.in') {
+    if (password !== 'Advisor@Telangana2026!' && password !== 'Agent@1234') {
+      throw new Error('Invalid advisor credentials. Access denied.');
+    }
     return {
       token: 'mock-jwt-agent-token-2026',
       user: {
