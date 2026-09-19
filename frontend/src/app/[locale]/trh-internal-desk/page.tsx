@@ -20,6 +20,7 @@ import {
 import { isValidLocale, Locale } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/lib/api';
+import { getPublicUrl } from '@/lib/domain';
 
 interface InternalDeskPageProps {
   params: { locale: string };
@@ -274,7 +275,7 @@ function InternalDeskContent({ params }: InternalDeskPageProps) {
         {/* Legal & Security Warning Footer */}
         <div className="text-center space-y-2">
           <Link
-            href={`/${locale}`}
+            href={getPublicUrl(`/${locale}`)}
             className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors"
           >
             <ArrowLeft className="w-3.5 h-3.5" />
