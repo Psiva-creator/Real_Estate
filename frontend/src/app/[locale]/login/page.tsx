@@ -471,18 +471,9 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
             </span>
           </div>
 
-          <div className="flex items-center justify-center gap-6 text-xs text-slate-500 pt-1">
+          <div className="flex items-center justify-center text-xs text-slate-500 pt-1">
             <Link href={`/${locale}`} className="hover:text-emerald-800 transition-colors">
               ← {isTe ? 'ప్రజా వెబ్‌సైట్' : 'Return to Public Website'}
-            </Link>
-            <span>•</span>
-            {/* Discrete Link to Staff Portal */}
-            <Link
-              href={`/${locale}/admin/login`}
-              className="hover:text-slate-900 font-medium inline-flex items-center gap-1 transition-colors text-slate-400 hover:text-slate-700"
-            >
-              <Briefcase className="w-3 h-3" />
-              <span>{isTe ? 'సిబ్బంది పోర్టల్' : 'Internal Staff Portal'} &rarr;</span>
             </Link>
           </div>
         </div>
