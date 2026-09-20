@@ -12,7 +12,9 @@
     "test:integration": "tsc && node --test dist/backend/tests/postgres.integration.test.js",
     "test:all": "npm run test:unit && npm run test:integration",
     "seed": "tsx src/db/seeds/seed.ts",
+    "db:seed": "tsx src/db/seeds/seed.ts",
     "migrate": "tsx src/db/migrate.ts",
+    "db:migrate": "tsx src/db/migrate.ts",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },

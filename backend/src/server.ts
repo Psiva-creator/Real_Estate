@@ -1,6 +1,7 @@
 import { app } from './app.js';
 import { config } from './config/index.js';
 import { db } from './db/database.js';
+import { runMigrations } from './db/migrate.js';
 import { runSeeds } from './db/seeds/seed.js';
 
 async function startServer() {
@@ -10,14 +11,24 @@ async function startServer() {
   const pgConnected = await db.testConnection();
   if (pgConnected) {
     console.log('✅ PostgreSQL database connected successfully');
+    try {
+      console.log('🔄 Ensuring database schema and tables exist...');
+      await runMigrations();
+    } catch (migErr) {
+      console.warn('⚠️ Migration note:', (migErr as Error).message);
+    }
   } else if (config.nodeEnv !== 'test') {
     throw new Error('Fatal: PostgreSQL connection failed. Production runtime requires a working PostgreSQL database.');
   }
 
   // Seed default data if store is empty
-  const users = await db.listUsers();
-  if (users.length === 0) {
-    await runSeeds();
+  try {
+    const users = await db.listUsers();
+    if (users.length === 0) {
+      await runSeeds();
+    }
+  } catch (seedErr) {
+    console.warn('⚠️ Seed check note:', (seedErr as Error).message);
   }
 
   const server = app.listen(config.port, config.host, () => {
