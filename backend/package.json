@@ -2,14 +2,14 @@
   "name": "telangana-realty-backend",
   "version": "1.0.0",
   "description": "Backend API and data layer for Telangana & Hyderabad Real-Estate Brokerage Platform",
-  "main": "dist/backend/src/server.js",
+  "main": "dist/src/server.js",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
-    "start": "node dist/backend/src/server.js",
+    "start": "node dist/src/server.js",
     "test": "npm run test:unit",
-    "test:unit": "tsc && node --test dist/backend/tests/auth.test.js dist/backend/tests/documents.test.js dist/backend/tests/enquiries.test.js dist/backend/tests/maps.test.js dist/backend/tests/properties.test.js dist/backend/tests/docs.test.js dist/backend/tests/cors.test.js",
-    "test:integration": "tsc && node --test dist/backend/tests/postgres.integration.test.js",
+    "test:unit": "tsx --test tests/auth.test.ts tests/documents.test.ts tests/enquiries.test.ts tests/maps.test.ts tests/properties.test.ts tests/docs.test.ts tests/cors.test.ts",
+    "test:integration": "tsx --test tests/postgres.integration.test.ts",
     "test:all": "npm run test:unit && npm run test:integration",
     "seed": "tsx src/db/seeds/seed.ts",
     "db:seed": "tsx src/db/seeds/seed.ts",
@@ -27,6 +27,7 @@
     "multer": "^1.4.5-lts.1",
     "pg": "^8.13.3",
     "swagger-ui-express": "^5.0.1",
+    "typescript": "^5.7.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
@@ -41,7 +42,6 @@
     "@types/swagger-ui-express": "^4.1.8",
     "@types/uuid": "^10.0.0",
     "supertest": "^7.0.0",
-    "tsx": "^4.19.3",
-    "typescript": "^5.7.3"
+    "tsx": "^4.19.3"
   }
 }
