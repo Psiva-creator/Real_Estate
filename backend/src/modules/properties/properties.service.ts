@@ -11,6 +11,7 @@ import {
   LocationDetails,
   LandDetails,
   FlatDetails,
+  VillaDetails,
   PricingDetails,
 } from '../../types/index.js';
 
@@ -27,6 +28,7 @@ export interface CreatePropertyInput {
   };
   land?: LandDetails;
   flat?: FlatDetails;
+  villa?: VillaDetails;
   pricing: PricingDetails;
   mainImage: string;
   galleryImages?: string[];
@@ -74,8 +76,12 @@ export class PropertiesService {
       if (!input.flat.bedrooms || input.flat.bedrooms <= 0) {
         throw new Error('Number of bedrooms is required for Flat listings');
       }
+    } else if (input.type === 'VILLA') {
+      if (!input.villa || (!input.villa.builtUpAreaSqFt && !input.villa.plotAreaSqYards)) {
+        throw new Error('Built-up area or plot area is required for Villa listings');
+      }
     } else {
-      throw new Error('Invalid property type. Must be LAND or FLAT');
+      throw new Error('Invalid property type. Must be LAND, FLAT, or VILLA');
     }
 
     if (!input.mainImage) {
@@ -127,6 +133,7 @@ export class PropertiesService {
       },
       land: input.type === 'LAND' ? input.land : undefined,
       flat: input.type === 'FLAT' ? input.flat : undefined,
+      villa: input.type === 'VILLA' ? input.villa : undefined,
       pricing: input.pricing,
       mainImage: input.mainImage,
       galleryImages: input.galleryImages || [],
@@ -176,10 +183,11 @@ export class PropertiesService {
     page: number;
     limit: number;
   }> {
-    // Only search LIVE properties for public
+    // Only LIVE or SOLD properties can be searched publicly (default to LIVE)
+    const publicStatus = params.status === 'SOLD' ? 'SOLD' : 'LIVE';
     const { properties, total } = await db.searchProperties({
       ...params,
-      status: 'LIVE',
+      status: publicStatus,
     });
 
     const sanitizedList = await Promise.all(properties.map(sanitizePropertyForPublic));
@@ -240,8 +248,8 @@ export class PropertiesService {
       throw new Error('English description cannot be empty');
     }
 
-    if (updates.type !== undefined && !['LAND', 'FLAT'].includes(updates.type)) {
-      throw new Error('Property type must be LAND or FLAT');
+    if (updates.type !== undefined && !['LAND', 'FLAT', 'VILLA'].includes(updates.type)) {
+      throw new Error('Property type must be LAND, FLAT, or VILLA');
     }
 
     if (updates.pricing) {
@@ -277,6 +285,18 @@ export class PropertiesService {
       }
       if (updates.flat.sqft !== undefined && (typeof updates.flat.sqft !== 'number' || updates.flat.sqft <= 0)) {
         throw new Error('Sqft must be a positive number');
+      }
+    }
+
+    if (updates.villa) {
+      if (updates.villa.bedrooms !== undefined && (typeof updates.villa.bedrooms !== 'number' || updates.villa.bedrooms < 0)) {
+        throw new Error('Villa bedrooms cannot be negative');
+      }
+      if (updates.villa.builtUpAreaSqFt !== undefined && (typeof updates.villa.builtUpAreaSqFt !== 'number' || updates.villa.builtUpAreaSqFt <= 0)) {
+        throw new Error('Built-up area must be a positive number');
+      }
+      if (updates.villa.plotAreaSqYards !== undefined && (typeof updates.villa.plotAreaSqYards !== 'number' || updates.villa.plotAreaSqYards <= 0)) {
+        throw new Error('Plot area must be a positive number');
       }
     }
   }

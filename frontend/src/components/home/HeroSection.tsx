@@ -26,12 +26,14 @@ export default function HeroSection({ locale }: HeroSectionProps) {
   const isTe = locale === 'te';
 
   const [searchQuery, setSearchQuery] = useState('');
+  const [propertyStatus, setPropertyStatus] = useState('FOR_SALE');
   const [propertyType, setPropertyType] = useState('ALL');
 
   const handleSearchSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const params = new URLSearchParams();
     if (searchQuery.trim()) params.set('q', searchQuery.trim());
+    if (propertyStatus !== 'ALL') params.set('status', propertyStatus);
     if (propertyType !== 'ALL') params.set('type', propertyType);
     router.push(`/${locale}/properties?${params.toString()}`);
   };
@@ -91,24 +93,39 @@ export default function HeroSection({ locale }: HeroSectionProps) {
             <div className="pt-2">
               <form
                 onSubmit={handleSearchSubmit}
-                className="bg-white rounded-2xl p-2 sm:p-2.5 shadow-[0_8px_30px_-6px_rgba(25,21,18,0.08)] border border-[#E8E2D9] flex flex-col sm:flex-row items-center gap-2 transition-all hover:border-[#C5A880]/60"
+                className="bg-white rounded-2xl p-2 sm:p-2.5 shadow-[0_8px_30px_-6px_rgba(25,21,18,0.08)] border border-[#E8E2D9] flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all hover:border-[#C5A880]/60"
               >
-                {/* Property Type Dropdown */}
+                {/* Status Dropdown: For Sale vs Sold */}
+                <div className="w-full sm:w-36 shrink-0">
+                  <select
+                    value={propertyStatus}
+                    onChange={(e) => setPropertyStatus(e.target.value)}
+                    className="w-full h-12 px-3 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] text-xs font-semibold text-[#191512] focus:outline-none focus:ring-1 focus:ring-[#8C653E] cursor-pointer"
+                    aria-label="Property Status"
+                  >
+                    <option value="FOR_SALE">{dict.filters.forSale || (isTe ? 'అమ్మకానికి' : 'For Sale')}</option>
+                    <option value="SOLD">{dict.filters.sold || (isTe ? 'విక్రయించబడినవి' : 'Sold')}</option>
+                    <option value="ALL">{dict.filters.allStatuses || (isTe ? 'అన్ని స్థితులు' : 'All Statuses')}</option>
+                  </select>
+                </div>
+
+                {/* Property Type Dropdown: Apartments, Lands/Plots, Villas */}
                 <div className="w-full sm:w-44 shrink-0">
                   <select
                     value={propertyType}
                     onChange={(e) => setPropertyType(e.target.value)}
-                    className="w-full h-12 px-3.5 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] text-xs font-semibold text-[#191512] focus:outline-none focus:ring-1 focus:ring-[#8C653E] cursor-pointer"
+                    className="w-full h-12 px-3 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] text-xs font-semibold text-[#191512] focus:outline-none focus:ring-1 focus:ring-[#8C653E] cursor-pointer"
                     aria-label="Property Type"
                   >
                     <option value="ALL">{dict.filters.allTypes}</option>
-                    <option value="LAND">{dict.filters.land}</option>
-                    <option value="FLAT">{dict.filters.flat}</option>
+                    <option value="FLAT">{dict.nav.apartments || dict.filters.apartments || (isTe ? 'అపార్ట్‌మెంట్లు' : 'Apartments')}</option>
+                    <option value="LAND">{dict.nav.landsPlots || dict.filters.landsPlots || (isTe ? 'భూములు / ప్లాట్లు' : 'Lands / Plots')}</option>
+                    <option value="VILLA">{dict.nav.villas || dict.filters.villas || (isTe ? 'విల్లాలు' : 'Villas')}</option>
                   </select>
                 </div>
 
                 {/* Keyword Input */}
-                <div className="relative flex-1 w-full">
+                <div className="relative flex-1 w-full min-w-0">
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-[#8C827A]" />
                   <input
                     type="text"
@@ -126,7 +143,7 @@ export default function HeroSection({ locale }: HeroSectionProps) {
                 {/* Submit Button */}
                 <button
                   type="submit"
-                  className="w-full sm:w-auto h-12 px-7 rounded-xl bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] font-semibold text-xs tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] shrink-0 shadow-sm"
+                  className="w-full sm:w-auto h-12 px-6 rounded-xl bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] font-semibold text-xs tracking-widest uppercase transition-all duration-300 flex items-center justify-center gap-2 active:scale-[0.98] shrink-0 shadow-sm"
                 >
                   <span>{isTe ? 'వెతకండి' : 'Explore'}</span>
                   <ArrowRight className="w-3.5 h-3.5 text-[#C5A880]" />

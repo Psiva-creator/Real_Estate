@@ -31,7 +31,7 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
 
   const [properties, setProperties] = useState<MockProperty[]>(initialProperties || []);
   const [isLoading, setIsLoading] = useState(!initialProperties || initialProperties.length === 0);
-  const [activeFilter, setActiveFilter] = useState<'ALL' | 'LAND' | 'FLAT' | 'ORR'>('ALL');
+  const [activeFilter, setActiveFilter] = useState<'ALL' | 'FOR_SALE' | 'SOLD' | 'FLAT' | 'LAND' | 'VILLA'>('ALL');
   const [selectedVisitProperty, setSelectedVisitProperty] = useState<MockProperty | null>(null);
   const [visitSubmitted, setVisitSubmitted] = useState(false);
   const [buyerName, setBuyerName] = useState('');
@@ -70,13 +70,15 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
   }, [initialProperties]);
 
   const filteredProperties = properties.filter((prop) => {
-    if (activeFilter === 'LAND') return prop.type === 'LAND';
+    if (activeFilter === 'FOR_SALE') return prop.status !== 'SOLD';
+    if (activeFilter === 'SOLD') return prop.status === 'SOLD';
     if (activeFilter === 'FLAT') return prop.type === 'FLAT';
-    if (activeFilter === 'ORR') return prop.isOrrCorridor;
+    if (activeFilter === 'LAND') return prop.type === 'LAND';
+    if (activeFilter === 'VILLA') return prop.type === 'VILLA';
     return true;
   });
 
-  const leadProperty = filteredProperties[0] || MOCK_PROPERTIES[0];
+  const leadProperty = filteredProperties[0];
   const secondaryProperties = filteredProperties.slice(1, 5);
 
   const handleBookVisit = (property: MockProperty) => {
@@ -145,56 +147,78 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
           </div>
 
           {/* Filter Pills */}
-          <div className="flex flex-wrap items-center gap-2 p-1.5 bg-[#F5F1EA] rounded-full border border-[#E8E2D9] self-start lg:self-auto">
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 p-1.5 bg-[#F5F1EA] rounded-2xl sm:rounded-full border border-[#E8E2D9] self-start lg:self-auto">
             <button
               type="button"
               onClick={() => setActiveFilter('ALL')}
-              className={`px-5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
                 activeFilter === 'ALL'
                   ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
                   : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
-              {isTe ? 'అన్నీ' : 'All Listings'}
+              {isTe ? 'అన్నీ' : 'All'}
             </button>
             <button
               type="button"
-              onClick={() => setActiveFilter('LAND')}
-              className={`px-5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
-                activeFilter === 'LAND'
+              onClick={() => setActiveFilter('FOR_SALE')}
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
+                activeFilter === 'FOR_SALE'
                   ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
                   : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
-              {isTe ? 'భూములు / ప్లాట్లు' : 'Land & Plots'}
+              {dict.nav.forSale || (isTe ? 'అమ్మకానికి' : 'For Sale')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveFilter('SOLD')}
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
+                activeFilter === 'SOLD'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
+              }`}
+            >
+              {dict.nav.sold || (isTe ? 'విక్రయించబడినవి' : 'Sold')}
             </button>
             <button
               type="button"
               onClick={() => setActiveFilter('FLAT')}
-              className={`px-5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
                 activeFilter === 'FLAT'
                   ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
                   : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
-              {isTe ? 'అపార్ట్‌మెంట్లు' : 'Flats'}
+              {dict.nav.apartments || (isTe ? 'అపార్ట్‌మెంట్లు' : 'Apartments')}
             </button>
             <button
               type="button"
-              onClick={() => setActiveFilter('ORR')}
-              className={`px-5 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
-                activeFilter === 'ORR'
+              onClick={() => setActiveFilter('LAND')}
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
+                activeFilter === 'LAND'
                   ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
                   : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
-              {isTe ? 'ORR కారిడార్' : 'ORR Corridor'}
+              {dict.nav.landsPlots || (isTe ? 'భూములు / ప్లాట్లు' : 'Lands / Plots')}
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveFilter('VILLA')}
+              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all ${
+                activeFilter === 'VILLA'
+                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
+              }`}
+            >
+              {dict.nav.villas || (isTe ? 'విల్లాలు' : 'Villas')}
             </button>
           </div>
         </div>
 
         {/* ── 1. MAGAZINE HERO FEATURED LEAD PROPERTY ── */}
-        {leadProperty && (
+        {leadProperty ? (
           <div className="bg-white rounded-3xl border border-[#E8E2D9] overflow-hidden shadow-[0_12px_40px_-10px_rgba(25,21,18,0.06)] hover:border-[#8C653E]/40 transition-all duration-300">
             <div className="grid grid-cols-1 lg:grid-cols-12 items-stretch">
               
@@ -209,6 +233,11 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
 
                 {/* Top Floating Badges */}
                 <div className="absolute top-5 left-5 flex flex-wrap gap-2">
+                  {leadProperty.status === 'SOLD' && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-amber-950/90 backdrop-blur-md text-amber-200 text-[11px] font-bold tracking-wider uppercase border border-amber-600/50">
+                      <span>{isTe ? 'విక్రయించబడినది' : 'Sold Property'}</span>
+                    </span>
+                  )}
                   <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F5]/95 backdrop-blur-md text-[#191512] text-[11px] font-semibold border border-[#E8E2D9]">
                     <ShieldCheck className="w-3.5 h-3.5 text-[#8C653E]" />
                     <span>{leadProperty.verifiedDocsCount}/{leadProperty.totalDocsRequired} Legal Gates Passed</span>
@@ -234,7 +263,11 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <span className="text-[11px] font-mono uppercase tracking-[0.2em] text-[#8C653E] font-bold">
-                      {leadProperty.type === 'LAND' ? 'Verified Land Parcel' : 'Architectural Sky Residence'}
+                      {leadProperty.type === 'LAND'
+                        ? (isTe ? 'ధృవీకరించబడిన భూమి' : 'Verified Land Parcel')
+                        : leadProperty.type === 'VILLA'
+                        ? (isTe ? 'లగ్జరీ విల్లా' : 'Architectural Luxury Villa')
+                        : (isTe ? 'ఆర్కిటెక్చరల్ అపార్ట్‌మెంట్' : 'Architectural Sky Residence')}
                     </span>
                     <span className="text-xs font-mono text-[#8C827A]">
                       ID: {leadProperty.id}
@@ -267,6 +300,10 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
                           ? leadProperty.land?.totalAcres
                             ? `${leadProperty.land.totalAcres} Acres`
                             : `${leadProperty.land?.sqYards} Sq.Yards`
+                          : leadProperty.type === 'VILLA'
+                          ? leadProperty.villa?.builtUpAreaSqFt
+                            ? `${leadProperty.villa.builtUpAreaSqFt} Sq.Ft`
+                            : `${leadProperty.villa?.plotAreaSqYards} Sq.Yds`
                           : `${leadProperty.flat?.sqft} Sq.Ft`}
                       </span>
                     </div>
@@ -294,13 +331,22 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
                   </div>
 
                   <div className="flex flex-col sm:flex-row gap-3">
-                    <button
-                      type="button"
-                      onClick={() => handleBookVisit(leadProperty)}
-                      className="flex-1 py-3.5 px-6 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] font-semibold text-xs tracking-wider uppercase transition-all text-center shadow-sm"
-                    >
-                      {isTe ? 'సైట్ విజిట్ బుక్ చేయండి' : 'Schedule Private Visit'}
-                    </button>
+                    {leadProperty.status === 'SOLD' ? (
+                      <Link
+                        href={`/${locale}/properties/${leadProperty.id}`}
+                        className="flex-1 py-3.5 px-6 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] font-semibold text-xs tracking-wider uppercase transition-all text-center shadow-sm"
+                      >
+                        {dict.propertyDetail.inquireSimilar || (isTe ? 'ఇలాంటివి విచారించండి' : 'Inquire Similar Properties')}
+                      </Link>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={() => handleBookVisit(leadProperty)}
+                        className="flex-1 py-3.5 px-6 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] font-semibold text-xs tracking-wider uppercase transition-all text-center shadow-sm"
+                      >
+                        {isTe ? 'సైట్ విజిట్ బుక్ చేయండి' : 'Schedule Private Visit'}
+                      </button>
+                    )}
                     <Link
                       href={`/${locale}/properties/${leadProperty.id}`}
                       className="py-3.5 px-6 rounded-full bg-[#FAF8F5] hover:bg-[#EFE9E0] text-[#191512] border border-[#E8E2D9] font-semibold text-xs tracking-wider uppercase transition-all text-center"
@@ -314,9 +360,27 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
 
             </div>
           </div>
+        ) : (
+          <div className="p-12 text-center bg-white rounded-3xl border border-[#E8E2D9] space-y-4">
+            <h3 className="font-serif text-xl font-bold text-[#191512]">
+              {isTe ? 'ఈ కేటగిరీలో ప్రస్తుతం లిస్టింగ్‌లు లేవు' : 'No properties match this filter'}
+            </h3>
+            <p className="text-xs text-[#574F48] max-w-md mx-auto">
+              {isTe
+                ? 'దయచేసి అన్ని లిస్టింగ్‌లను చూడండి లేదా మా పూర్తి పోర్ట్‌ఫోలియోను అన్వేషించండి.'
+                : 'View all verified properties or explore other categories.'}
+            </p>
+            <button
+              type="button"
+              onClick={() => setActiveFilter('ALL')}
+              className="px-6 py-2.5 rounded-full bg-[#191512] text-white text-xs font-semibold uppercase tracking-wider hover:bg-[#8C653E] transition-colors"
+            >
+              {isTe ? 'అన్ని లిస్టింగ్‌లు చూడండి' : 'View All Listings'}
+            </button>
+          </div>
         )}
 
-        {/* ── 2. SECONDARY ASYMMETRICAL MAGAZINE PROPERTY GRID ── */}
+        {/* ── 2. SECONDARY FEATURED PROPERTIES GRID (4 cols) ── */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           {secondaryProperties.map((property) => (
             <div
@@ -331,7 +395,12 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
                     alt={property.title}
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                   />
-                  <div className="absolute top-3 left-3">
+                  <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
+                    {property.status === 'SOLD' && (
+                      <span className="px-2.5 py-0.5 rounded-full bg-amber-950/90 backdrop-blur-sm text-[9px] font-bold uppercase text-amber-200 border border-amber-600/40">
+                        {isTe ? 'విక్రయించబడింది' : 'Sold'}
+                      </span>
+                    )}
                     <span className="px-2.5 py-1 rounded-full bg-[#FAF8F5]/90 backdrop-blur-sm text-[10px] font-mono font-semibold uppercase text-[#191512] border border-[#E8E2D9]">
                       {property.type}
                     </span>
@@ -367,13 +436,22 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
 
               {/* Card Footer Actions */}
               <div className="p-5 pt-0 border-t border-[#E8E2D9]/60 mt-4 flex items-center justify-between gap-2">
-                <button
-                  type="button"
-                  onClick={() => handleBookVisit(property)}
-                  className="text-xs font-semibold uppercase tracking-wider text-[#8C653E] hover:text-[#191512] transition-colors"
-                >
-                  {isTe ? 'విజిట్ షెడ్యూల్' : 'Book Visit'}
-                </button>
+                {property.status === 'SOLD' ? (
+                  <Link
+                    href={`/${locale}/properties/${property.id}`}
+                    className="text-xs font-semibold uppercase tracking-wider text-[#8C653E] hover:text-[#191512] transition-colors"
+                  >
+                    {isTe ? 'వివరాలు' : 'Details'}
+                  </Link>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => handleBookVisit(property)}
+                    className="text-xs font-semibold uppercase tracking-wider text-[#8C653E] hover:text-[#191512] transition-colors"
+                  >
+                    {isTe ? 'విజిట్ షెడ్యూల్' : 'Book Visit'}
+                  </button>
+                )}
                 <Link
                   href={`/${locale}/properties/${property.id}`}
                   className="w-8 h-8 rounded-full bg-[#FAF8F5] border border-[#E8E2D9] flex items-center justify-center text-[#191512] group-hover:bg-[#191512] group-hover:text-white transition-colors"

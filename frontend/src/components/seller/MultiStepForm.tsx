@@ -148,6 +148,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           if (!formData.surveyNumbers.trim()) {
             newErrors.surveyNumbers = isTe ? 'సర్వే నంబర్లు తప్పనిసరి' : 'Survey number(s) required';
           }
+        } else if (formData.propertyType === 'VILLA') {
+          if (!formData.builtUpAreaSqFt.trim() && !formData.plotAreaSqYards.trim()) {
+            newErrors.builtUpAreaSqFt = isTe ? 'విస్తీర్ణం నమోదు చేయండి' : 'Built-up area or plot area required';
+          }
         } else {
           if (!formData.sqft.trim() || isNaN(Number(formData.sqft))) {
             newErrors.sqft = isTe ? 'నిర్మాణ విస్తీర్ణం తప్పనిసరి' : 'Built-up sq.ft required';
@@ -270,6 +274,30 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         };
       }
 
+      // Villa specifics mapping
+      let villaPayload: CreatePropertyDTO['villa'] = undefined;
+      if (formData.propertyType === 'VILLA') {
+        const amenitiesArr = formData.amenities
+          ? formData.amenities
+              .split(/[,;]+/)
+              .map((s) => s.trim())
+              .filter(Boolean)
+          : [];
+
+        villaPayload = {
+          plotAreaSqYards: formData.plotAreaSqYards ? parseFloat(formData.plotAreaSqYards) : 250,
+          builtUpAreaSqFt: formData.builtUpAreaSqFt ? parseFloat(formData.builtUpAreaSqFt) : 3200,
+          configuration: formData.configuration || '4 BHK Triplex',
+          floors: formData.floors || 'G+2',
+          facing: formData.facing || 'East',
+          communityName: formData.communityName || undefined,
+          gatedCommunity: formData.gatedCommunity,
+          bedrooms: formData.bedrooms ? parseInt(formData.bedrooms, 10) : 4,
+          bathrooms: formData.bathrooms ? parseInt(formData.bathrooms, 10) : 4,
+          amenities: amenitiesArr,
+        };
+      }
+
       // Pricing details mapping
       const pricingPayload: CreatePropertyDTO['pricing'] = {
         totalPrice: totalPriceNum,
@@ -283,6 +311,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       const mainImage =
         formData.propertyType === 'LAND'
           ? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
+          : formData.propertyType === 'VILLA'
+          ? 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80'
           : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80';
 
       const payload: CreatePropertyDTO = {
@@ -306,6 +336,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         },
         land: landPayload,
         flat: flatPayload,
+        villa: villaPayload,
         pricing: pricingPayload,
         mainImage,
       };
@@ -519,7 +550,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Land Card */}
               <button
                 type="button"
@@ -576,6 +607,38 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </h3>
                   <p className="text-xs text-slate-600 mt-1">
                     {sfDict.typeSelection.flatDesc}
+                  </p>
+                </div>
+              </button>
+
+              {/* Villa Card */}
+              <button
+                type="button"
+                onClick={() => updateField('propertyType', 'VILLA')}
+                className={`p-5 rounded-2xl border-2 text-left transition-all tap-target flex flex-col justify-between space-y-4 ${
+                  formData.propertyType === 'VILLA'
+                    ? 'border-emerald-700 bg-emerald-50/50 shadow-md ring-2 ring-emerald-600/20'
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center">
+                    <Building className="w-6 h-6" />
+                  </div>
+                  {formData.propertyType === 'VILLA' && (
+                    <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    {isTe ? 'లగ్జరీ విల్లా' : 'Luxury Villa'}
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1">
+                    {isTe
+                      ? 'గేటెడ్ కమ్యూనిటీ లేదా ఇండిపెండెంట్ లగ్జరీ విల్లా (డూప్లెక్స్/ట్రిప్లెక్స్)'
+                      : 'Independent or gated community luxury villa (Duplex/Triplex)'}
                   </p>
                 </div>
               </button>
@@ -771,6 +834,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
                 {formData.propertyType === 'LAND'
                   ? sfDict.details.headingLand
+                  : formData.propertyType === 'VILLA'
+                  ? (isTe ? 'విల్లా వివరాలు & స్పెసిఫికేషన్లు' : 'Villa Details & Specifications')
                   : sfDict.details.headingFlat}
               </h2>
               <p className="text-xs sm:text-sm text-slate-600">
@@ -1006,6 +1071,162 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     value={formData.amenities}
                     onChange={(e) => updateField('amenities', e.target.value)}
                     placeholder={sfDict.details.amenitiesPlaceholder}
+                    className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  />
+                </div>
+              </div>
+            )}
+
+            {/* Villa Specs */}
+            {formData.propertyType === 'VILLA' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'ప్లాట్ ఏరియా (చదరపు గజాలు)' : 'Plot Area (Sq. Yards)'} *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.plotAreaSqYards}
+                      onChange={(e) => updateField('plotAreaSqYards', e.target.value)}
+                      placeholder="e.g. 250"
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'నిర్మాణ విస్తీర్ణం (sq.ft)' : 'Built-up Area (sq.ft)'} *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.builtUpAreaSqFt}
+                      onChange={(e) => updateField('builtUpAreaSqFt', e.target.value)}
+                      placeholder="e.g. 3500"
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
+                        errors.builtUpAreaSqFt ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                      }`}
+                    />
+                    {errors.builtUpAreaSqFt && (
+                      <p className="text-xs text-rose-600 mt-1">{errors.builtUpAreaSqFt}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'కాన్ఫిగరేషన్' : 'Configuration'}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.configuration}
+                      onChange={(e) => updateField('configuration', e.target.value)}
+                      placeholder="e.g. 4 BHK Triplex"
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {sfDict.details.bedroomsLabel}
+                    </label>
+                    <select
+                      value={formData.bedrooms}
+                      onChange={(e) => updateField('bedrooms', e.target.value)}
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    >
+                      <option value="3">3 BHK</option>
+                      <option value="4">4 BHK</option>
+                      <option value="5">5 BHK</option>
+                      <option value="6">6+ BHK</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {sfDict.details.bathroomsLabel}
+                    </label>
+                    <select
+                      value={formData.bathrooms}
+                      onChange={(e) => updateField('bathrooms', e.target.value)}
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    >
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6+</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'అంతస్తులు' : 'Floors'}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.floors}
+                      onChange={(e) => updateField('floors', e.target.value)}
+                      placeholder="e.g. G+2"
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'ఫేసింగ్' : 'Facing'}
+                    </label>
+                    <select
+                      value={formData.facing}
+                      onChange={(e) => updateField('facing', e.target.value as 'EAST' | 'WEST' | 'NORTH' | 'SOUTH' | '')}
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    >
+                      <option value="EAST">{isTe ? 'తూర్పు (East)' : 'East'}</option>
+                      <option value="WEST">{isTe ? 'పడమర (West)' : 'West'}</option>
+                      <option value="NORTH">{isTe ? 'ఉత్తరం (North)' : 'North'}</option>
+                      <option value="SOUTH">{isTe ? 'దక్షిణం (South)' : 'South'}</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'కమ్యూనిటీ / గేటెడ్ లేఅవుట్ పేరు' : 'Community / Project Name'}
+                    </label>
+                    <input
+                      type="text"
+                      value={formData.communityName}
+                      onChange={(e) => updateField('communityName', e.target.value)}
+                      placeholder="e.g. Prestige Glenwood, Boulder Hills"
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    />
+                  </div>
+
+                  <div className="flex items-center pt-6">
+                    <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer w-full">
+                      <input
+                        type="checkbox"
+                        checked={formData.gatedCommunity}
+                        onChange={(e) => updateField('gatedCommunity', e.target.checked)}
+                        className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                      />
+                      <span className="text-xs font-medium text-slate-700">
+                        {isTe ? 'గేటెడ్ కమ్యూనిటీ విల్లా (24/7 సెక్యూరిటీ & క్లబ్‌హౌస్)' : 'Gated Community Villa (24/7 Security & Club House)'}
+                      </span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    {sfDict.details.amenitiesLabel}
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.amenities}
+                    onChange={(e) => updateField('amenities', e.target.value)}
+                    placeholder={isTe ? 'ఉదా. ప్రైవేట్ గార్డెన్, క్లబ్‌హౌస్, స్విమ్మింగ్ పూల్, పవర్ బ్యాకప్' : 'e.g. Private Lawn, Swimming Pool, 100% Power Backup, Clubhouse'}
                     className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
                 </div>
@@ -1312,6 +1533,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     <p>
                       <span className="font-semibold text-slate-700">Acreage:</span> {formData.totalAcres} Acres{' '}
                       {formData.guntas ? `(${formData.guntas} Guntas)` : ''}
+                    </p>
+                  ) : formData.propertyType === 'VILLA' ? (
+                    <p>
+                      <span className="font-semibold text-slate-700">Configuration:</span> {formData.configuration || `${formData.bedrooms} BHK`} ({formData.builtUpAreaSqFt} sq.ft / {formData.plotAreaSqYards} sq.yd)
                     </p>
                   ) : (
                     <p>

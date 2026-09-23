@@ -1,7 +1,7 @@
 import { db } from '../database.js';
 import { hashPassword } from '../../middleware/auth.js';
 import { ALL_13_DOCS } from '../../middleware/security.js';
-import { User, Owner, Property, UserRole, PropertyStatus } from '../../types/index.js';
+import { User, Owner, Property, UserRole, PropertyStatus, PropertyType } from '../../types/index.js';
 
 async function upsertUser(data: {
   id?: string;
@@ -75,7 +75,7 @@ async function upsertOwner(data: {
 async function upsertProperty(data: {
   id?: string;
   sellerId: string;
-  type: 'LAND' | 'FLAT';
+  type: PropertyType;
   status: PropertyStatus;
   titleEn: string;
   titleTe?: string;
@@ -84,11 +84,35 @@ async function upsertProperty(data: {
   location: any;
   land?: any;
   flat?: any;
+  villa?: any;
   pricing: any;
   mainImage: string;
   galleryImages?: string[];
   sitePlanImage?: string;
   isFeatured?: boolean;
+  projectHighlights?: string[];
+  locationHighlights?: string[];
+  bankApprovals?: string[];
+  externalLinks?: {
+    projectLink?: string;
+    mapLink?: string;
+    website?: string;
+  };
+  specialAttractions?: string[];
+  discrepancyNotes?: string[];
+  paymentTerms?: string[];
+  inventory?: Array<{
+    unitNumber: string;
+    facing: string;
+    plotAreaSqYards?: number;
+    builtUpAreaSqFt?: number;
+    status: string;
+  }>;
+  bookingAmount?: number;
+  monthlyInstallment?: number;
+  tenureMonths?: number;
+  promotedBy?: string;
+  reraNumber?: string;
 }): Promise<Property> {
   const allProps = await db.listAllProperties();
   let existing: Property | undefined = allProps.find((p) => p.titleEn === data.titleEn);
@@ -98,20 +122,8 @@ async function upsertProperty(data: {
   }
   if (existing) {
     const updated = await db.updateProperty(existing.id, {
-      sellerId: data.sellerId,
-      type: data.type,
-      status: data.status,
-      titleEn: data.titleEn,
-      titleTe: data.titleTe,
-      descriptionEn: data.descriptionEn,
-      descriptionTe: data.descriptionTe,
-      location: data.location,
-      land: data.land,
-      flat: data.flat,
-      pricing: data.pricing,
-      mainImage: data.mainImage,
+      ...data,
       galleryImages: data.galleryImages || [],
-      sitePlanImage: data.sitePlanImage,
       isFeatured: data.isFeatured ?? false,
     });
     return updated ?? existing;
@@ -241,6 +253,29 @@ export async function runSeeds() {
     aadharNumber: '670134567890',
     propertiesCount: 2,
     dealsCompleted: 4,
+    rating: 5.0,
+  });
+
+  const nskUser = await upsertUser({
+    name: 'NSK Group LLP',
+    email: 'contact@nskgroupllp.com',
+    phone: '+919392559013',
+    whatsapp: '+919392559013',
+    passwordHash,
+    role: 'SELLER',
+    isActive: true,
+  });
+
+  const nskSeller = await upsertOwner({
+    id: 'b5dfe5ab-939e-4ae5-93d7-2154fd864f99',
+    userId: nskUser.id,
+    name: 'NSK Group LLP',
+    phone: '+919392559013',
+    whatsapp: '+919392559013',
+    email: 'contact@nskgroupllp.com',
+    aadharNumber: '999900001111',
+    propertiesCount: 1,
+    dealsCompleted: 1,
     rating: 5.0,
   });
 
@@ -499,7 +534,393 @@ export async function runSeeds() {
     isFeatured: false,
   });
 
-  // 5. Create / Upsert Exactly 78 Property Documents (13 per property)
+  // 4a. Real Project 1: Lotus Manapolam Lucky Plots (Narayankhed)
+  const propLotusId = '10101010-1010-4010-8010-101010101010';
+  const propLotus = await upsertProperty({
+    id: propLotusId,
+    sellerId: seller1.id,
+    type: 'LAND',
+    status: 'LIVE',
+    titleEn: 'Lotus Manapolam Lucky Plots – Narayankhed',
+    titleTe: 'లోటస్ మనపొలం లక్కీ ప్లాట్స్ – నారాయణఖేడ్',
+    descriptionEn:
+      'Lotus Manapolam Lucky Plots in Abendha Village, Narayankhed Mandal, Sangareddy District (Sy No 120/5 part). 121 Sq. Yards plots with 30 feet road layout, fruit plantation, 3 years free maintenance, and monthly lucky draw opportunity.',
+    descriptionTe:
+      'సంగారెడ్డి జిల్లా నారాయణఖేడ్ మండలం అభేంద గ్రామంలో లోటస్ మనపొలం లక్కీ ప్లాట్స్ (సర్వే నెం 120/5 పార్ట్). 121 గజాల ప్లాట్లు, 30 అడుగుల రోడ్లు, పండ్ల తోటలు, 3 సంవత్సరాల ఉచిత నిర్వహణ మరియు నెలవారీ లక్కీ డ్రా అవకాశం.',
+    location: {
+      district: 'Sangareddy',
+      mandal: 'Narayankhed',
+      village: 'Abendha',
+      zone: 'Residential Layout',
+      tier: 'TIER_3',
+    },
+    land: {
+      sqYards: 121,
+      surveyNumbers: ['120/5 part'],
+      developmentLevel: 'VENTURE_READY',
+      roadWidthFt: 30,
+    },
+    pricing: {
+      totalPrice: 200000,
+      isNegotiable: false,
+    },
+    mainImage: '/images/properties/lotus-manapolam/poster.jpeg',
+    galleryImages: ['/images/properties/lotus-manapolam/layout-plan.png'],
+    sitePlanImage: '/images/properties/lotus-manapolam/layout-plan.png',
+    isFeatured: false,
+    monthlyInstallment: 9999,
+    tenureMonths: 20,
+    specialAttractions: [
+      'Lucky draw opportunity – each group consists of 100 members',
+      'NOTE (discrepancy): One source states draw months are from 4th to 20th month; another source states 4th to 19th month. Both noted for transparency.',
+      'Free dinner set on every plot booking',
+      'Fruit plantation',
+      '3 years free maintenance',
+    ],
+    discrepancyNotes: [
+      'Source text states a chance to win 1 free plot every month from the 4th month to the 20th month; another source note states draw months are from the 4th to the 19th month.',
+    ],
+    paymentTerms: [
+      'Total Price: ₹2,00,000',
+      'Monthly installment: ₹9,999 for 20 months',
+      'Monthly payment by/before the 10th',
+      'Monthly draw on the 15th',
+      'Terms and conditions apply',
+    ],
+    projectHighlights: [
+      'Plot Area: 121 Sq. Yards',
+      'Sy No 120/5 part, Abendha Village, Narayankhed Mandal, Sangareddy District',
+      '30 feet road layout',
+      'Project amenities including site office, swimming pool, park and plantation areas',
+    ],
+  });
+
+  // 4b. Real Project 2: NIMZ Siri Kshetram (Narayankhed)
+  const propNimzId = '20202020-2020-4020-8020-202020202020';
+  const propNimz = await upsertProperty({
+    id: propNimzId,
+    sellerId: nskSeller.id,
+    type: 'LAND',
+    status: 'LIVE',
+    titleEn: 'NIMZ Siri Kshetram – Narayankhed',
+    titleTe: 'నిమ్జ్ సిరి క్షేత్రం – నారాయణఖేడ్',
+    descriptionEn:
+      'NIMZ Siri Kshetram, a 99-acre mega venture in Narayankhed promoted by NSK Group LLP. Featuring plot options of 100 Sq. Yards and 1 Gunta, jackfruit plantation, customized capsule houses, and flexible EMI payment options.',
+    descriptionTe:
+      'నారాయణఖేడ్‌లో ఎన్‌ఎస్‌కే గ్రూప్ ఎల్‌ఎల్‌పి వారి 99 ఎకరాల మెగా వెంచర్ నిమ్జ్ సిరి క్షేత్రం. 100 గజాలు మరియు 1 గుంట ప్లాట్ ఆప్షన్లు, పనస తోటలు, కస్టమైజ్డ్ క్యాప్సూల్ హౌస్‌లు మరియు సులభ ఈఎమ్‌ఐ చెల్లింపు అవకాశాలు.',
+    promotedBy: 'NSK Group LLP',
+    location: {
+      district: 'Sangareddy',
+      mandal: 'Narayankhed',
+      village: 'Narayankhed',
+      zone: 'Agro Residential Layout',
+      tier: 'TIER_3',
+    },
+    land: {
+      totalAcres: 99,
+      developmentLevel: 'PARTIALLY_DEVELOPED',
+      surveyNumbers: [],
+    },
+    pricing: {
+      totalPrice: 0,
+      isNegotiable: true,
+    },
+    mainImage: '/images/properties/nimz-siri-kshetram/poster.jpeg',
+    galleryImages: [
+      '/images/properties/nimz-siri-kshetram/photo-1.jpeg',
+      '/images/properties/nimz-siri-kshetram/photo-2.jpeg',
+      '/images/properties/nimz-siri-kshetram/photo-3.jpeg',
+      '/images/properties/nimz-siri-kshetram/photo-4.jpeg',
+    ],
+    isFeatured: false,
+    projectHighlights: [
+      'Project Size: 99 Acres',
+      'Plot options: 100 Sq. Yards / 1 Gunta',
+      'Promoted by NSK Group LLP',
+      'Jackfruit plantation',
+      'Customized capsule houses',
+      'EMI / payment options mentioned',
+    ],
+    discrepancyNotes: [
+      'Supplied promotional material contains conflicting price information. Exact price not disclosed.',
+    ],
+    paymentTerms: ['EMI / payment options mentioned'],
+  });
+
+  // 4c. Real Project 3: Vasu Sri Pride (Gandimaisamma)
+  const propVspId = '30303030-3030-4030-8030-303030303030';
+  const propVsp = await upsertProperty({
+    id: propVspId,
+    sellerId: seller2.id,
+    type: 'FLAT',
+    status: 'LIVE',
+    titleEn: 'Vasu Sri Pride – Gandimaisamma, Hyderabad',
+    titleTe: 'వాసు శ్రీ ప్రైడ్ – గండిమైసమ్మ, హైదరాబాద్',
+    descriptionEn:
+      'Vasu Sri Pride in Gandimaisamma, Hyderabad. TS RERA Approved (Registration No.: P02200005287), Ready to Move (RTM) 2 & 3 BHK apartments at ₹4,799 per Sft across 5.5 Acres with 330 flats, 2 commercial & 3 residential blocks, 2-level car parking, and premier bank approvals.',
+    descriptionTe:
+      'హైదరాబాద్ గండిమైసమ్మలో వాసు శ్రీ ప్రైడ్. TS RERA ఆమోదం (రిజిస్ట్రేషన్ నెం: P02200005287), రెడీ టు మూవ్ (RTM) 2 & 3 BHK ఫ్లాట్లు. చ.అ.కు ₹4,799. 5.5 ఎకరాల్లో 330 ఫ్లాట్లు, 2 కమర్షియల్ & 3 రెసిడెన్షియల్ బ్లాకులు, 2 స్థాయిల కార్ పార్కింగ్ మరియు ప్రముఖ బ్యాంకుల ఆమోదం.',
+    reraNumber: 'P02200005287',
+    location: {
+      district: 'Medchal-Malkajgiri',
+      mandal: 'Balanagar',
+      village: 'Gandimaisamma',
+      zone: 'Residential',
+      tier: 'TIER_2',
+    },
+    flat: {
+      sqft: 1175,
+      bedrooms: 2,
+      bathrooms: 2,
+      floor: 1,
+      totalFloors: 7,
+      possessionStatus: 'READY_TO_MOVE',
+      amenities: [
+        '2 BHK: 1175 Sft, 1235 Sft',
+        '3 BHK: 1380 Sft, 1575 Sft, 1605 Sft',
+        '2-level car parking',
+        '100% Vaastu compliant claim',
+        'Well ventilated flats',
+        '2 Commercial Blocks & 3 Residential Blocks',
+        '330 Flats across 5.5 Acres',
+      ],
+    },
+    pricing: {
+      totalPrice: 5638825,
+      pricePerSqft: 4799,
+      isNegotiable: false,
+    },
+    mainImage: '/images/properties/vasu-sri-pride/poster.jpeg',
+    galleryImages: [
+      '/images/properties/vasu-sri-pride/photo-1.jpeg',
+      '/images/properties/vasu-sri-pride/photo-2.jpeg',
+      '/images/properties/vasu-sri-pride/photo-3.jpeg',
+      '/images/properties/vasu-sri-pride/photo-4.jpeg',
+      '/images/properties/vasu-sri-pride/photo-5.jpeg',
+      '/images/properties/vasu-sri-pride/photo-6.jpeg',
+      '/images/properties/vasu-sri-pride/photo-7.jpeg',
+      '/images/properties/vasu-sri-pride/photo-8.jpeg',
+      '/images/properties/vasu-sri-pride/photo-9.jpeg',
+      '/images/properties/vasu-sri-pride/photo-10.jpeg',
+      '/images/properties/vasu-sri-pride/floor-plan-ab.png',
+      '/images/properties/vasu-sri-pride/floor-plan-c.png',
+    ],
+    isFeatured: true,
+    projectHighlights: [
+      '5.5 Acres',
+      '330 Flats',
+      '2 Commercial Blocks',
+      '3 Residential Blocks',
+      'Well ventilated flats',
+      '100% Vaastu compliant claim',
+      '2-level car parking',
+      '2 BHK: 1175 Sft, 1235 Sft',
+      '3 BHK: 1380 Sft, 1575 Sft, 1605 Sft',
+      'Possession: Ready to Move (RTM)',
+      'Price: ₹4,799 per Sft',
+      '2 Cellar + Ground + 5 floors proposal (Block A & B, Block C)',
+    ],
+    locationHighlights: [
+      'About 20 minutes drive from Gachibowli / Financial District',
+      'Near IARE, MRIT and HITAM Engineering Colleges',
+      'Close to ORR',
+      'Near pharma hubs',
+    ],
+    bankApprovals: ['PNB', 'HDFC', 'LIC', 'SBI', 'CANARA'],
+    externalLinks: {
+      projectLink: 'http://bit.ly/3XZlhvM',
+      mapLink: 'http://bit.ly/3F63yds',
+    },
+  });
+
+  // 4d. Real Project 4: Krishna's Arena (Masjid Banda, Kondapur)
+  const propKaId = '40404040-4040-4040-8040-404040404040';
+  const propKa = await upsertProperty({
+    id: propKaId,
+    sellerId: seller1.id,
+    type: 'FLAT',
+    status: 'LIVE',
+    titleEn: "Krishna's Arena – Masjid Banda, Kondapur, Hyderabad",
+    titleTe: 'కృష్ణాస్ ఎరీనా – మసీద్ బండ, కొండాపూర్, హైదరాబాద్',
+    descriptionEn:
+      "Krishna's Arena in Masjid Banda, Kondapur, Hyderabad. Premium & luxurious green limited-edition 4 BHK apartments on 4000 Square Yards. Single tower with 2 Cellars + Stilt + 17 Floors, 64 corner 4 BHK units (2995 Sft to 3247 Sft), and comprehensive indoor and outdoor lifestyle amenities with G+1 Clubhouse.",
+    descriptionTe:
+      'కొండాపూర్ మసీద్ బండలో కృష్ణాస్ ఎరీనా. 4000 చదరపు గజాలలో ప్రీమియం లిమిటెడ్-ఎడిషన్ 4 BHK అపార్ట్‌మెంట్లు. సింగిల్ టవర్ (2 సెల్లార్లు + స్టిల్ట్ + 17 అంతస్తులు), 64 కార్నర్ 4 BHK యూనిట్లు (2995 Sft నుండి 3247 Sft) మరియు G+1 క్లబ్‌హౌస్.',
+    location: {
+      district: 'Rangareddy',
+      mandal: 'Serilingampally',
+      village: 'Masjid Banda',
+      zone: 'Premium Residential',
+      tier: 'TIER_1',
+    },
+    flat: {
+      sqft: 3121,
+      bedrooms: 4,
+      bathrooms: 4,
+      floor: 9,
+      totalFloors: 17,
+      possessionStatus: 'UNDER_CONSTRUCTION',
+      amenities: [
+        'Reception',
+        'Lounge',
+        'Multipurpose Hall',
+        'Indoor Games',
+        'Mini Theatre',
+        'Fully Equipped AC Gym',
+        'Couple of Guest Rooms',
+        'Swimming Pool',
+        'Kids Pool',
+        'Terrace Seating Deck',
+        'Barbeque Lawn',
+        'Party Area',
+        'Open Gym',
+        'Badminton Court',
+        'Yoga Deck',
+        'Climbing Wall',
+        'Elders Seating Zones',
+        'Jogging Track',
+        "Children's Play Area",
+        'Toddler Play Area',
+        'Half Basketball Court',
+        'Outdoor Gym',
+        'Amphitheater',
+        '24/7 Security Services',
+        'CCTV Surveillance',
+        'Boundary Avenue Planting',
+        'Reflexology Zone',
+        'Centralized Gas Bank',
+        'EV Charging Stations',
+        'Seating Areas & Work Pots',
+        'Solar Power',
+        'Rainwater Harvesting',
+        'Grid Planting',
+        'Sandpit',
+        'Car Wash',
+      ],
+    },
+    pricing: {
+      totalPrice: 0,
+      isNegotiable: true,
+    },
+    mainImage: '/images/property-placeholder.svg',
+    galleryImages: [],
+    isFeatured: false,
+    projectHighlights: [
+      'Premium & luxurious green limited-edition 4 BHK apartments',
+      '4000 Square Yards',
+      'Single tower',
+      '2 Cellars + Stilt + 17 Floors',
+      '64 corner 4 BHK units',
+      'Unit sizes: 2995 Sft to 3247 Sft',
+      'G+1 Club House',
+    ],
+    externalLinks: {
+      website: 'https://www.krishnasarena.in',
+    },
+    discrepancyNotes: [
+      'Price, RERA details, and coordinates are not disclosed in initial promotional material.',
+    ],
+  });
+
+  // 4e. Real Project 5: Kaakatiya Golden Meadows (Indresham, Patancheru)
+  const propKgmId = '50505050-5050-4050-8050-505050505050';
+  const propKgm = await upsertProperty({
+    id: propKgmId,
+    sellerId: seller2.id,
+    type: 'VILLA',
+    status: 'LIVE',
+    titleEn: 'Kaakatiya Golden Meadows – Indresham, Patancheru',
+    titleTe: 'కాకతీయ గోల్డెన్ మెడోస్ – ఇంద్రేశం, పటాన్‌చెరు',
+    descriptionEn:
+      'Kaakatiya Golden Meadows in Indresham, Patancheru. 1 Acre project with 20 exclusive G+2 3 BHK villas (East & West facing). Plot size 150 Sq. Yards, built-up area 2140–2250 Sft. Ready to Move, ₹1.40 Cr onwards with ₹5 Lakhs booking amount.',
+    descriptionTe:
+      'పటాన్‌చెరు ఇంద్రేశంలో కాకతీయ గోల్డెన్ మెడోస్. 1 ఎకరంలో 20 ప్రత్యేక G+2 3 BHK విల్లాలు (తూర్పు మరియు పడమర ముఖంగా). 150 గజాల ప్లాట్, 2140–2250 Sft బిల్ట్-అప్ ఏరియా. రెడీ టు మూవ్, ₹1.40 కోట్లు నుండి, బుకింగ్ మొత్తం ₹5 లక్షలు.',
+    location: {
+      district: 'Sangareddy',
+      mandal: 'Patancheru',
+      village: 'Indresham',
+      distanceFromOrrKm: 3.5,
+      zone: 'Gated Villa Community',
+      tier: 'TIER_2',
+    },
+    pricing: {
+      totalPrice: 14000000,
+      pricePerSqft: 6378,
+      isNegotiable: false,
+    },
+    villa: {
+      plotAreaSqYards: 150,
+      builtUpAreaSqFt: 2195,
+      configuration: '3 BHK G+2',
+      floors: 'G+2',
+      facing: 'EAST',
+      communityName: 'Kaakatiya Golden Meadows',
+      gatedCommunity: true,
+      bedrooms: 3,
+      bathrooms: 4,
+      amenities: [
+        'G+2 Club House',
+        'Children Play Area',
+        '24/7 Surveillance Camera',
+        'Gym',
+        'Indoor Games',
+        'Intercom Facility',
+        'LED Street Lights',
+        'Avenue Plantation',
+        'Landscape Gardens',
+        'Grand Entrance',
+        'Underground Drainage',
+        'Underground Water Tank',
+      ],
+    },
+    mainImage: '/images/properties/kaakatiya-golden-meadows/poster.jpeg',
+    galleryImages: [
+      '/images/properties/kaakatiya-golden-meadows/photo-1.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-2.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-3.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-4.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-5.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-6.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-7.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-8.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-9.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-10.jpeg',
+      '/images/properties/kaakatiya-golden-meadows/photo-11.jpeg',
+    ],
+    isFeatured: true,
+    projectHighlights: [
+      'Project Size: 1 Acre',
+      'Total Villas: 20',
+      'Villa Type: G+2',
+      'Unit Type: 3 BHK',
+      'Facing: East, West',
+      'Plot Size: 150 Sq. Yards',
+      'Built-up Area: 2140–2250 Sft',
+      'Ready to Move',
+      'Price: ₹1.40 Cr onwards',
+      'Booking Amount: ₹5 Lakhs',
+    ],
+    locationHighlights: [
+      '5 minutes to ORR',
+      '10 minutes to Oakdale School',
+      '10 minutes to Maheshwara Medical College',
+      '10 minutes to Ellenki College of Engineering',
+      '20 minutes to BHEL Township',
+      '30 minutes to Financial District',
+      '40 minutes to Gachibowli',
+    ],
+    bookingAmount: 500000,
+    inventory: [
+      { unitNumber: 'Villa 8', facing: 'WEST', plotAreaSqYards: 150, builtUpAreaSqFt: 2250, status: 'AVAILABLE' },
+      { unitNumber: 'Villa 11', facing: 'EAST', plotAreaSqYards: 150, builtUpAreaSqFt: 2140, status: 'AVAILABLE' },
+      { unitNumber: 'Villa 20', facing: 'EAST', plotAreaSqYards: 150, builtUpAreaSqFt: 2140, status: 'AVAILABLE' },
+    ],
+    externalLinks: {
+      mapLink: 'https://maps.app.goo.gl/hnU4875',
+    },
+  });
+
+  // 5. Create / Upsert Property Documents (13 for demo properties)
   const verifiedProps = [prop1, prop2, prop3, prop4];
   for (const prop of verifiedProps) {
     for (const docType of ALL_13_DOCS) {
@@ -551,6 +972,16 @@ export async function runSeeds() {
     });
   }
 
+  // Real Project 3 (Vasu Sri Pride): 1 VERIFIED (HMDA_DTCP_APPROVAL)
+  await db.upsertDocument({
+    propertyId: propVsp.id,
+    documentType: 'HMDA_DTCP_APPROVAL',
+    fileUrl: `/uploads/docs/${propVsp.id}/HMDA_DTCP_APPROVAL.pdf`,
+    status: 'VERIFIED',
+    verifiedBy: admin.id,
+    verifiedAt: new Date().toISOString(),
+  });
+
   // 6. Create Initial Buyer Enquiries (only if none exist to preserve existing data)
   const existingEnquiries = await db.listEnquiries();
   if (existingEnquiries.length === 0) {
@@ -583,10 +1014,10 @@ export async function runSeeds() {
   }
 
   console.log('✅ Seeding complete!');
-  console.log(`- Users: 6 (1 Admin, 2 Agents, 3 Sellers)`);
-  console.log(`- Sourced Sellers: 3`);
-  console.log(`- Properties: 6 (4 LIVE & Verified, 1 UNDER_REVIEW, 1 DRAFT)`);
-  console.log(`- Property Documents: 78 (53 Verified, 1 Uploaded, 24 Pending)`);
+  console.log(`- Users: 7 (1 Admin, 2 Agents, 4 Sellers)`);
+  console.log(`- Sourced Sellers: 4`);
+  console.log(`- Properties: 11 (9 LIVE, 1 UNDER_REVIEW, 1 DRAFT)`);
+  console.log(`- Property Documents: 79 (54 Verified, 1 Uploaded, 24 Pending)`);
   console.log(`- Enquiries: ${existingEnquiries.length > 0 ? existingEnquiries.length : 2}`);
 }
 

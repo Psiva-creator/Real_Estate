@@ -87,6 +87,18 @@ export interface CreatePropertyDTO {
     possessionStatus?: string;
     furnishingStatus?: string;
   };
+  villa?: {
+    plotAreaSqYards?: number;
+    builtUpAreaSqFt?: number;
+    configuration?: string;
+    floors?: string;
+    facing?: string;
+    communityName?: string;
+    gatedCommunity?: boolean;
+    bedrooms?: number;
+    bathrooms?: number;
+    amenities?: string[];
+  };
   pricing: {
     totalPrice: number;
     pricePerAcre?: number;
@@ -143,6 +155,19 @@ interface BackendFlatDetails {
   furnishingStatus?: string;
 }
 
+interface BackendVillaDetails {
+  plotAreaSqYards?: number;
+  builtUpAreaSqFt?: number;
+  configuration?: string;
+  floors?: string;
+  facing?: string;
+  communityName?: string;
+  gatedCommunity?: boolean;
+  bedrooms?: number;
+  bathrooms?: number;
+  amenities?: string[];
+}
+
 interface BackendPricing {
   totalPrice: number;
   pricePerSqft?: number;
@@ -162,13 +187,38 @@ interface BackendProperty {
   location: BackendLocation;
   land?: BackendLandDetails;
   flat?: BackendFlatDetails;
+  villa?: BackendVillaDetails;
   pricing: BackendPricing;
   mainImage: string;
   galleryImages: string[];
+  sitePlanImage?: string;
   isFeatured: boolean;
   viewsCount: number;
   createdAt: string;
   updatedAt: string;
+  projectHighlights?: string[];
+  locationHighlights?: string[];
+  bankApprovals?: string[];
+  externalLinks?: {
+    projectLink?: string;
+    mapLink?: string;
+    website?: string;
+  };
+  specialAttractions?: string[];
+  discrepancyNotes?: string[];
+  paymentTerms?: string[];
+  inventory?: Array<{
+    unitNumber: string;
+    facing: string;
+    plotAreaSqYards?: number;
+    builtUpAreaSqFt?: number;
+    status: string;
+  }>;
+  bookingAmount?: number;
+  monthlyInstallment?: number;
+  tenureMonths?: number;
+  promotedBy?: string;
+  reraNumber?: string;
   verificationStatus?: {
     totalDocuments: number;
     verifiedDocuments: number;
@@ -267,8 +317,23 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
             | undefined,
         }
       : undefined,
+    villa: bp.villa
+      ? {
+          plotAreaSqYards: bp.villa.plotAreaSqYards,
+          builtUpAreaSqFt: bp.villa.builtUpAreaSqFt,
+          configuration: bp.villa.configuration,
+          floors: bp.villa.floors,
+          facing: bp.villa.facing,
+          communityName: bp.villa.communityName,
+          gatedCommunity: bp.villa.gatedCommunity,
+          bedrooms: bp.villa.bedrooms,
+          bathrooms: bp.villa.bathrooms,
+          amenities: bp.villa.amenities ?? [],
+        }
+      : undefined,
     mainImage: bp.mainImage,
     galleryImages: bp.galleryImages,
+    sitePlanImage: bp.sitePlanImage,
     verifiedDocsCount,
     totalDocsRequired,
     isFeatured: bp.isFeatured,
@@ -276,7 +341,20 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
       bp.location.distanceFromOrrKm !== undefined && bp.location.distanceFromOrrKm <= 10,
     dharaniApproved,
     hmdaApproved,
-    reraApproved,
+    reraApproved: !!bp.reraNumber || isDocVerified('RERA_APPROVAL'),
+    projectHighlights: bp.projectHighlights,
+    locationHighlights: bp.locationHighlights,
+    bankApprovals: bp.bankApprovals,
+    externalLinks: bp.externalLinks,
+    specialAttractions: bp.specialAttractions,
+    discrepancyNotes: bp.discrepancyNotes,
+    paymentTerms: bp.paymentTerms,
+    inventory: bp.inventory,
+    bookingAmount: bp.bookingAmount,
+    monthlyInstallment: bp.monthlyInstallment,
+    tenureMonths: bp.tenureMonths,
+    promotedBy: bp.promotedBy,
+    reraNumber: bp.reraNumber,
   };
 }
 
@@ -299,6 +377,7 @@ function isRealBackend(): boolean {
  */
 export async function getProperties(params?: {
   type?: string;
+  status?: string;
   limit?: number;
   page?: number;
 }): Promise<{ properties: MockProperty[]; fromBackend: boolean }> {
@@ -306,6 +385,7 @@ export async function getProperties(params?: {
     try {
       const url = new URL(`${API_BASE_URL}/properties`);
       if (params?.type && params.type !== 'ALL') url.searchParams.set('type', params.type);
+      if (params?.status && params.status !== 'ALL') url.searchParams.set('status', params.status);
       if (params?.limit) url.searchParams.set('limit', String(params.limit));
       if (params?.page) url.searchParams.set('page', String(params.page));
 

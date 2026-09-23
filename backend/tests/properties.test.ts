@@ -120,4 +120,161 @@ describe('Properties Module & Seller Privacy Gate', () => {
       assert.ok(prop.flat.bedrooms >= 4);
     }
   });
+
+  test('POST /api/properties validates required fields for Villa listing', async () => {
+    const invalidRes = await request(app)
+      .post('/api/properties')
+      .send({
+        type: 'VILLA',
+        titleEn: 'Incomplete Villa Listing',
+        descriptionEn: 'Missing built up area and plot area',
+        location: {
+          district: 'Rangareddy',
+          mandal: 'Gandipet',
+          village: 'Kokapet',
+        },
+        pricing: { totalPrice: 50000000 },
+        mainImage: 'https://example.com/villa.jpg',
+        seller: {
+          name: 'Villa Owner',
+          phone: '+919876511111',
+        },
+      });
+
+    assert.strictEqual(invalidRes.status, 400);
+    assert.ok(invalidRes.body.error.includes('Built-up area or plot area is required for Villa listings'));
+  });
+
+  test('POST /api/properties successfully registers VILLA listing with VillaDetails', async () => {
+    const res = await request(app)
+      .post('/api/properties')
+      .send({
+        type: 'VILLA',
+        titleEn: 'Luxury 4BHK Villa in Gated Community Kokapet',
+        descriptionEn: 'Ultra luxury villa with private garden and clubhouse access.',
+        location: {
+          district: 'Rangareddy',
+          mandal: 'Gandipet',
+          village: 'Kokapet',
+          latitude: 17.3912,
+          longitude: 78.3301,
+        },
+        villa: {
+          plotAreaSqYards: 350,
+          builtUpAreaSqFt: 4200,
+          configuration: '4 BHK',
+          floors: 'G+2',
+          facing: 'EAST',
+          communityName: 'Kokapet Greens',
+          gatedCommunity: true,
+          bedrooms: 4,
+          bathrooms: 5,
+          amenities: ['Clubhouse', 'Swimming Pool', 'Gym'],
+        },
+        pricing: {
+          totalPrice: 65000000,
+          isNegotiable: true,
+        },
+        mainImage: 'https://example.com/villa_main.jpg',
+        seller: {
+          name: 'Villa Seller',
+          phone: '+919876522222',
+        },
+      });
+
+    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.body.property.type, 'VILLA');
+    assert.strictEqual(res.body.property.status, 'DRAFT');
+    assert.strictEqual(res.body.property.villa.plotAreaSqYards, 350);
+    assert.strictEqual(res.body.property.villa.builtUpAreaSqFt, 4200);
+    assert.strictEqual(res.body.property.villa.configuration, '4 BHK');
+    assert.strictEqual(res.body.property.villa.facing, 'EAST');
+    assert.strictEqual(res.body.property.villa.communityName, 'Kokapet Greens');
+    assert.strictEqual(res.body.property.villa.gatedCommunity, true);
+    assert.strictEqual(res.body.property.villa.bedrooms, 4);
+    assert.strictEqual(res.body.property.villa.bathrooms, 5);
+  });
+
+  test('POST /api/properties supports LandDetails with sqYards', async () => {
+    const res = await request(app)
+      .post('/api/properties')
+      .send({
+        type: 'LAND',
+        titleEn: 'Commercial Land with sqYards defined',
+        descriptionEn: 'Prime land near Financial District',
+        location: {
+          district: 'Rangareddy',
+          mandal: 'Serilingampally',
+          village: 'Gachibowli',
+        },
+        land: {
+          totalAcres: 2.5,
+          sqYards: 12100,
+          surveyNumbers: ['45/1'],
+          soilType: 'RED',
+          developmentLevel: 'RAW',
+        },
+        pricing: {
+          totalPrice: 120000000,
+        },
+        mainImage: 'https://example.com/land_sqyards.jpg',
+        seller: {
+          name: 'Land Owner',
+          phone: '+919876533333',
+        },
+      });
+
+    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.body.property.land.sqYards, 12100);
+  });
+
+  test('Public search supports status=SOLD and defaults to LIVE, blocking private workflow states', async () => {
+    // 1. Create a SOLD villa and a DRAFT property directly in DB
+    const { db } = await import('../src/db/database.js');
+    await db.createProperty({
+      sellerId: 'test-seller',
+      type: 'VILLA',
+      status: 'SOLD',
+      titleEn: 'Sold Prime Villa in Jubilee Hills',
+      descriptionEn: 'Recently sold luxury villa.',
+      location: {
+        district: 'Hyderabad',
+        mandal: 'Shaikpet',
+        village: 'Jubilee Hills',
+        tier: 'TIER_1',
+      },
+      villa: {
+        plotAreaSqYards: 500,
+        builtUpAreaSqFt: 6000,
+        bedrooms: 5,
+      },
+      pricing: { totalPrice: 150000000, isNegotiable: false },
+      mainImage: 'https://example.com/sold_villa.jpg',
+      galleryImages: [],
+      isFeatured: false,
+    });
+
+    // 2. Default search must return LIVE properties only
+    const defaultRes = await request(app).get('/api/properties/search');
+    assert.strictEqual(defaultRes.status, 200);
+    for (const p of defaultRes.body.properties) {
+      assert.strictEqual(p.status, 'LIVE');
+    }
+
+    // 3. Search with status=SOLD must return SOLD properties
+    const soldRes = await request(app).get('/api/properties/search?status=SOLD');
+    assert.strictEqual(soldRes.status, 200);
+    assert.ok(soldRes.body.properties.length > 0);
+    for (const p of soldRes.body.properties) {
+      assert.strictEqual(p.status, 'SOLD');
+    }
+
+    // 4. Search with status=DRAFT must safely fall back to LIVE (never expose DRAFT to public)
+    const draftRes = await request(app).get('/api/properties/search?status=DRAFT');
+    assert.strictEqual(draftRes.status, 200);
+    for (const p of draftRes.body.properties) {
+      assert.strictEqual(p.status, 'LIVE');
+      assert.notStrictEqual(p.status, 'DRAFT');
+    }
+  });
 });

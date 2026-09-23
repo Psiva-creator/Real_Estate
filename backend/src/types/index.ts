@@ -1,4 +1,4 @@
-export type PropertyType = 'LAND' | 'FLAT';
+export type PropertyType = 'LAND' | 'FLAT' | 'VILLA';
 export type PropertyStatus = 'DRAFT' | 'UNDER_REVIEW' | 'VERIFIED' | 'LIVE' | 'SOLD' | 'OFF_MARKET';
 
 export type DocumentType =
@@ -74,6 +74,7 @@ export interface LocationDetails {
 
 export interface LandDetails {
   totalAcres?: number;
+  sqYards?: number;
   surveyNumbers?: string[];
   soilType?: string;
   developmentLevel?: string;
@@ -90,6 +91,19 @@ export interface FlatDetails {
   totalFloors?: number;
   amenities?: string[];
   possessionStatus?: string;
+}
+
+export interface VillaDetails {
+  plotAreaSqYards?: number;
+  builtUpAreaSqFt?: number;
+  configuration?: string;
+  floors?: string;
+  facing?: 'EAST' | 'WEST' | 'NORTH' | 'SOUTH';
+  communityName?: string;
+  gatedCommunity?: boolean;
+  bedrooms?: number;
+  bathrooms?: number;
+  amenities?: string[];
 }
 
 export interface PricingDetails {
@@ -126,6 +140,7 @@ export interface Property {
   location: LocationDetails;
   land?: LandDetails;
   flat?: FlatDetails;
+  villa?: VillaDetails;
   pricing: PricingDetails;
   mainImage: string;
   galleryImages: string[];
@@ -133,6 +148,30 @@ export interface Property {
   isFeatured: boolean;
   viewsCount: number;
   documents?: Record<string, DocumentStatus>;
+  // Extended project metadata & transparent auditing
+  projectHighlights?: string[];
+  locationHighlights?: string[];
+  bankApprovals?: string[];
+  externalLinks?: {
+    projectLink?: string;
+    mapLink?: string;
+    website?: string;
+  };
+  specialAttractions?: string[];
+  discrepancyNotes?: string[];
+  paymentTerms?: string[];
+  inventory?: Array<{
+    unitNumber: string;
+    facing: string;
+    plotAreaSqYards?: number;
+    builtUpAreaSqFt?: number;
+    status: string;
+  }>;
+  bookingAmount?: number;
+  monthlyInstallment?: number;
+  tenureMonths?: number;
+  promotedBy?: string;
+  reraNumber?: string;
   createdAt: string;
   updatedAt: string;
 }

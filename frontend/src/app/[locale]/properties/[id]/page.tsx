@@ -56,8 +56,11 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     if (doc.appliesTo === 'BOTH') return true;
     if (property.type === 'LAND' && doc.appliesTo === 'LAND') return true;
     if (property.type === 'FLAT' && doc.appliesTo === 'FLAT') return true;
+    if (property.type === 'VILLA') return true;
     return false;
   });
+
+  const isSold = property.status === 'SOLD';
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-10 pb-28 lg:pb-16">
@@ -91,10 +94,18 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
           <div className="space-y-4 bg-white p-6 sm:p-8 rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)]">
             {/* Top Badges */}
             <div className="flex flex-wrap items-center gap-2">
+              {isSold && (
+                <span className="px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-[#7A2E22] text-white shadow-sm">
+                  {isTe ? 'అమ్మబడింది (ఆర్కైవ్)' : 'Sold (Archive)'}
+                </span>
+              )}
+
               <span
                 className={`px-3.5 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider ${
                   property.type === 'LAND'
                     ? 'bg-[#8C653E] text-white'
+                    : property.type === 'VILLA'
+                    ? 'bg-[#2E3D2F] text-[#FAF8F5]'
                     : 'bg-[#191512] text-[#FAF8F5]'
                 }`}
               >
@@ -102,6 +113,10 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                   ? isTe
                     ? 'భూమి / ప్లాట్'
                     : 'Land Parcel'
+                  : property.type === 'VILLA'
+                  ? isTe
+                    ? 'లగ్జరీ విల్లా'
+                    : 'Luxury Villa'
                   : isTe
                   ? 'ఫ్లాట్ / అపార్ట్‌మెంట్'
                   : 'Architectural Flat'}
@@ -118,6 +133,23 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
                 </span>
               )}
             </div>
+
+            {/* Sold Notice Banner if Sold */}
+            {isSold && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#C5A880]/50 flex items-start gap-3">
+                <div className="w-6 h-6 rounded-full bg-[#7A2E22] text-white flex items-center justify-center shrink-0 mt-0.5 text-xs font-bold">
+                  ✓
+                </div>
+                <div className="space-y-0.5">
+                  <h4 className="text-xs font-bold text-[#191512] uppercase tracking-wider">
+                    {dict.propertyDetail.soldProperty}
+                  </h4>
+                  <p className="text-xs text-[#574F48] leading-relaxed">
+                    {dict.propertyDetail.soldNotice}
+                  </p>
+                </div>
+              </div>
+            )}
 
             {/* Location Line */}
             <div className="flex items-center gap-2 text-xs sm:text-sm text-[#8C827A] pt-1">

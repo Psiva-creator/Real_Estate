@@ -1,9 +1,24 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Menu, X, Shield, PlusCircle, Building2, MapPin, UserCheck, Users2, LogOut } from 'lucide-react';
+import {
+  Menu,
+  X,
+  Shield,
+  PlusCircle,
+  Building2,
+  MapPin,
+  Home,
+  CheckCircle2,
+  ChevronDown,
+  UserCheck,
+  Users2,
+  LogOut,
+  Archive,
+  Layers,
+} from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import LanguageToggle from './LanguageToggle';
@@ -15,16 +30,36 @@ interface NavbarProps {
 export default function Navbar({ locale }: NavbarProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
+  const [activeDropdown, setActiveDropdown] = useState<'forSale' | 'sold' | null>(null);
+  const [mobileExpanded, setMobileExpanded] = useState<{ forSale: boolean; sold: boolean }>({
+    forSale: true,
+    sold: true,
+  });
+
+  const dropdownRef = useRef<HTMLDivElement>(null);
   const pathname = usePathname();
   const dict = getDictionary(locale);
+  const isTe = locale === 'te';
   const { user, isAuthenticated, isSeller, logout } = useAuth();
 
   const dashboardHref = isSeller ? '/dashboard/seller' : '/dashboard/properties';
 
-  // Close mobile drawer on route change
+  // Close mobile drawer and dropdown on route change
   useEffect(() => {
     setIsMobileMenuOpen(false);
+    setActiveDropdown(null);
   }, [pathname]);
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setActiveDropdown(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Handle sticky shadow on scroll
   useEffect(() => {
@@ -35,11 +70,46 @@ export default function Navbar({ locale }: NavbarProps) {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const navLinks = [
-    { href: `/${locale}/properties`, label: dict.nav.properties, icon: Building2 },
-    { href: `/${locale}/properties?type=LAND`, label: dict.nav.lands, icon: MapPin },
-    { href: `/${locale}/properties?type=FLAT`, label: dict.nav.flats, icon: Building2 },
-    { href: `/${locale}/about`, label: dict.nav.about, icon: Shield },
+  const forSaleCategories = [
+    {
+      href: `/${locale}/properties?status=FOR_SALE&type=FLAT`,
+      label: dict.nav.apartments || (isTe ? 'అపార్ట్‌మెంట్లు' : 'Apartments'),
+      subtext: isTe ? 'లగ్జరీ హై-రైజ్ & ఫ్లాట్లు' : 'High-rises & residences',
+      icon: Building2,
+    },
+    {
+      href: `/${locale}/properties?status=FOR_SALE&type=LAND`,
+      label: dict.nav.landsPlots || (isTe ? 'భూములు / ప్లాట్లు' : 'Lands / Plots'),
+      subtext: isTe ? 'వ్యవసాయ & వెంచర్ ప్లాట్లు' : 'Farmlands & layout plots',
+      icon: MapPin,
+    },
+    {
+      href: `/${locale}/properties?status=FOR_SALE&type=VILLA`,
+      label: dict.nav.villas || (isTe ? 'విల్లాలు' : 'Villas'),
+      subtext: isTe ? 'గేటెడ్ ట్రిప్లెక్స్ & విల్లాలు' : 'Gated triplexes & villas',
+      icon: Home,
+    },
+  ];
+
+  const soldCategories = [
+    {
+      href: `/${locale}/properties?status=SOLD&type=FLAT`,
+      label: dict.nav.apartments || (isTe ? 'అపార్ట్‌మెంట్లు' : 'Apartments'),
+      subtext: isTe ? 'విక్రయించబడిన ఫ్లాట్లు' : 'Transacted flats',
+      icon: Building2,
+    },
+    {
+      href: `/${locale}/properties?status=SOLD&type=LAND`,
+      label: dict.nav.landsPlots || (isTe ? 'భూములు / ప్లాట్లు' : 'Lands / Plots'),
+      subtext: isTe ? 'విక్రయించబడిన భూములు' : 'Transacted land parcels',
+      icon: MapPin,
+    },
+    {
+      href: `/${locale}/properties?status=SOLD&type=VILLA`,
+      label: dict.nav.villas || (isTe ? 'విల్లాలు' : 'Villas'),
+      subtext: isTe ? 'విక్రయించబడిన విల్లాలు' : 'Transacted luxury villas',
+      icon: Home,
+    },
   ];
 
   return (
@@ -69,26 +139,170 @@ export default function Navbar({ locale }: NavbarProps) {
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-2 xl:gap-4" aria-label="Main Navigation">
-            {navLinks.map((link) => {
-              const isActive = pathname === link.href;
-              return (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all relative ${
-                    isActive
-                      ? 'text-[#191512] font-bold bg-[#EFE9E0]'
-                      : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
-                  }`}
-                >
-                  {link.label}
-                  {isActive && (
-                    <span className="absolute bottom-1 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#8C653E]" />
-                  )}
-                </Link>
-              );
-            })}
+          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-3" aria-label="Main Navigation" ref={dropdownRef}>
+            {/* All Properties */}
+            <Link
+              href={`/${locale}/properties`}
+              className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all relative ${
+                pathname === `/${locale}/properties` && !activeDropdown
+                  ? 'text-[#191512] font-bold bg-[#EFE9E0]'
+                  : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
+              }`}
+            >
+              {dict.nav.properties}
+            </Link>
+
+            {/* For Sale Dropdown Trigger & Flyout */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('forSale')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveDropdown(activeDropdown === 'forSale' ? null : 'forSale')}
+                aria-expanded={activeDropdown === 'forSale'}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all ${
+                  activeDropdown === 'forSale' || (pathname.includes('/properties') && pathname.includes('status=FOR_SALE'))
+                    ? 'text-[#191512] font-bold bg-[#EFE9E0]'
+                    : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
+                }`}
+              >
+                <span>{dict.nav.forSale || (isTe ? 'అమ్మకానికి' : 'For Sale')}</span>
+                <ChevronDown className={`w-3 h-3 text-[#8C653E] transition-transform duration-200 ${activeDropdown === 'forSale' ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu Card */}
+              {activeDropdown === 'forSale' && (
+                <div className="absolute top-full left-0 mt-1.5 w-72 bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_12px_36px_-6px_rgba(25,21,18,0.12)] p-2 z-50 animate-in fade-in-50 slide-in-from-top-1 duration-150">
+                  <div className="px-3 py-1.5 border-b border-[#E8E2D9]/60 flex items-center justify-between">
+                    <span className="text-[10px] font-bold tracking-[0.16em] uppercase text-[#8C653E]">
+                      {isTe ? 'అమ్మకానికి అందుబాటులో ఉన్నవి' : 'Available For Sale'}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#F5F1EA] text-[#5C4026] font-semibold">
+                      {isTe ? '13 డాక్స్ ధృవీకరించినవి' : '13-Doc Verified'}
+                    </span>
+                  </div>
+
+                  <div className="py-1 space-y-0.5">
+                    {forSaleCategories.map((cat) => {
+                      const Icon = cat.icon;
+                      return (
+                        <Link
+                          key={cat.href}
+                          href={cat.href}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#F5F1EA] text-[#191512] group transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-[#FAF8F5] border border-[#E8E2D9] flex items-center justify-center text-[#8C653E] group-hover:bg-[#191512] group-hover:text-white transition-colors shrink-0">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-semibold tracking-wide">
+                              {cat.label}
+                            </span>
+                            <span className="text-[10px] text-[#8C827A] truncate">
+                              {cat.subtext}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pt-1.5 mt-1 border-t border-[#E8E2D9]/60">
+                    <Link
+                      href={`/${locale}/properties?status=FOR_SALE`}
+                      className="flex items-center justify-between px-3 py-2 rounded-xl text-[11px] font-semibold text-[#8C653E] hover:bg-[#F5F1EA] transition-colors"
+                    >
+                      <span>{isTe ? 'అన్ని అమ్మకపు ప్రాపర్టీలు చూడండి' : 'View All For Sale'}</span>
+                      <span>→</span>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Sold Dropdown Trigger & Flyout */}
+            <div
+              className="relative"
+              onMouseEnter={() => setActiveDropdown('sold')}
+              onMouseLeave={() => setActiveDropdown(null)}
+            >
+              <button
+                type="button"
+                onClick={() => setActiveDropdown(activeDropdown === 'sold' ? null : 'sold')}
+                aria-expanded={activeDropdown === 'sold'}
+                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all ${
+                  activeDropdown === 'sold' || (pathname.includes('/properties') && pathname.includes('status=SOLD'))
+                    ? 'text-[#191512] font-bold bg-[#EFE9E0]'
+                    : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
+                }`}
+              >
+                <span>{dict.nav.sold || (isTe ? 'విక్రయించబడినవి' : 'Sold')}</span>
+                <ChevronDown className={`w-3 h-3 text-[#8C653E] transition-transform duration-200 ${activeDropdown === 'sold' ? 'rotate-180' : ''}`} />
+              </button>
+
+              {/* Dropdown Menu Card */}
+              {activeDropdown === 'sold' && (
+                <div className="absolute top-full left-0 mt-1.5 w-72 bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_12px_36px_-6px_rgba(25,21,18,0.12)] p-2 z-50 animate-in fade-in-50 slide-in-from-top-1 duration-150">
+                  <div className="px-3 py-1.5 border-b border-[#E8E2D9]/60 flex items-center justify-between">
+                    <span className="text-[10px] font-bold tracking-[0.16em] uppercase text-[#8C653E]">
+                      {isTe ? 'విక్రయించబడిన ప్రాపర్టీల ఆర్కైవ్' : 'Sold Transacted Archive'}
+                    </span>
+                    <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#F5F1EA] text-[#8C827A] font-semibold">
+                      {isTe ? 'పూర్తయినవి' : 'Closed Deals'}
+                    </span>
+                  </div>
+
+                  <div className="py-1 space-y-0.5">
+                    {soldCategories.map((cat) => {
+                      const Icon = cat.icon;
+                      return (
+                        <Link
+                          key={cat.href}
+                          href={cat.href}
+                          className="flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-[#F5F1EA] text-[#191512] group transition-colors"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-[#FAF8F5] border border-[#E8E2D9] flex items-center justify-center text-[#8C827A] group-hover:bg-[#191512] group-hover:text-white transition-colors shrink-0">
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <div className="flex flex-col min-w-0">
+                            <span className="text-xs font-semibold tracking-wide">
+                              {cat.label}
+                            </span>
+                            <span className="text-[10px] text-[#8C827A] truncate">
+                              {cat.subtext}
+                            </span>
+                          </div>
+                        </Link>
+                      );
+                    })}
+                  </div>
+
+                  <div className="pt-1.5 mt-1 border-t border-[#E8E2D9]/60">
+                    <Link
+                      href={`/${locale}/properties?status=SOLD`}
+                      className="flex items-center justify-between px-3 py-2 rounded-xl text-[11px] font-semibold text-[#8C653E] hover:bg-[#F5F1EA] transition-colors"
+                    >
+                      <span>{isTe ? 'విక్రయించబడిన అన్ని ప్రాపర్టీలు' : 'View All Sold Archive'}</span>
+                      <span>→</span>
+                    </Link>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* About */}
+            <Link
+              href={`/${locale}/about`}
+              className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all relative ${
+                pathname === `/${locale}/about`
+                  ? 'text-[#191512] font-bold bg-[#EFE9E0]'
+                  : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
+              }`}
+            >
+              {dict.nav.about}
+            </Link>
           </nav>
 
           {/* Actions & Utilities */}
@@ -166,27 +380,106 @@ export default function Navbar({ locale }: NavbarProps) {
       {isMobileMenuOpen && (
         <div className="lg:hidden border-t border-[#E8E2D9] bg-[#FAF8F5] shadow-xl animate-in slide-in-from-top-2 duration-200">
           <div className="max-w-7xl mx-auto px-5 py-6 space-y-5 max-h-[85vh] overflow-y-auto">
-            <nav className="flex flex-col space-y-1.5" aria-label="Mobile Navigation">
-              {navLinks.map((link) => {
-                const Icon = link.icon;
-                const isActive = pathname === link.href;
-                return (
-                  <Link
-                    key={link.href}
-                    href={link.href}
-                    onClick={() => setIsMobileMenuOpen(false)}
-                    className={`flex items-center gap-3.5 px-4 py-3.5 rounded-2xl text-sm font-medium transition-colors tap-target ${
-                      isActive
-                        ? 'bg-[#EFE9E0] text-[#191512] font-semibold border border-[#E8E2D9]'
-                        : 'text-[#574F48] hover:bg-[#F5F1EA]'
-                    }`}
-                  >
-                    <Icon className="w-4 h-4 text-[#8C653E] shrink-0" />
-                    <span>{link.label}</span>
-                  </Link>
-                );
-              })}
-            </nav>
+            {/* Top Level: Explore All */}
+            <Link
+              href={`/${locale}/properties`}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className={`flex items-center justify-between px-4 py-3 rounded-2xl text-xs font-bold uppercase tracking-wider transition-colors border ${
+                pathname === `/${locale}/properties`
+                  ? 'bg-[#191512] text-white border-[#191512]'
+                  : 'bg-white text-[#191512] border-[#E8E2D9] hover:bg-[#F5F1EA]'
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Building2 className="w-4 h-4 text-[#8C653E]" />
+                <span>{dict.nav.properties}</span>
+              </div>
+              <span>→</span>
+            </Link>
+
+            {/* FOR SALE SECTION */}
+            <div className="bg-white rounded-2xl border border-[#E8E2D9] p-4 space-y-2.5">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]/70">
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8C653E] flex items-center gap-1.5">
+                  <CheckCircle2 className="w-3.5 h-3.5" />
+                  <span>{dict.nav.forSale || (isTe ? 'అమ్మకానికి' : 'For Sale')}</span>
+                </span>
+                <Link
+                  href={`/${locale}/properties?status=FOR_SALE`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-[10px] font-semibold text-[#8C827A] hover:text-[#191512]"
+                >
+                  {isTe ? 'అన్నీ' : 'All'} →
+                </Link>
+              </div>
+
+              <div className="space-y-1">
+                {forSaleCategories.map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <Link
+                      key={cat.href}
+                      href={cat.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F5F1EA] text-[#191512] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-4 h-4 text-[#8C653E]" />
+                        <span className="text-xs font-medium">{cat.label}</span>
+                      </div>
+                      <span className="text-[10px] text-[#8C827A]">→</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* SOLD SECTION */}
+            <div className="bg-white rounded-2xl border border-[#E8E2D9] p-4 space-y-2.5">
+              <div className="flex items-center justify-between pb-2 border-b border-[#E8E2D9]/70">
+                <span className="text-[11px] font-bold uppercase tracking-[0.16em] text-[#8C827A] flex items-center gap-1.5">
+                  <Archive className="w-3.5 h-3.5 text-[#8C653E]" />
+                  <span>{dict.nav.sold || (isTe ? 'విక్రయించబడినవి' : 'Sold Archive')}</span>
+                </span>
+                <Link
+                  href={`/${locale}/properties?status=SOLD`}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="text-[10px] font-semibold text-[#8C827A] hover:text-[#191512]"
+                >
+                  {isTe ? 'అన్నీ' : 'All'} →
+                </Link>
+              </div>
+
+              <div className="space-y-1">
+                {soldCategories.map((cat) => {
+                  const Icon = cat.icon;
+                  return (
+                    <Link
+                      key={cat.href}
+                      href={cat.href}
+                      onClick={() => setIsMobileMenuOpen(false)}
+                      className="flex items-center justify-between px-3 py-2.5 rounded-xl hover:bg-[#F5F1EA] text-[#191512] transition-colors"
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-4 h-4 text-[#8C827A]" />
+                        <span className="text-xs font-medium">{cat.label}</span>
+                      </div>
+                      <span className="text-[10px] text-[#8C827A]">→</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* About */}
+            <Link
+              href={`/${locale}/about`}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center gap-3 px-4 py-3 rounded-2xl bg-white border border-[#E8E2D9] text-[#191512] font-semibold text-xs uppercase tracking-wider hover:bg-[#F5F1EA] transition-colors"
+            >
+              <Shield className="w-4 h-4 text-[#8C653E]" />
+              <span>{dict.nav.about}</span>
+            </Link>
 
             <div className="pt-4 border-t border-[#E8E2D9] flex flex-col gap-3">
               <Link

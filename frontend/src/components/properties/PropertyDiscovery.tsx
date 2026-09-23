@@ -29,6 +29,7 @@ import MapView from './MapView';
 interface PropertyDiscoveryProps {
   locale: Locale;
   initialParams: {
+    status?: string;
     type?: string;
     q?: string;
     location?: string;
@@ -40,6 +41,7 @@ interface PropertyDiscoveryProps {
 }
 
 interface FilterState {
+  status: string;
   type: string;
   query: string;
   location: string;
@@ -67,6 +69,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
   // Active form state (what the user is configuring in the controls)
   const [filters, setFilters] = useState<FilterState>({
+    status: initialParams.status || 'ALL',
     type: initialParams.type || 'ALL',
     query: initialParams.q || '',
     location: initialParams.location || 'ALL',
@@ -78,6 +81,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
   // Applied state (what currently filters the displayed list)
   const [appliedFilters, setAppliedFilters] = useState<FilterState>({
+    status: initialParams.status || 'ALL',
     type: initialParams.type || 'ALL',
     query: initialParams.q || '',
     location: initialParams.location || 'ALL',
@@ -121,6 +125,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
   // Sync state with URL search params helper
   const syncUrlParams = (newApplied: FilterState) => {
     const params = new URLSearchParams();
+    if (newApplied.status && newApplied.status !== 'ALL') params.set('status', newApplied.status);
     if (newApplied.type !== 'ALL') params.set('type', newApplied.type);
     if (newApplied.query.trim()) params.set('q', newApplied.query.trim());
     if (newApplied.location !== 'ALL') params.set('location', newApplied.location);
@@ -137,6 +142,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
   // Check if any non-default filters are applied
   const activeFilterCount = useMemo(() => {
     let count = 0;
+    if (appliedFilters.status !== 'ALL') count++;
     if (appliedFilters.type !== 'ALL') count++;
     if (appliedFilters.query.trim()) count++;
     if (appliedFilters.location !== 'ALL') count++;
@@ -160,6 +166,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
   // Clear button handler
   const handleClearFilters = () => {
     const defaultState: FilterState = {
+      status: 'ALL',
       type: 'ALL',
       query: '',
       location: 'ALL',
@@ -172,6 +179,18 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     setIsLoading(true);
     setAppliedFilters(defaultState);
     syncUrlParams(defaultState);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 200);
+  };
+
+  // Quick status tab switch (instantly applies)
+  const handleStatusTabClick = (status: string) => {
+    const updated = { ...filters, status };
+    setFilters(updated);
+    setIsLoading(true);
+    setAppliedFilters(updated);
+    syncUrlParams(updated);
     setTimeout(() => {
       setIsLoading(false);
     }, 200);
@@ -192,6 +211,13 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
   // Actual filtering based on appliedFilters (uses backend data or mock fallback)
   const filteredProperties = useMemo(() => {
     return allProperties.filter((prop) => {
+      // 0. Status Filter (FOR_SALE vs SOLD)
+      if (appliedFilters.status === 'FOR_SALE') {
+        if (prop.status === 'SOLD') return false;
+      } else if (appliedFilters.status === 'SOLD') {
+        if (prop.status !== 'SOLD') return false;
+      }
+
       // 1. Property Type
       if (appliedFilters.type !== 'ALL' && prop.type !== appliedFilters.type) {
         return false;
@@ -330,12 +356,24 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     () => allProperties.filter((p) => p.type === 'FLAT').length,
     [allProperties]
   );
+  const villasCount = useMemo(
+    () => allProperties.filter((p) => p.type === 'VILLA').length,
+    [allProperties]
+  );
+  const forSaleCount = useMemo(
+    () => allProperties.filter((p) => p.status !== 'SOLD').length,
+    [allProperties]
+  );
+  const soldCount = useMemo(
+    () => allProperties.filter((p) => p.status === 'SOLD').length,
+    [allProperties]
+  );
 
   return (
     <div className="w-full max-w-full space-y-8 overflow-hidden">
       {/* Search & Main Filter Card */}
       <div className="bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] p-5 sm:p-6 space-y-5 overflow-hidden">
-        {/* Top Row: Search Input & Quick Type Tabs */}
+        {/* Row 1: Search Input & Quick Status Tabs */}
         <div className="flex flex-col md:flex-row gap-3.5 items-stretch md:items-center justify-between">
           {/* Search Input Bar */}
           <div className="relative flex-1">
@@ -361,42 +399,93 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
             )}
           </div>
 
-          {/* Quick Property Type Tabs — scrollable on narrow screens */}
-          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto pb-1 md:pb-0 scrollbar-none">
+          {/* Quick Status Tabs (All / For Sale / Sold) */}
+          <div className="flex items-center gap-1.5 shrink-0 overflow-x-auto pb-1 md:pb-0 scrollbar-none bg-[#F5F1EA] p-1 rounded-full border border-[#E8E2D9]">
             <button
               type="button"
-              onClick={() => handleTypeTabClick('ALL')}
-              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
-                appliedFilters.type === 'ALL'
+              onClick={() => handleStatusTabClick('ALL')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
+                appliedFilters.status === 'ALL'
                   ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
-                  : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
+                  : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
-              {isTe ? 'అన్నీ' : 'All Listings'} ({allProperties.length})
+              {isTe ? 'అన్నీ' : 'All'} ({allProperties.length})
             </button>
             <button
               type="button"
-              onClick={() => handleTypeTabClick('LAND')}
-              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
-                appliedFilters.type === 'LAND'
-                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
-                  : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
+              onClick={() => handleStatusTabClick('FOR_SALE')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
+                appliedFilters.status === 'FOR_SALE'
+                  ? 'bg-[#8C653E] text-white shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
-              {dict.nav.lands} ({landsCount})
+              {dict.nav.forSale} ({forSaleCount})
             </button>
             <button
               type="button"
-              onClick={() => handleTypeTabClick('FLAT')}
-              className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
-                appliedFilters.type === 'FLAT'
-                  ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
-                  : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
+              onClick={() => handleStatusTabClick('SOLD')}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
+                appliedFilters.status === 'SOLD'
+                  ? 'bg-[#7A2E22] text-white shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
               }`}
             >
-              {dict.nav.flats} ({flatsCount})
+              {dict.nav.sold} ({soldCount})
             </button>
           </div>
+        </div>
+
+        {/* Row 2: Property Type Tabs */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none pt-1">
+          <span className="text-[11px] font-bold text-[#8C653E] uppercase tracking-wider shrink-0 mr-1">
+            {isTe ? 'రకం:' : 'Type:'}
+          </span>
+          <button
+            type="button"
+            onClick={() => handleTypeTabClick('ALL')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
+              appliedFilters.type === 'ALL'
+                ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
+            }`}
+          >
+            {isTe ? 'అన్ని రకాలు' : 'All Types'} ({allProperties.length})
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeTabClick('FLAT')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
+              appliedFilters.type === 'FLAT'
+                ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
+            }`}
+          >
+            {dict.nav.apartments} ({flatsCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeTabClick('LAND')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
+              appliedFilters.type === 'LAND'
+                ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
+            }`}
+          >
+            {dict.nav.landsPlots} ({landsCount})
+          </button>
+          <button
+            type="button"
+            onClick={() => handleTypeTabClick('VILLA')}
+            className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap ${
+              appliedFilters.type === 'VILLA'
+                ? 'bg-[#191512] text-[#FAF8F5] shadow-sm'
+                : 'bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] border border-[#E8E2D9]'
+            }`}
+          >
+            {dict.nav.villas} ({villasCount})
+          </button>
         </div>
 
         {/* Multi-Criteria Filter Dropdowns (Location, Price, Area, ORR Distance, Verification) */}
@@ -540,9 +629,17 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
       <div className="flex flex-col min-[480px]:flex-row items-stretch min-[480px]:items-center justify-between gap-3">
         <div className="font-serif text-base text-[#191512] flex items-center gap-2">
           <span>
-            {isTe
-              ? `${filteredProperties.length} ధృవీకరించిన ప్రాపర్టీలు అందుబాటులో ఉన్నాయి`
-              : `Showing ${filteredProperties.length} verified listings`}
+            {appliedFilters.status === 'SOLD'
+              ? (isTe
+                  ? `అమ్మబడిన ఆర్కైవ్: ${filteredProperties.length} ప్రాపర్టీలు`
+                  : `Sold Archive: ${filteredProperties.length} verified properties`)
+              : appliedFilters.status === 'FOR_SALE'
+              ? (isTe
+                  ? `అమ్మకానికి సిద్ధంగా ఉన్నవి: ${filteredProperties.length} ధృవీకరించిన ప్రాపర్టీలు`
+                  : `For Sale: ${filteredProperties.length} verified properties`)
+              : (isTe
+                  ? `${filteredProperties.length} ధృవీకరించిన ప్రాపర్టీలు అందుబాటులో ఉన్నాయి`
+                  : `Showing ${filteredProperties.length} verified listings`)}
           </span>
           {(isLoading || isFetchingBackend) && (
             <span className="inline-flex items-center text-xs font-sans text-[#8C653E] font-normal animate-pulse">

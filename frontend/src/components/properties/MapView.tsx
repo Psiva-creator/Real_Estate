@@ -6,8 +6,6 @@ import { Navigation, Compass, ArrowUpRight, Info } from 'lucide-react';
 import { Locale } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
 import { formatINR } from '@/lib/formatters';
-import { useGoogleMaps } from '@/lib/useGoogleMaps';
-import MapStatusFallback from './MapStatusFallback';
 
 interface MapViewProps {
   properties: MockProperty[];
@@ -17,76 +15,8 @@ interface MapViewProps {
   className?: string;
 }
 
-const HYDERABAD_CENTER = { lat: 17.4065, lng: 78.4772 };
+const HYDERABAD_CENTER: [number, number] = [17.4065, 78.4772];
 const DEFAULT_ZOOM = 11;
-
-const DARK_MAP_STYLES: google.maps.MapTypeStyle[] = [
-  { elementType: 'geometry', stylers: [{ color: '#161311' }] },
-  { elementType: 'labels.text.stroke', stylers: [{ color: '#161311' }] },
-  { elementType: 'labels.text.fill', stylers: [{ color: '#C5BDB5' }] },
-  {
-    featureType: 'administrative.locality',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#FAF8F5' }],
-  },
-  {
-    featureType: 'poi',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#8C827A' }],
-  },
-  {
-    featureType: 'road',
-    elementType: 'geometry',
-    stylers: [{ color: '#26201B' }],
-  },
-  {
-    featureType: 'road',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#191512' }],
-  },
-  {
-    featureType: 'road',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#8C827A' }],
-  },
-  {
-    featureType: 'road.highway',
-    elementType: 'geometry',
-    stylers: [{ color: '#4A3B2C' }],
-  },
-  {
-    featureType: 'road.highway',
-    elementType: 'geometry.stroke',
-    stylers: [{ color: '#191512' }],
-  },
-  {
-    featureType: 'road.highway',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#C5A880' }],
-  },
-  {
-    featureType: 'water',
-    elementType: 'geometry',
-    stylers: [{ color: '#0F1722' }],
-  },
-  {
-    featureType: 'water',
-    elementType: 'labels.text.fill',
-    stylers: [{ color: '#455A75' }],
-  },
-];
-
-function createMarkerIcon(isSelected: boolean): google.maps.Symbol {
-  return {
-    path: 'M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z',
-    fillColor: isSelected ? '#C5A880' : '#191512',
-    fillOpacity: 1,
-    strokeColor: isSelected ? '#FFFFFF' : '#C5A880',
-    strokeWeight: isSelected ? 2.5 : 1.5,
-    scale: isSelected ? 1.7 : 1.3,
-    anchor: typeof google !== 'undefined' && google.maps?.Point ? new google.maps.Point(12, 22) : undefined,
-  };
-}
 
 export default function MapView({
   properties,
@@ -95,15 +25,15 @@ export default function MapView({
   onSelectProperty,
   className = '',
 }: MapViewProps) {
-  const { isLoaded, status } = useGoogleMaps();
   const mapContainerRef = useRef<HTMLDivElement | null>(null);
-  const mapInstanceRef = useRef<google.maps.Map | null>(null);
-  const [mapInstance, setMapInstance] = useState<google.maps.Map | null>(null);
-  const markersMapRef = useRef<Map<string, google.maps.Marker>>(new Map());
+  const mapInstanceRef = useRef<any>(null);
+  const markersRef = useRef<Map<string, any>>(new Map());
+  const LRef = useRef<any>(null);
 
   const [activePin, setActivePin] = useState<string | null>(
     selectedPropertyId || properties[0]?.id || null
   );
+  const [isMapReady, setIsMapReady] = useState(false);
 
   const isTe = locale === 'te';
 
@@ -118,6 +48,47 @@ export default function MapView({
     }
   }, [properties, selectedPropertyId, activePin]);
 
+  const activePinRef = useRef<string | null>(activePin);
+  useEffect(() => {
+    activePinRef.current = activePin;
+  }, [activePin]);
+
+  // Create SVG marker pin element
+  const createMarkerHtml = (isSelected: boolean) => {
+    const size = isSelected ? 38 : 28;
+    const bg = isSelected ? '#C5A880' : '#191512';
+    const stroke = isSelected ? '#FFFFFF' : '#C5A880';
+    const pulse = isSelected
+      ? `<div style="position: absolute; inset: -4px; border-radius: 50%; background: rgba(197, 168, 128, 0.4); animation: ping 1.5s cubic-bezier(0, 0, 0.2, 1) infinite;"></div>`
+      : '';
+
+    return `
+      <div style="position: relative; width: ${size}px; height: ${size}px; cursor: pointer;">
+        ${pulse}
+        <div style="
+          width: ${size}px;
+          height: ${size}px;
+          border-radius: 50% 50% 50% 0;
+          transform: rotate(-45deg);
+          background: ${bg};
+          border: 2px solid ${stroke};
+          box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.2s ease-in-out;
+        ">
+          <div style="
+            width: ${isSelected ? '10px' : '7px'};
+            height: ${isSelected ? '10px' : '7px'};
+            border-radius: 50%;
+            background: ${isSelected ? '#191512' : '#C5A880'};
+          "></div>
+        </div>
+      </div>
+    `;
+  };
+
   // Handle marker selection callback
   const handleMarkerClick = useCallback(
     (propertyId: string, lat?: number, lng?: number) => {
@@ -126,61 +97,95 @@ export default function MapView({
         onSelectProperty(propertyId);
       }
       if (mapInstanceRef.current && lat !== undefined && lng !== undefined) {
-        mapInstanceRef.current.panTo({ lat, lng });
+        mapInstanceRef.current.panTo([lat, lng], { animate: true, duration: 0.5 });
       }
     },
     [onSelectProperty]
   );
 
-  // Initialize Map Instance once loaded
+  // Initialize Leaflet Map Instance once on client
   useEffect(() => {
-    if (!isLoaded || !mapContainerRef.current) return;
+    let isMounted = true;
+    let resizeObserver: ResizeObserver | null = null;
 
-    let isCancelled = false;
+    async function initLeaflet() {
+      if (typeof window === 'undefined' || !mapContainerRef.current) return;
 
-    const initMap = async () => {
-      try {
-        const { Map } = await google.maps.importLibrary('maps');
-        if (isCancelled || !mapContainerRef.current) return;
+      const L = (await import('leaflet')).default;
+      if (!isMounted || !mapContainerRef.current) return;
 
-        if (!mapInstanceRef.current) {
-          const map = new Map(mapContainerRef.current, {
-            center: HYDERABAD_CENTER,
-            zoom: DEFAULT_ZOOM,
-            styles: DARK_MAP_STYLES,
-            mapTypeControl: false,
-            streetViewControl: false,
-            fullscreenControl: true,
-            zoomControl: true,
-          });
-          mapInstanceRef.current = map;
-          setMapInstance(map);
-        }
-      } catch (err) {
-        console.error('Failed to initialize Google Map:', err);
+      LRef.current = L;
+
+      // Clean up previous instance if already existing on same container
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
       }
-    };
 
-    initMap();
+      const map = L.map(mapContainerRef.current, {
+        center: HYDERABAD_CENTER,
+        zoom: DEFAULT_ZOOM,
+        zoomControl: false,
+        attributionControl: true,
+      });
+
+      // Standard OpenStreetMap Tiles (No API key required)
+      L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright" target="_blank" rel="noopener noreferrer">OpenStreetMap</a> contributors',
+      }).addTo(map);
+
+      // Custom top-right zoom control
+      L.control.zoom({ position: 'topright' }).addTo(map);
+
+      mapInstanceRef.current = map;
+      setIsMapReady(true);
+
+      // Invalidate size once container renders
+      setTimeout(() => {
+        if (isMounted && mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 200);
+
+      // Observe container size changes (e.g., when switching from list to map tab on mobile)
+      if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        });
+        resizeObserver.observe(mapContainerRef.current);
+      }
+    }
+
+    initLeaflet();
 
     return () => {
-      isCancelled = true;
+      isMounted = false;
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
+      if (mapInstanceRef.current) {
+        mapInstanceRef.current.remove();
+        mapInstanceRef.current = null;
+      }
     };
-  }, [isLoaded]);
+  }, []);
 
-  // Update Markers whenever properties, isLoaded, or activePin changes
+  // Update Markers whenever properties or isMapReady changes
   useEffect(() => {
-    if (!isLoaded || !mapInstance) return;
+    const map = mapInstanceRef.current;
+    const L = LRef.current;
+    if (!isMapReady || !map || !L) return;
 
-    const map = mapInstance;
-    const currentMarkers = markersMapRef.current;
+    const currentMarkers = markersRef.current;
 
-    // Remove existing markers
-    currentMarkers.forEach((marker) => marker.setMap(null));
+    // Clear old markers
+    currentMarkers.forEach((marker) => marker.remove());
     currentMarkers.clear();
 
-    const bounds = new google.maps.LatLngBounds();
-    let validCount = 0;
+    const validLatLngs: [number, number][] = [];
 
     properties.forEach((prop) => {
       const lat = prop.location.latitude;
@@ -190,69 +195,67 @@ export default function MapView({
         return;
       }
 
-      validCount++;
-      const pos = { lat, lng };
-      bounds.extend(pos);
+      validLatLngs.push([lat, lng]);
+      const isSelected = prop.id === activePinRef.current;
+      const size = isSelected ? 38 : 28;
 
-      const isSelected = prop.id === activePin;
-
-      const marker = new google.maps.Marker({
-        position: pos,
-        map,
-        title: `${prop.location.village} - ${isTe && prop.titleTe ? prop.titleTe : prop.title}`,
-        icon: createMarkerIcon(isSelected),
-        zIndex: isSelected ? 999 : 1,
+      const customIcon = L.divIcon({
+        className: 'realty-map-marker',
+        html: createMarkerHtml(isSelected),
+        iconSize: [size, size],
+        iconAnchor: [size / 2, size],
       });
 
-      marker.addListener('click', () => {
+      const marker = L.marker([lat, lng], {
+        icon: customIcon,
+        zIndexOffset: isSelected ? 1000 : 10,
+        title: `${prop.location.village} - ${isTe && prop.titleTe ? prop.titleTe : prop.title}`,
+      }).addTo(map);
+
+      marker.on('click', () => {
         handleMarkerClick(prop.id, lat, lng);
       });
 
       currentMarkers.set(prop.id, marker);
     });
 
-    // Fit bounds or center gracefully
-    if (validCount > 1) {
-      map.fitBounds(bounds, { top: 50, right: 50, bottom: 100, left: 50 });
-      // Prevent over-zooming on tight bounds
-      const listener = google.maps.event.addListener(map, 'idle', () => {
-        const zoom = map.getZoom();
-        if (zoom !== undefined && zoom > 14) {
-          map.setZoom(14);
-        }
-        google.maps.event.removeListener(listener);
+    // Auto fit bounds
+    if (validLatLngs.length > 1) {
+      map.fitBounds(validLatLngs, {
+        padding: [50, 50],
+        maxZoom: 14,
       });
-    } else if (validCount === 1) {
-      const firstValid = properties.find(
-        (p) => typeof p.location.latitude === 'number' && typeof p.location.longitude === 'number'
-      );
-      if (firstValid && firstValid.location.latitude && firstValid.location.longitude) {
-        map.setCenter({ lat: firstValid.location.latitude, lng: firstValid.location.longitude });
-        map.setZoom(13);
-      }
+    } else if (validLatLngs.length === 1) {
+      map.setView(validLatLngs[0], 13);
     } else {
-      map.setCenter(HYDERABAD_CENTER);
-      map.setZoom(DEFAULT_ZOOM);
+      map.setView(HYDERABAD_CENTER, DEFAULT_ZOOM);
     }
-  }, [isLoaded, mapInstance, properties, handleMarkerClick, activePin, isTe]);
+  }, [isMapReady, properties, handleMarkerClick, isTe]);
 
-  // Update selected marker highlighting & pan when activePin changes externally
+  // Update marker icons when activePin changes
   useEffect(() => {
-    if (!isLoaded || !mapInstance) return;
+    const L = LRef.current;
+    if (!isMapReady || !L) return;
 
-    markersMapRef.current.forEach((marker, id) => {
+    markersRef.current.forEach((marker, id) => {
       const isSelected = id === activePin;
-      marker.setIcon(createMarkerIcon(isSelected));
-      marker.setZIndex(isSelected ? 999 : 1);
+      const size = isSelected ? 38 : 28;
+      marker.setIcon(
+        L.divIcon({
+          className: 'realty-map-marker',
+          html: createMarkerHtml(isSelected),
+          iconSize: [size, size],
+          iconAnchor: [size / 2, size],
+        })
+      );
+      marker.setZIndexOffset(isSelected ? 1000 : 10);
 
-      if (isSelected) {
-        const pos = marker.getPosition();
-        if (pos && mapInstance) {
-          mapInstance.panTo(pos);
-        }
+      if (isSelected && mapInstanceRef.current) {
+        const latLng = marker.getLatLng();
+        mapInstanceRef.current.panTo(latLng, { animate: true, duration: 0.4 });
       }
     });
-  }, [isLoaded, mapInstance, activePin]);
+  }, [activePin, isMapReady]);
 
   const selectedProp = properties.find((p) => p.id === activePin) || properties[0] || null;
 
@@ -261,7 +264,7 @@ export default function MapView({
       className={`relative bg-[#141210] rounded-2xl overflow-hidden border border-[#2A241F] shadow-xl flex flex-col ${className}`}
     >
       {/* Map Header / Status Bar */}
-      <div className="px-5 py-3.5 bg-[#191512]/95 backdrop-blur-md border-b border-[#2A241F] flex items-center justify-between text-xs text-[#C5BDB5]">
+      <div className="px-5 py-3.5 bg-[#191512]/95 backdrop-blur-md border-b border-[#2A241F] flex items-center justify-between text-xs text-[#C5BDB5] z-10">
         <div className="flex items-center gap-2.5">
           <Navigation className="w-4 h-4 text-[#C5A880]" />
           <span className="font-serif font-medium text-white tracking-wide">
@@ -274,19 +277,15 @@ export default function MapView({
         </div>
       </div>
 
-      {/* Map Surface or Fallback */}
+      {/* Map Surface */}
       <div className="relative h-80 sm:h-96 min-h-[380px] lg:h-[480px] w-full bg-[#110F0D] overflow-hidden">
-        {status !== 'loaded' ? (
-          <MapStatusFallback status={status} theme="dark" />
-        ) : (
-          <div ref={mapContainerRef} className="w-full h-full" />
-        )}
+        <div ref={mapContainerRef} className="w-full h-full z-0" />
 
         {/* Selected Property Preview Pop-up */}
         {selectedProp ? (
           <Link
             href={`/${locale}/properties/${selectedProp.id}`}
-            className="absolute bottom-3 left-3 right-3 sm:left-auto sm:right-3 sm:w-84 bg-[#191512]/95 hover:bg-[#221D18]/95 backdrop-blur-md rounded-2xl p-4 border border-[#2A241F] hover:border-[#8C653E] text-white shadow-2xl z-30 transition-all duration-200 group"
+            className="absolute bottom-3 left-3 right-3 sm:left-auto sm:right-3 sm:w-84 bg-[#191512]/95 hover:bg-[#221D18]/95 backdrop-blur-md rounded-2xl p-4 border border-[#2A241F] hover:border-[#8C653E] text-white shadow-2xl z-[1001] transition-all duration-200 group"
           >
             <div className="flex items-start justify-between gap-3">
               <div className="min-w-0 flex-1">
@@ -315,7 +314,7 @@ export default function MapView({
             </div>
           </Link>
         ) : properties.length === 0 ? (
-          <div className="absolute inset-0 flex items-center justify-center bg-[#141210]/60 backdrop-blur-sm z-20 pointer-events-none">
+          <div className="absolute inset-0 flex items-center justify-center bg-[#141210]/60 backdrop-blur-sm z-[1001] pointer-events-none">
             <div className="text-center p-4">
               <Compass className="w-8 h-8 text-[#8C653E] mx-auto mb-2 animate-pulse" />
               <p className="text-xs text-[#A39A8F] font-light">
@@ -327,13 +326,13 @@ export default function MapView({
       </div>
 
       {/* Map Footer Notice */}
-      <div className="px-5 py-2.5 bg-[#0D0B0A] border-t border-[#2A241F] flex items-center justify-between text-[11px] text-[#8C827A]">
+      <div className="px-5 py-2.5 bg-[#0D0B0A] border-t border-[#2A241F] flex items-center justify-between text-[11px] text-[#8C827A] z-10">
         <span className="flex items-center gap-2">
           <Info className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
           <span className="truncate">
             {isTe
-              ? 'గూగుల్ మ్యాప్స్ ద్వారా ఆధారితం'
-              : 'Powered by Google Maps JavaScript API'}
+              ? 'మ్యాప్ డేటా © OpenStreetMap కాంట్రిబ్యూటర్స్'
+              : 'Map data © OpenStreetMap contributors'}
           </span>
         </span>
         <span className="font-mono text-[#C5A880] text-[10px] shrink-0 ml-2">

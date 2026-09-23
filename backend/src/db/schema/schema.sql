@@ -6,7 +6,9 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. ENUMS (Created idempotently)
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'property_type_enum') THEN
-        CREATE TYPE property_type_enum AS ENUM ('LAND', 'FLAT');
+        CREATE TYPE property_type_enum AS ENUM ('LAND', 'FLAT', 'VILLA');
+    ELSE
+        ALTER TYPE property_type_enum ADD VALUE IF NOT EXISTS 'VILLA';
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'property_status_enum') THEN
         CREATE TYPE property_status_enum AS ENUM ('DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE', 'SOLD', 'OFF_MARKET');
@@ -97,6 +99,7 @@ CREATE TABLE IF NOT EXISTS properties (
     
     -- Land Specifics
     total_acres DECIMAL(10, 4),
+    sq_yards DECIMAL(12, 2),
     survey_numbers TEXT[], -- Array of survey numbers
     soil_type VARCHAR(50),
     development_level VARCHAR(50),
@@ -112,6 +115,18 @@ CREATE TABLE IF NOT EXISTS properties (
     total_floors INT,
     amenities TEXT[],
     possession_status VARCHAR(50),
+
+    -- Villa Specifics
+    villa_plot_area_sq_yards DECIMAL(10, 2),
+    villa_built_up_area_sq_ft INT,
+    villa_configuration VARCHAR(100),
+    villa_floors VARCHAR(50),
+    villa_facing VARCHAR(20),
+    villa_community_name VARCHAR(255),
+    villa_gated_community BOOLEAN DEFAULT FALSE,
+    villa_bedrooms INT,
+    villa_bathrooms INT,
+    villa_amenities TEXT[],
     
     -- Pricing
     price_per_acre DECIMAL(15, 2),
@@ -174,3 +189,17 @@ CREATE INDEX IF NOT EXISTS idx_properties_orr_distance ON properties(distance_fr
 CREATE INDEX IF NOT EXISTS idx_enquiries_status ON enquiries(status);
 CREATE INDEX IF NOT EXISTS idx_enquiries_assigned_to ON enquiries(assigned_to);
 CREATE INDEX IF NOT EXISTS idx_property_documents_status ON property_documents(status);
+
+-- Schema Migrations / Alterations for existing databases
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS sq_yards DECIMAL(12, 2);
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_plot_area_sq_yards DECIMAL(10, 2);
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_built_up_area_sq_ft INT;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_configuration VARCHAR(100);
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_floors VARCHAR(50);
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_facing VARCHAR(20);
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_community_name VARCHAR(255);
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_gated_community BOOLEAN DEFAULT FALSE;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_bedrooms INT;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_bathrooms INT;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_amenities TEXT[];
+

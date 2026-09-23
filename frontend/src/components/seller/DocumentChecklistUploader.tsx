@@ -343,7 +343,7 @@ export default function DocumentChecklistUploader({
           // Check if document is tailored for land vs flat
           const isLandOnly = doc.appliesTo === 'LAND';
           const isFlatOnly = doc.appliesTo === 'FLAT';
-          const isRelevant = doc.appliesTo === 'BOTH' || doc.appliesTo === propertyType;
+          const isRelevant = doc.appliesTo === 'BOTH' || doc.appliesTo === propertyType || propertyType === 'VILLA';
 
           return (
             <div

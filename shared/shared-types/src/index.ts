@@ -9,6 +9,17 @@ import {
   UserRole,
 } from '../../constants/src/index';
 
+export {
+  PropertyType,
+  PropertyStatus,
+  DocumentType,
+  DocumentStatus,
+  ServiceTier,
+  EnquiryType,
+  EnquiryStatus,
+  UserRole,
+};
+
 export interface LocationDetails {
   village: string;
   mandal: string;
@@ -22,6 +33,7 @@ export interface LocationDetails {
 
 export interface LandDetails {
   totalAcres: number;
+  sqYards?: number;
   surveyNumbers: string[];
   soilType?: 'RED' | 'BLACK' | 'MIXED' | string;
   developmentLevel: 'RAW' | 'FENCED' | 'PARTIALLY_DEVELOPED' | 'VENTURE_READY';
@@ -39,6 +51,19 @@ export interface FlatDetails {
   amenities: string[];
   possessionStatus: 'READY_TO_MOVE' | 'UNDER_CONSTRUCTION';
   furnishingStatus?: 'UNFURNISHED' | 'SEMI_FURNISHED' | 'FULLY_FURNISHED';
+}
+
+export interface VillaDetails {
+  plotAreaSqYards?: number;
+  builtUpAreaSqFt?: number;
+  configuration?: string;
+  floors?: string;
+  facing?: 'EAST' | 'WEST' | 'NORTH' | 'SOUTH';
+  communityName?: string;
+  gatedCommunity?: boolean;
+  bedrooms?: number;
+  bathrooms?: number;
+  amenities?: string[];
 }
 
 export interface PricingDetails {
@@ -74,6 +99,7 @@ export interface Property {
   location: LocationDetails;
   land?: LandDetails;
   flat?: FlatDetails;
+  villa?: VillaDetails;
   pricing: PricingDetails;
   documents: Record<DocumentType, DocumentStatus>;
   mainImage: string;
@@ -81,6 +107,30 @@ export interface Property {
   sitePlanImage?: string;
   isFeatured: boolean;
   viewsCount: number;
+  // Extended project metadata & transparent auditing
+  projectHighlights?: string[];
+  locationHighlights?: string[];
+  bankApprovals?: string[];
+  externalLinks?: {
+    projectLink?: string;
+    mapLink?: string;
+    website?: string;
+  };
+  specialAttractions?: string[];
+  discrepancyNotes?: string[];
+  paymentTerms?: string[];
+  inventory?: Array<{
+    unitNumber: string;
+    facing: string;
+    plotAreaSqYards?: number;
+    builtUpAreaSqFt?: number;
+    status: string;
+  }>;
+  bookingAmount?: number;
+  monthlyInstallment?: number;
+  tenureMonths?: number;
+  promotedBy?: string;
+  reraNumber?: string;
   createdAt: string;
   updatedAt: string;
 }

@@ -112,6 +112,7 @@ function mapPropertyRow(row: any): Property {
     },
     land: row.type === 'LAND' ? {
       totalAcres: row.total_acres !== null && row.total_acres !== undefined ? parseFloat(row.total_acres) : undefined,
+      sqYards: row.sq_yards !== null && row.sq_yards !== undefined ? parseFloat(row.sq_yards) : undefined,
       surveyNumbers: row.survey_numbers || [],
       soilType: row.soil_type || undefined,
       developmentLevel: row.development_level || undefined,
@@ -127,6 +128,18 @@ function mapPropertyRow(row: any): Property {
       totalFloors: row.total_floors !== null && row.total_floors !== undefined ? parseInt(row.total_floors, 10) : undefined,
       amenities: row.amenities || [],
       possessionStatus: row.possession_status || undefined,
+    } : undefined,
+    villa: row.type === 'VILLA' ? {
+      plotAreaSqYards: row.villa_plot_area_sq_yards !== null && row.villa_plot_area_sq_yards !== undefined ? parseFloat(row.villa_plot_area_sq_yards) : undefined,
+      builtUpAreaSqFt: row.villa_built_up_area_sq_ft !== null && row.villa_built_up_area_sq_ft !== undefined ? parseInt(row.villa_built_up_area_sq_ft, 10) : undefined,
+      configuration: row.villa_configuration || undefined,
+      floors: row.villa_floors || undefined,
+      facing: row.villa_facing || undefined,
+      communityName: row.villa_community_name || undefined,
+      gatedCommunity: row.villa_gated_community !== null && row.villa_gated_community !== undefined ? !!row.villa_gated_community : undefined,
+      bedrooms: row.villa_bedrooms !== null && row.villa_bedrooms !== undefined ? parseInt(row.villa_bedrooms, 10) : undefined,
+      bathrooms: row.villa_bathrooms !== null && row.villa_bathrooms !== undefined ? parseInt(row.villa_bathrooms, 10) : undefined,
+      amenities: row.villa_amenities || [],
     } : undefined,
     pricing: {
       pricePerAcre: row.price_per_acre !== null && row.price_per_acre !== undefined ? parseFloat(row.price_per_acre) : undefined,
@@ -643,7 +656,7 @@ class Database {
     if (this.isTestMemoryMode) {
       const prop: Property = {
         ...data,
-        id: uuidv4(),
+        id: (data as any).id || uuidv4(),
         viewsCount: 0,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString(),
@@ -668,19 +681,23 @@ class Database {
         INSERT INTO properties (
           seller_id, type, status, title_en, title_te, description_en, description_te,
           village, mandal, district, latitude, longitude, distance_from_orr_km, zone, tier,
-          total_acres, survey_numbers, soil_type, development_level, road_width_ft,
+          total_acres, sq_yards, survey_numbers, soil_type, development_level, road_width_ft,
           water_available, electricity_available,
           sqft, bedrooms, bathrooms, floor, total_floors, amenities, possession_status,
+          villa_plot_area_sq_yards, villa_built_up_area_sq_ft, villa_configuration, villa_floors,
+          villa_facing, villa_community_name, villa_gated_community, villa_bedrooms, villa_bathrooms,
+          villa_amenities,
           price_per_acre, price_per_sqft, total_price, outrate, half_development_value, is_negotiable,
           main_image, gallery_images, site_plan_image, is_featured, views_count
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7,
           $8, $9, $10, $11, $12, $13, $14, $15,
-          $16, $17, $18, $19, $20,
-          $21, $22,
-          $23, $24, $25, $26, $27, $28, $29,
-          $30, $31, $32, $33, $34, $35,
-          $36, $37, $38, $39, $40
+          $16, $17, $18, $19, $20, $21,
+          $22, $23,
+          $24, $25, $26, $27, $28, $29, $30,
+          $31, $32, $33, $34, $35, $36, $37, $38, $39, $40,
+          $41, $42, $43, $44, $45, $46,
+          $47, $48, $49, $50, $51
         ) RETURNING *;
       `;
 
@@ -701,6 +718,7 @@ class Database {
         data.location.zone || null,
         data.location.tier,
         data.land?.totalAcres ?? null,
+        data.land?.sqYards ?? null,
         data.land?.surveyNumbers || null,
         data.land?.soilType || null,
         data.land?.developmentLevel || null,
@@ -714,6 +732,16 @@ class Database {
         data.flat?.totalFloors ?? null,
         data.flat?.amenities || null,
         data.flat?.possessionStatus || null,
+        data.villa?.plotAreaSqYards ?? null,
+        data.villa?.builtUpAreaSqFt ?? null,
+        data.villa?.configuration || null,
+        data.villa?.floors || null,
+        data.villa?.facing || null,
+        data.villa?.communityName || null,
+        data.villa?.gatedCommunity ?? false,
+        data.villa?.bedrooms ?? null,
+        data.villa?.bathrooms ?? null,
+        data.villa?.amenities || null,
         data.pricing.pricePerAcre ?? null,
         data.pricing.pricePerSqft ?? null,
         data.pricing.totalPrice,
@@ -768,6 +796,7 @@ class Database {
         location: updates.location ? { ...existing.location, ...updates.location } : existing.location,
         land: updates.land ? (existing.land ? { ...existing.land, ...updates.land } : updates.land) : existing.land,
         flat: updates.flat ? (existing.flat ? { ...existing.flat, ...updates.flat } : updates.flat) : existing.flat,
+        villa: updates.villa ? (existing.villa ? { ...existing.villa, ...updates.villa } : updates.villa) : existing.villa,
         pricing: updates.pricing ? { ...existing.pricing, ...updates.pricing } : existing.pricing,
         id: existing.id,
         updatedAt: new Date().toISOString(),
@@ -845,6 +874,10 @@ class Database {
       setClauses.push(`total_acres = $${idx++}`);
       values.push(updates.land.totalAcres);
     }
+    if (updates.land?.sqYards !== undefined) {
+      setClauses.push(`sq_yards = $${idx++}`);
+      values.push(updates.land.sqYards);
+    }
     if (updates.land?.surveyNumbers !== undefined) {
       setClauses.push(`survey_numbers = $${idx++}`);
       values.push(updates.land.surveyNumbers);
@@ -896,6 +929,46 @@ class Database {
     if (updates.flat?.possessionStatus !== undefined) {
       setClauses.push(`possession_status = $${idx++}`);
       values.push(updates.flat.possessionStatus);
+    }
+    if (updates.villa?.plotAreaSqYards !== undefined) {
+      setClauses.push(`villa_plot_area_sq_yards = $${idx++}`);
+      values.push(updates.villa.plotAreaSqYards);
+    }
+    if (updates.villa?.builtUpAreaSqFt !== undefined) {
+      setClauses.push(`villa_built_up_area_sq_ft = $${idx++}`);
+      values.push(updates.villa.builtUpAreaSqFt);
+    }
+    if (updates.villa?.configuration !== undefined) {
+      setClauses.push(`villa_configuration = $${idx++}`);
+      values.push(updates.villa.configuration);
+    }
+    if (updates.villa?.floors !== undefined) {
+      setClauses.push(`villa_floors = $${idx++}`);
+      values.push(updates.villa.floors);
+    }
+    if (updates.villa?.facing !== undefined) {
+      setClauses.push(`villa_facing = $${idx++}`);
+      values.push(updates.villa.facing);
+    }
+    if (updates.villa?.communityName !== undefined) {
+      setClauses.push(`villa_community_name = $${idx++}`);
+      values.push(updates.villa.communityName);
+    }
+    if (updates.villa?.gatedCommunity !== undefined) {
+      setClauses.push(`villa_gated_community = $${idx++}`);
+      values.push(updates.villa.gatedCommunity);
+    }
+    if (updates.villa?.bedrooms !== undefined) {
+      setClauses.push(`villa_bedrooms = $${idx++}`);
+      values.push(updates.villa.bedrooms);
+    }
+    if (updates.villa?.bathrooms !== undefined) {
+      setClauses.push(`villa_bathrooms = $${idx++}`);
+      values.push(updates.villa.bathrooms);
+    }
+    if (updates.villa?.amenities !== undefined) {
+      setClauses.push(`villa_amenities = $${idx++}`);
+      values.push(updates.villa.amenities);
     }
     if (updates.pricing?.pricePerAcre !== undefined) {
       setClauses.push(`price_per_acre = $${idx++}`);
@@ -1064,8 +1137,18 @@ class Database {
       if (params.maxPrice !== undefined) results = results.filter((p) => p.pricing.totalPrice <= params.maxPrice!);
       if (params.minAcres !== undefined) results = results.filter((p) => p.land?.totalAcres !== undefined && p.land.totalAcres >= params.minAcres!);
       if (params.maxAcres !== undefined) results = results.filter((p) => p.land?.totalAcres !== undefined && p.land.totalAcres <= params.maxAcres!);
-      if (params.minBedrooms !== undefined) results = results.filter((p) => p.flat?.bedrooms !== undefined && p.flat.bedrooms >= params.minBedrooms!);
-      if (params.maxBedrooms !== undefined) results = results.filter((p) => p.flat?.bedrooms !== undefined && p.flat.bedrooms <= params.maxBedrooms!);
+      if (params.minBedrooms !== undefined) {
+        results = results.filter((p) => {
+          const beds = p.flat?.bedrooms ?? p.villa?.bedrooms;
+          return beds !== undefined && beds >= params.minBedrooms!;
+        });
+      }
+      if (params.maxBedrooms !== undefined) {
+        results = results.filter((p) => {
+          const beds = p.flat?.bedrooms ?? p.villa?.bedrooms;
+          return beds !== undefined && beds <= params.maxBedrooms!;
+        });
+      }
       if (params.maxDistanceOrr !== undefined) {
         results = results.filter((p) => p.location.distanceFromOrrKm !== undefined && p.location.distanceFromOrrKm <= params.maxDistanceOrr!);
       }
@@ -1139,11 +1222,11 @@ class Database {
       values.push(params.maxAcres);
     }
     if (params.minBedrooms !== undefined) {
-      conditions.push(`bedrooms >= $${idx++}`);
+      conditions.push(`COALESCE(bedrooms, villa_bedrooms) >= $${idx++}`);
       values.push(params.minBedrooms);
     }
     if (params.maxBedrooms !== undefined) {
-      conditions.push(`bedrooms <= $${idx++}`);
+      conditions.push(`COALESCE(bedrooms, villa_bedrooms) <= $${idx++}`);
       values.push(params.maxBedrooms);
     }
     if (params.maxDistanceOrr !== undefined) {

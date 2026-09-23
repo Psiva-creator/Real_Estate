@@ -6,6 +6,7 @@
 export enum PropertyType {
   LAND = 'LAND',
   FLAT = 'FLAT',
+  VILLA = 'VILLA',
 }
 
 export enum PropertyStatus {
@@ -57,7 +58,7 @@ export const REQUIRED_VERIFICATION_DOCUMENTS: DocumentMeta[] = [
     titleTe: 'సేల్ డీడ్ (రిజిస్ట్రేషన్ పత్రం)',
     descriptionEn: 'Registered sale deed establishing current ownership.',
     descriptionTe: 'ప్రస్తుత యజమాని పేరిట ఉన్న రిజిస్టర్డ్ విక్రయ పత్రం.',
-    requiredFor: [PropertyType.LAND, PropertyType.FLAT],
+    requiredFor: [PropertyType.LAND, PropertyType.FLAT, PropertyType.VILLA],
   },
   {
     key: DocumentType.EC,
@@ -65,7 +66,7 @@ export const REQUIRED_VERIFICATION_DOCUMENTS: DocumentMeta[] = [
     titleTe: 'ఈసీ (ఎన్‌కంబరెన్స్ సర్టిఫికేట్)',
     descriptionEn: 'Certificate showing property is free from legal dues/liens (typically 30 years).',
     descriptionTe: 'ఆస్తిపై ఎలాంటి తాకట్టు లేదా చట్టపరమైన బాధ్యతలు లేవని ధృవీకరించే పత్రం.',
-    requiredFor: [PropertyType.LAND, PropertyType.FLAT],
+    requiredFor: [PropertyType.LAND, PropertyType.FLAT, PropertyType.VILLA],
   },
   {
     key: DocumentType.LINK_DOCUMENTS,
@@ -73,7 +74,7 @@ export const REQUIRED_VERIFICATION_DOCUMENTS: DocumentMeta[] = [
     titleTe: 'లింక్ డాక్యుమెంట్లు',
     descriptionEn: 'Chain of previous title transfers establishing unbroken ownership chain.',
     descriptionTe: 'గత యాజమాన్య బదిలీలకు సంబంధించిన పూర్తి లింక్ రికార్డులు.',
-    requiredFor: [PropertyType.LAND, PropertyType.FLAT],
+    requiredFor: [PropertyType.LAND, PropertyType.FLAT, PropertyType.VILLA],
   },
   {
     key: DocumentType.PAHANI,
@@ -113,7 +114,7 @@ export const REQUIRED_VERIFICATION_DOCUMENTS: DocumentMeta[] = [
     titleTe: 'హెచ్.ఎమ్.డి.ఎ / డి.టి.సి.పి అనుమతి పత్రం',
     descriptionEn: 'Sanctioned layout approval copy from HMDA or DTCP authority.',
     descriptionTe: 'అధికారిక HMDA లేదా DTCP ద్వారా ఆమోదించబడిన లేఅవుట్ కాపీ.',
-    requiredFor: [PropertyType.LAND, PropertyType.FLAT],
+    requiredFor: [PropertyType.LAND, PropertyType.FLAT, PropertyType.VILLA],
   },
   {
     key: DocumentType.MUTATION,
@@ -129,7 +130,7 @@ export const REQUIRED_VERIFICATION_DOCUMENTS: DocumentMeta[] = [
     titleTe: 'ఆస్తి పన్ను రసీదు (GHMC / మున్సిపల్)',
     descriptionEn: 'Latest municipal / gram panchayat property tax paid receipt.',
     descriptionTe: 'ఇటీవల చెల్లించిన పురపాలక లేదా గ్రామ పంచాయతీ పన్ను రసీదు.',
-    requiredFor: [PropertyType.LAND, PropertyType.FLAT],
+    requiredFor: [PropertyType.LAND, PropertyType.FLAT, PropertyType.VILLA],
   },
   {
     key: DocumentType.MASTER_PLAN,
@@ -153,7 +154,7 @@ export const REQUIRED_VERIFICATION_DOCUMENTS: DocumentMeta[] = [
     titleTe: 'సేల్ అగ్రిమెంట్',
     descriptionEn: 'Executed brokerage mediation agreement authorizing platform to represent listing.',
     descriptionTe: 'బ్రోకరేజ్ మరియు ప్రాపర్టీ ప్రాతినిధ్య ఒప్పంద పత్రం.',
-    requiredFor: [PropertyType.LAND, PropertyType.FLAT],
+    requiredFor: [PropertyType.LAND, PropertyType.FLAT, PropertyType.VILLA],
   },
 ];
 

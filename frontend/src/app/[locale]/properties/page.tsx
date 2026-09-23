@@ -7,6 +7,7 @@ import PropertyDiscovery from '@/components/properties/PropertyDiscovery';
 interface PropertiesPageProps {
   params: { locale: string };
   searchParams: {
+    status?: string;
     type?: string;
     q?: string;
     location?: string;

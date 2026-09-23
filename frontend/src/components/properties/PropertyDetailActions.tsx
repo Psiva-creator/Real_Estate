@@ -44,6 +44,7 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
   };
 
   const title = isTe && property.titleTe ? property.titleTe : property.title;
+  const isSold = property.status === 'SOLD';
 
   return (
     <>
@@ -53,13 +54,19 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
         <div>
           <div className="flex items-center justify-between">
             <span className="text-[10px] uppercase font-mono text-[#8C827A] tracking-widest block">
-              {isTe ? 'అమ్మకపు ధర' : 'Acquisition Value'}
+              {isSold
+                ? (isTe ? 'చివరి లిస్టింగ్ విలువ' : 'Last Listed Value')
+                : (isTe ? 'అమ్మకపు ధర' : 'Acquisition Value')}
             </span>
-            {property.pricing.isNegotiable && (
+            {isSold ? (
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase bg-[#7A2E22] text-white">
+                {isTe ? 'అమ్మబడింది' : 'Sold'}
+              </span>
+            ) : property.pricing.isNegotiable ? (
               <span className="px-2.5 py-0.5 rounded-full text-[10px] font-mono uppercase bg-[#F5F1EA] border border-[#E8E2D9] text-[#8C653E]">
                 {isTe ? 'చర్చించదగినది' : 'Negotiable'}
               </span>
-            )}
+            ) : null}
           </div>
           <div className="text-3xl sm:text-4xl font-serif font-normal text-[#191512] mt-1.5 tracking-tight">
             {formatINR(property.pricing.totalPrice)}
@@ -79,35 +86,61 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
 
         {/* Primary Functional Action Buttons */}
         <div className="space-y-2.5 pt-4 border-t border-[#E8E2D9]">
-          {/* Action 1: Book Free Site Visit */}
-          <button
-            type="button"
-            onClick={() => openEnquiry('SITE_VISIT')}
-            className="w-full py-3.5 px-4 rounded-xl bg-[#191512] hover:bg-[#2A241F] text-white font-medium text-xs tracking-wide shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
-          >
-            <Calendar className="w-4 h-4 text-[#C5A880]" />
-            <span>{dict.propertyDetail.bookVisitBtn}</span>
-          </button>
+          {isSold ? (
+            <>
+              {/* Action 1 for Sold: Inquire Similar Properties */}
+              <button
+                type="button"
+                onClick={() => openEnquiry('QUESTION')}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#8C653E] hover:bg-[#725232] text-white font-medium text-xs tracking-wide shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+              >
+                <MessageSquare className="w-4 h-4 text-[#F5F1EA]" />
+                <span>{dict.propertyDetail.inquireSimilar}</span>
+              </button>
 
-          {/* Action 2: Request Callback */}
-          <button
-            type="button"
-            onClick={() => openEnquiry('CALL')}
-            className="w-full py-3 px-4 rounded-xl bg-[#8C653E] hover:bg-[#725232] text-white font-medium text-xs tracking-wide transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
-          >
-            <Phone className="w-4 h-4 text-[#F5F1EA]" />
-            <span>{dict.propertyDetail.requestCallBtn}</span>
-          </button>
+              {/* Action 2 for Sold: Request Callback */}
+              <button
+                type="button"
+                onClick={() => openEnquiry('CALL')}
+                className="w-full py-3 px-4 rounded-xl border border-[#E8E2D9] hover:bg-[#FAF8F5] text-[#191512] font-medium text-xs transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+              >
+                <Phone className="w-4 h-4 text-[#8C653E]" />
+                <span>{dict.propertyDetail.requestCallBtn}</span>
+              </button>
+            </>
+          ) : (
+            <>
+              {/* Action 1: Book Free Site Visit */}
+              <button
+                type="button"
+                onClick={() => openEnquiry('SITE_VISIT')}
+                className="w-full py-3.5 px-4 rounded-xl bg-[#191512] hover:bg-[#2A241F] text-white font-medium text-xs tracking-wide shadow-sm transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+              >
+                <Calendar className="w-4 h-4 text-[#C5A880]" />
+                <span>{dict.propertyDetail.bookVisitBtn}</span>
+              </button>
 
-          {/* Action 3: Ask Legal/Property Question */}
-          <button
-            type="button"
-            onClick={() => openEnquiry('QUESTION')}
-            className="w-full py-2.5 px-4 rounded-xl border border-[#E8E2D9] hover:bg-[#FAF8F5] text-[#191512] font-medium text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
-          >
-            <MessageSquare className="w-3.5 h-3.5 text-[#8C653E]" />
-            <span>{dict.propertyDetail.askQuestionBtn}</span>
-          </button>
+              {/* Action 2: Request Callback */}
+              <button
+                type="button"
+                onClick={() => openEnquiry('CALL')}
+                className="w-full py-3 px-4 rounded-xl bg-[#8C653E] hover:bg-[#725232] text-white font-medium text-xs tracking-wide transition-all flex items-center justify-center gap-2 active:scale-[0.98] cursor-pointer"
+              >
+                <Phone className="w-4 h-4 text-[#F5F1EA]" />
+                <span>{dict.propertyDetail.requestCallBtn}</span>
+              </button>
+
+              {/* Action 3: Ask Legal/Property Question */}
+              <button
+                type="button"
+                onClick={() => openEnquiry('QUESTION')}
+                className="w-full py-2.5 px-4 rounded-xl border border-[#E8E2D9] hover:bg-[#FAF8F5] text-[#191512] font-medium text-xs transition-colors flex items-center justify-center gap-2 cursor-pointer"
+              >
+                <MessageSquare className="w-3.5 h-3.5 text-[#8C653E]" />
+                <span>{dict.propertyDetail.askQuestionBtn}</span>
+              </button>
+            </>
+          )}
 
           {/* Direct Telephone Mediation desk link */}
           <div className="pt-2 flex items-center justify-between text-xs text-[#8C827A] px-1">
@@ -177,7 +210,9 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
       <div className="fixed lg:hidden bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#E8E2D9] p-3 px-4 shadow-2xl flex items-center justify-between gap-3">
         <div>
           <span className="text-[10px] uppercase font-mono text-[#8C827A] block">
-            {isTe ? 'మొత్తం ధర' : 'Total Price'}
+            {isSold
+              ? (isTe ? 'చివరి లిస్టింగ్' : 'Last Listed')
+              : (isTe ? 'మొత్తం ధర' : 'Total Price')}
           </span>
           <span className="text-base font-serif font-semibold text-[#191512]">
             {formatINR(property.pricing.totalPrice)}
@@ -194,14 +229,25 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
             <span>{dict.enquiryModal.tabCall}</span>
           </button>
 
-          <button
-            type="button"
-            onClick={() => openEnquiry('SITE_VISIT')}
-            className="py-2.5 px-4 rounded-full bg-[#191512] text-white font-medium text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
-          >
-            <Calendar className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>{dict.propertyDetail.bookVisitBtn}</span>
-          </button>
+          {isSold ? (
+            <button
+              type="button"
+              onClick={() => openEnquiry('QUESTION')}
+              className="py-2.5 px-4 rounded-full bg-[#8C653E] text-white font-medium text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+            >
+              <MessageSquare className="w-3.5 h-3.5 text-white" />
+              <span>{isTe ? 'ఇలాంటివి' : 'Inquire Similar'}</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={() => openEnquiry('SITE_VISIT')}
+              className="py-2.5 px-4 rounded-full bg-[#191512] text-white font-medium text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+            >
+              <Calendar className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span>{dict.propertyDetail.bookVisitBtn}</span>
+            </button>
+          )}
         </div>
       </div>
 

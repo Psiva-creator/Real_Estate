@@ -29,8 +29,11 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
   const isTe = locale === 'te';
 
   const isLand = property.type === 'LAND';
+  const isFlat = property.type === 'FLAT';
+  const isVilla = property.type === 'VILLA';
   const land = property.land;
   const flat = property.flat;
+  const villa = property.villa;
 
   // Development level localization helper
   const getDevLevelText = (lvl?: string) => {
@@ -95,11 +98,17 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
         <h2 className="text-xl sm:text-2xl font-serif font-normal text-[#191512] flex items-center gap-2.5">
           {isLand ? (
             <Layers className="w-5 h-5 text-[#8C653E]" />
+          ) : isVilla ? (
+            <Home className="w-5 h-5 text-[#8C653E]" />
           ) : (
             <Building className="w-5 h-5 text-[#8C653E]" />
           )}
           <span>
-            {isLand ? dict.propertyDetail.landSpecs : dict.propertyDetail.flatSpecs}
+            {isLand
+              ? dict.propertyDetail.landSpecs
+              : isVilla
+              ? dict.propertyDetail.villaSpecs
+              : dict.propertyDetail.flatSpecs}
           </span>
         </h2>
       </div>
@@ -216,7 +225,7 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
       )}
 
       {/* Flat Specifications */}
-      {!isLand && flat && (
+      {isFlat && flat && (
         <div className="space-y-5">
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
             {/* Bedrooms */}
@@ -298,6 +307,139 @@ export default function PropertySpecs({ property, locale }: PropertySpecsProps) 
               </span>
               <div className="flex flex-wrap gap-2">
                 {flat.amenities.map((amenity, idx) => (
+                  <span
+                    key={idx}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F5] border border-[#E8E2D9] text-[#191512] text-xs font-medium"
+                  >
+                    <Check className="w-3.5 h-3.5 text-[#8C653E]" />
+                    <span>{amenity}</span>
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Villa Specifications */}
+      {isVilla && villa && (
+        <div className="space-y-5">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
+            {/* Configuration */}
+            {villa.configuration && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.configuration}
+                </span>
+                <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
+                  {villa.configuration}
+                </span>
+              </div>
+            )}
+
+            {/* Plot Area */}
+            {villa.plotAreaSqYards !== undefined && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.plotArea}
+                </span>
+                <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
+                  {villa.plotAreaSqYards.toLocaleString('en-IN')} Sq.Yds
+                </span>
+              </div>
+            )}
+
+            {/* Built-up Area */}
+            {villa.builtUpAreaSqFt !== undefined && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.builtUpArea}
+                </span>
+                <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
+                  {villa.builtUpAreaSqFt.toLocaleString('en-IN')} sq.ft
+                </span>
+              </div>
+            )}
+
+            {/* Floors */}
+            {villa.floors && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.floors}
+                </span>
+                <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
+                  {villa.floors}
+                </span>
+              </div>
+            )}
+
+            {/* Facing */}
+            {villa.facing && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.facing}
+                </span>
+                <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
+                  {villa.facing}
+                </span>
+              </div>
+            )}
+
+            {/* Bedrooms */}
+            {villa.bedrooms !== undefined && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.bedrooms}
+                </span>
+                <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
+                  {villa.bedrooms} BHK
+                </span>
+              </div>
+            )}
+
+            {/* Bathrooms */}
+            {villa.bathrooms !== undefined && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.bathrooms}
+                </span>
+                <span className="text-base sm:text-lg font-serif font-semibold text-[#191512] mt-1 block">
+                  {villa.bathrooms} Baths
+                </span>
+              </div>
+            )}
+
+            {/* Gated Community */}
+            {(villa.communityName || villa.gatedCommunity !== undefined) && (
+              <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                  {dict.propertyDetail.community}
+                </span>
+                <span className="text-sm font-serif font-semibold text-[#191512] mt-1 block truncate">
+                  {villa.communityName || (villa.gatedCommunity ? (isTe ? 'గేటెడ్ కమ్యూనిటీ' : 'Gated Enclave') : 'Independent')}
+                </span>
+              </div>
+            )}
+
+            {/* Master Plan Zone */}
+            <div className="p-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] col-span-2">
+              <span className="text-[10px] font-mono text-[#8C827A] uppercase tracking-wider block">
+                {dict.propertyDetail.zoning}
+              </span>
+              <span className="text-sm font-serif font-semibold text-[#191512] mt-1 block truncate">
+                {property.location.zone}
+              </span>
+            </div>
+          </div>
+
+          {/* Villa Amenities Chips */}
+          {villa.amenities && villa.amenities.length > 0 && (
+            <div className="pt-4 border-t border-[#E8E2D9] space-y-2.5">
+              <span className="text-xs font-mono uppercase tracking-wider text-[#8C827A] block">
+                {dict.propertyDetail.amenities}
+              </span>
+              <div className="flex flex-wrap gap-2">
+                {villa.amenities.map((amenity, idx) => (
                   <span
                     key={idx}
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#FAF8F5] border border-[#E8E2D9] text-[#191512] text-xs font-medium"

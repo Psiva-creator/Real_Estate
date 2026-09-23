@@ -12,6 +12,7 @@ export class PropertiesController {
   async search(req: Request, res: Response) {
     try {
       const {
+        status,
         type,
         tier,
         district,
@@ -31,6 +32,7 @@ export class PropertiesController {
       } = req.query;
 
       const searchParams: PropertySearchParams = {
+        status: status as PropertyStatus,
         type: type as PropertyType,
         tier: tier as ServiceTier,
         district: district as string,

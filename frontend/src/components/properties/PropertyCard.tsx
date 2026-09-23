@@ -29,7 +29,9 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
   const title = isTe && property.titleTe ? property.titleTe : property.title;
   const landmark = isTe && property.location.landmarkTe ? property.location.landmarkTe : property.location.landmark;
 
-  // Format area details based on Land or Flat
+  const isSold = property.status === 'SOLD';
+
+  // Format area details based on Land, Flat, or Villa
   const getAreaString = () => {
     if (property.type === 'LAND') {
       if (property.land?.totalAcres) {
@@ -42,6 +44,22 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
     }
     if (property.type === 'FLAT' && property.flat) {
       return `${property.flat.bedrooms} BHK (${property.flat.sqft} sq.ft)`;
+    }
+    if (property.type === 'VILLA' && property.villa) {
+      return `${property.villa.configuration || 'Villa'} (${property.villa.builtUpAreaSqFt} sq.ft)`;
+    }
+    return 'Residential';
+  };
+
+  const getTypeBadgeLabel = () => {
+    if (property.type === 'LAND') {
+      return isTe ? 'భూమి / ప్లాట్' : 'Land / Plot';
+    }
+    if (property.type === 'FLAT') {
+      return isTe ? 'ఫ్లాట్ / అపార్ట్‌మెంట్' : 'Apartment';
+    }
+    if (property.type === 'VILLA') {
+      return isTe ? 'లగ్జరీ విల్లా' : 'Luxury Villa';
     }
     return 'Residential';
   };
@@ -71,23 +89,26 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
 
         {/* Top Badges */}
-        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none">
-          {/* Property Type Badge */}
-          <span
-            className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider shadow-sm pointer-events-auto backdrop-blur-sm ${
-              property.type === 'LAND'
-                ? 'bg-[#8C653E]/90 text-white border border-[#8C653E]/50'
-                : 'bg-[#191512]/90 text-[#FAF8F5] border border-white/20'
-            }`}
-          >
-            {property.type === 'LAND'
-              ? isTe
-                ? 'భూమి / ప్లాట్'
-                : 'Land Parcel'
-              : isTe
-              ? 'ఫ్లాట్ / అపార్ట్‌మెంట్'
-              : 'Residence / Flat'}
-          </span>
+        <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none gap-2">
+          {/* Status & Property Type Badges */}
+          <div className="flex items-center gap-1.5 flex-wrap pointer-events-auto">
+            {isSold && (
+              <span className="px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider shadow-sm bg-[#7A2E22] text-white border border-white/20">
+                {isTe ? 'అమ్మబడింది' : 'Sold'}
+              </span>
+            )}
+            <span
+              className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider shadow-sm backdrop-blur-sm ${
+                property.type === 'LAND'
+                  ? 'bg-[#8C653E]/90 text-white border border-[#8C653E]/50'
+                  : property.type === 'VILLA'
+                  ? 'bg-[#2E3D2F]/90 text-[#FAF8F5] border border-white/20'
+                  : 'bg-[#191512]/90 text-[#FAF8F5] border border-white/20'
+              }`}
+            >
+              {getTypeBadgeLabel()}
+            </span>
+          </div>
 
           {/* 13-Doc Verification Shield */}
           <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[#191512] text-[11px] font-semibold shadow-sm pointer-events-auto border border-[#E8E2D9]">
@@ -184,23 +205,40 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
           </div>
 
           {/* Action Buttons */}
-          <div className="grid grid-cols-2 gap-2">
-            <Link
-              href={`/${locale}/properties/${property.id}`}
-              className="px-3 py-2.5 rounded-full border border-[#E8E2D9] text-[#191512] hover:bg-[#F5F1EA] text-xs font-semibold tracking-wider uppercase text-center transition-colors tap-target flex items-center justify-center"
-            >
-              {isTe ? 'వివరాలు' : 'Details'}
-            </Link>
+          {isSold ? (
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href={`/${locale}/properties/${property.id}`}
+                className="px-3 py-2.5 rounded-full border border-[#E8E2D9] text-[#191512] hover:bg-[#F5F1EA] text-xs font-semibold tracking-wider uppercase text-center transition-colors tap-target flex items-center justify-center"
+              >
+                {isTe ? 'వివరాలు' : 'Details'}
+              </Link>
+              <Link
+                href={`/${locale}/properties?status=FOR_SALE&type=${property.type}`}
+                className="px-3 py-2.5 rounded-full bg-[#8C653E] hover:bg-[#6D4C2D] text-white text-xs font-semibold tracking-wider uppercase shadow-sm transition-all text-center tap-target flex items-center justify-center"
+              >
+                <span>{isTe ? 'ఇలాంటివి' : 'Similar Units'}</span>
+              </Link>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 gap-2">
+              <Link
+                href={`/${locale}/properties/${property.id}`}
+                className="px-3 py-2.5 rounded-full border border-[#E8E2D9] text-[#191512] hover:bg-[#F5F1EA] text-xs font-semibold tracking-wider uppercase text-center transition-colors tap-target flex items-center justify-center"
+              >
+                {isTe ? 'వివరాలు' : 'Details'}
+              </Link>
 
-            <button
-              type="button"
-              onClick={handleBookVisit}
-              className="px-3 py-2.5 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] text-xs font-semibold tracking-wider uppercase shadow-sm transition-all text-center tap-target flex items-center justify-center gap-1.5 active:scale-[0.98]"
-            >
-              <Calendar className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
-              <span>{isTe ? 'సైట్ విజిట్' : 'Site Visit'}</span>
-            </button>
-          </div>
+              <button
+                type="button"
+                onClick={handleBookVisit}
+                className="px-3 py-2.5 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] text-xs font-semibold tracking-wider uppercase shadow-sm transition-all text-center tap-target flex items-center justify-center gap-1.5 active:scale-[0.98]"
+              >
+                <Calendar className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
+                <span>{isTe ? 'సైట్ విజిట్' : 'Site Visit'}</span>
+              </button>
+            </div>
+          )}
         </div>
       </div>
     </div>
