@@ -360,7 +360,7 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
 
 /** Returns true if the API_BASE_URL is configured and points to the real backend. */
 function isRealBackend(): boolean {
@@ -820,6 +820,9 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   const cleanId = identifier.trim().toLowerCase();
 
   if (cleanId === 'admin@telanganarealty.in') {
+    if (password !== 'Director@Telangana2026!' && password !== 'Admin@1234') {
+      throw new Error('Invalid staff security credentials. Access denied.');
+    }
     return {
       token: 'mock-jwt-admin-token-2026',
       user: {
@@ -835,6 +838,9 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   }
 
   if (cleanId === 'suresh.reddy@telanganarealty.in') {
+    if (password !== 'Advisor@Telangana2026!' && password !== 'Agent@1234') {
+      throw new Error('Invalid advisor credentials. Access denied.');
+    }
     return {
       token: 'mock-jwt-agent-token-2026',
       user: {
@@ -1476,7 +1482,7 @@ export async function verifyPropertyDocumentApi(
  * or 'http://localhost:5000/api' -> 'http://localhost:5000'
  */
 export function getBackendRootUrl(): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
   return base.replace(/\/api\/?$/, '');
 }
 

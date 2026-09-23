@@ -21,6 +21,8 @@ import PropertySpecs from '@/components/properties/PropertySpecs';
 import PropertyLocationMap from '@/components/properties/PropertyLocationMap';
 import PropertyDetailActions from '@/components/properties/PropertyDetailActions';
 
+export const dynamicParams = true;
+
 export function generateStaticParams() {
   const params: { locale: string; id: string }[] = [];
   LOCALES.forEach((locale) => {
