@@ -27,11 +27,35 @@ app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 // Static uploads serving (for local file driver)
 app.use('/uploads', express.static(path.resolve(config.uploadDir)));
 
+// --- ROOT & SERVICE DISCOVERY ---
+app.get('/', (_req: Request, res: Response) => {
+  res.json({
+    service: 'Telangana & Hyderabad Real-Estate Brokerage Backend API',
+    status: 'healthy',
+    version: '1.0.0',
+    documentation: '/api/docs/',
+    health: '/api/health',
+    endpoints: {
+      properties: '/api/properties',
+      search: '/api/properties/search',
+      enquiries: '/api/enquiries',
+      maps: '/api/maps',
+      auth: '/api/auth',
+    },
+  });
+});
+
 // --- API DOCUMENTATION (SWAGGER UI) ---
+app.get('/docs.json', (_req: Request, res: Response) => {
+  res.json(openApiSpec);
+});
 app.get('/api/docs.json', (_req: Request, res: Response) => {
   res.json(openApiSpec);
 });
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
+app.use('/docs', (_req: Request, res: Response) => res.redirect(301, '/api/docs/'));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, {
+  customSiteTitle: 'Telangana Real-Estate Brokerage API Docs',
+}));
 
 // --- HEALTH CHECK ---
 const handleHealthCheck = (_req: Request, res: Response) => {
@@ -51,6 +75,7 @@ authRouter.post('/register', authController.register.bind(authController));
 authRouter.post('/login', authController.login.bind(authController));
 authRouter.get('/me', requireAuth, authController.me.bind(authController));
 app.use('/api/auth', authRouter);
+app.use('/auth', authRouter);
 
 // --- PROPERTIES ROUTES (PUBLIC & SELLER) ---
 const propertiesRouter = express.Router();
@@ -75,6 +100,7 @@ propertiesRouter.delete(
   propertiesController.deleteProperty.bind(propertiesController)
 );
 app.use('/api/properties', propertiesRouter);
+app.use('/properties', propertiesRouter);
 
 // --- DOCUMENTS & 13-VERIFICATION GATE ROUTES ---
 const documentsRouter = express.Router();
@@ -146,6 +172,7 @@ enquiriesRouter.patch(
   enquiriesController.scheduleSiteVisit.bind(enquiriesController)
 );
 app.use('/api/enquiries', enquiriesRouter);
+app.use('/enquiries', enquiriesRouter);
 
 // --- OWNERS / SELLERS ROUTES ---
 const ownersRouter = express.Router();
@@ -158,6 +185,7 @@ app.use('/api/owners', ownersRouter);
 const mapsRouter = express.Router();
 mapsRouter.get('/distance', mapsController.calculateOrrDistance.bind(mapsController));
 app.use('/api/maps', mapsRouter);
+app.use('/maps', mapsRouter);
 
 // --- ADMIN / TEAM BACK-OFFICE ROUTES ---
 const adminRouter = express.Router();
