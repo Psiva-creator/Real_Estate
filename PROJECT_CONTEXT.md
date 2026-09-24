@@ -337,14 +337,14 @@ backend/src/
 
 ---
 
-## 16. Known Issues & Quick Fixes
+## 16. Known Issues & Resolution Status
 
 1. **Root `package.json` Workspaces:**
-   - Root `package.json` configured `"workspaces": ["apps/*", "packages/*"]`, but actual folders are `frontend`, `backend`, `shared/constants`, `shared/shared-types`.
-   - *Fix:* Update root `package.json` to `"workspaces": ["frontend", "backend", "shared/*"]`.
+   - *Status:* **RESOLVED** (Updated `workspaces` to `["frontend", "backend"]`).
 2. **CORS Unit Test DB Initialization:**
-   - `backend/tests/cors.test.ts` test 8 calls `GET /api/properties` without invoking `initTestDb()`, causing a 500 error when PostgreSQL is not running locally.
-   - *Fix:* Add `beforeEach(async () => { await initTestDb(); })` to `cors.test.ts`.
+   - *Status:* **RESOLVED** (Added `beforeEach(async () => { await initTestDb(); })` to `backend/tests/cors.test.ts`; 100% unit tests pass: 42/42).
+3. **Scope Extension & Sourcing Intake:**
+   - *Status:* **DISPATCHED** (Scope Amendment #1 formalized in `project-lead/sprint-tracking/scope-lock.md`, sample villa `PROP-007` sourced, work orders generated in `project-lead/sprint-tracking/sprint-work-orders.md`).
 
 ---
 
