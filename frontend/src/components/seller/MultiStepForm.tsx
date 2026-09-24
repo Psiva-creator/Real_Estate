@@ -1068,6 +1068,125 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 </div>
               </div>
             )}
+
+            {/* Villa Specs */}
+            {formData.propertyType === 'VILLA' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'ప్లాట్ విస్తీర్ణం (చదరపు గజాలు)' : 'Plot Area (Sq. Yards)'} *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.plotSqYards}
+                      onChange={(e) => updateField('plotSqYards', e.target.value)}
+                      placeholder="e.g. 350"
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
+                        errors.plotSqYards ? 'border-rose-400 bg-rose-50/30' : 'border-slate-300'
+                      }`}
+                    />
+                    {errors.plotSqYards && (
+                      <p className="text-xs text-rose-600 mt-1">{errors.plotSqYards}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'నిర్మిత విస్తీర్ణం (చదరపు అడుగులు)' : 'Built-up Area (Sq. Ft)'} *
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.builtUpSqft}
+                      onChange={(e) => updateField('builtUpSqft', e.target.value)}
+                      placeholder="e.g. 4200"
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
+                        errors.builtUpSqft ? 'border-rose-400 bg-rose-50/30' : 'border-slate-300'
+                      }`}
+                    />
+                    {errors.builtUpSqft && (
+                      <p className="text-xs text-rose-600 mt-1">{errors.builtUpSqft}</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {sfDict.details.bedroomsLabel}
+                    </label>
+                    <select
+                      value={formData.bedrooms}
+                      onChange={(e) => updateField('bedrooms', e.target.value)}
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    >
+                      <option value="3">3 BHK</option>
+                      <option value="4">4 BHK</option>
+                      <option value="5">5 BHK</option>
+                      <option value="6">6+ BHK</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {sfDict.details.bathroomsLabel}
+                    </label>
+                    <select
+                      value={formData.bathrooms}
+                      onChange={(e) => updateField('bathrooms', e.target.value)}
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    >
+                      <option value="3">3</option>
+                      <option value="4">4</option>
+                      <option value="5">5</option>
+                      <option value="6">6+</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'అంతస్తుల నిర్మాణం' : 'Floor Configuration'}
+                    </label>
+                    <select
+                      value={formData.floorsConfig}
+                      onChange={(e) => updateField('floorsConfig', e.target.value as any)}
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    >
+                      <option value="G+1">G+1 Duplex</option>
+                      <option value="G+2">G+2 Triplex</option>
+                      <option value="Triplex">Luxury Triplex</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center gap-2.5 p-3.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.privateGarden}
+                      onChange={(e) => updateField('privateGarden', e.target.checked)}
+                      className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                    />
+                    <span className="text-xs font-medium text-slate-700">
+                      {isTe ? 'సొంత తోట / ప్రైవేట్ గార్డెన్ కలదు' : 'Private Landscaped Garden Available'}
+                    </span>
+                  </label>
+
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'కవర్డ్ కార్ పార్కింగ్ సంఖ్య' : 'Covered Car Parking Bays'}
+                    </label>
+                    <input
+                      type="number"
+                      value={formData.coveredParking}
+                      onChange={(e) => updateField('coveredParking', e.target.value)}
+                      placeholder="e.g. 2"
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         )}
 
