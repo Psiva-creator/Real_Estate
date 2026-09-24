@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS properties (
     -- Stats
     is_featured BOOLEAN DEFAULT FALSE,
     views_count INT DEFAULT 0,
+    boundary_coordinates JSONB DEFAULT NULL,
     
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
