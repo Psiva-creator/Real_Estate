@@ -552,8 +552,109 @@ export async function runSeeds() {
     isFeatured: false,
   });
 
-  // 5. Create / Upsert Exactly 78 Property Documents (13 per property)
-  const verifiedProps = [prop1, prop2, prop3, prop4];
+  // Property 7: Mokila Ultra-Luxury Gated Villa (Tier 2, LIVE, 100% Verified)
+  const prop7Id = '9a5c8e21-4f11-482a-bc93-d14285703901';
+  const prop7 = await upsertProperty({
+    id: prop7Id,
+    sellerId: seller4.id,
+    type: 'VILLA',
+    status: 'LIVE',
+    titleEn: '4 BHK Ultra-Luxury Triplex Gated Villa in Mokila Growth Belt',
+    titleTe: 'మోకిల గ్రోత్ బెల్ట్‌లో 4 BHK అల్ట్రా లగ్జరీ ట్రిప్లెక్స్ గేటెడ్ విల్లా',
+    descriptionEn:
+      'Brand-new 4 BHK G+2 Triplex Villa in an upscale 40-acre gated community. 350 sq.yd plot with 4,200 sq.ft built-up area, private landscaped garden, Italian marble flooring, 30,000 sq.ft clubhouse with swimming pool, and 24/7 security. Just 8.2 km from ORR Exit 2.',
+    descriptionTe:
+      'మోకిల 40 ఎకరాల గేటెడ్ కమ్యూనిటీలో బ్రాండ్ న్యూ 4 BHK G+2 ట్రిప్లెక్స్ విల్లా. 350 గజాల ప్లాట్, 4,200 చ.అ. నిర్మాణం, సొంత తోట మరియు క్లబ్‌హౌస్ సదుపాయాలు.',
+    location: {
+      district: 'Rangareddy',
+      mandal: 'Shankarpally',
+      village: 'Mokila',
+      latitude: 17.4201,
+      longitude: 78.1923,
+      distanceFromOrrKm: 8.2,
+      zone: 'R1 Residential Gated',
+      tier: 'TIER_2',
+    },
+    villa: {
+      plotSqYards: 350,
+      builtUpSqft: 4200,
+      bedrooms: 4,
+      bathrooms: 5,
+      floors: 3,
+      amenities: ['Clubhouse', 'Swimming Pool', 'Private Garden', 'Power Backup', '24/7 Security'],
+      possessionStatus: 'READY_TO_MOVE',
+    },
+    pricing: {
+      pricePerSqft: 11547,
+      totalPrice: 48500000,
+      isNegotiable: true,
+    },
+    boundaryCoordinates: [
+      { lat: 17.4205, lng: 78.1919 },
+      { lat: 17.4206, lng: 78.1927 },
+      { lat: 17.4197, lng: 78.1928 },
+      { lat: 17.4196, lng: 78.1918 },
+    ],
+    mainImage: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=800&q=80',
+      'https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=800&q=80',
+    ],
+    isFeatured: true,
+  });
+
+  // Property 8: Maheshwaram Managed Agro-Farmland (Tier 2, LIVE, 100% Verified)
+  const prop8Id = '5d3f9b12-7e44-461a-9821-b38421098472';
+  const prop8 = await upsertProperty({
+    id: prop8Id,
+    sellerId: seller5.id,
+    type: 'LAND',
+    status: 'LIVE',
+    titleEn: '2.50 Acre Clear-Title Managed Agro-Farmland in Maheshwaram Growth Belt',
+    titleTe: 'మహేశ్వరం గ్రోత్ కారిడార్‌లో 2.50 ఎకరాల స్పష్టమైన టైటిల్ సాగు భూమి / వ్యవసాయ క్షేత్రం',
+    descriptionEn:
+      'Clear title 2.50 acre fertile agricultural land in Mansanpally Village, Maheshwaram. 350 mature Malabar Neem trees, 40 organic fruit trees, automated micro-drip irrigation, and 2 high-yield borewells. 11.5 km from ORR Exit 14 Tukkuguda.',
+    descriptionTe:
+      'మహేశ్వరం మండలం మాన్సన్‌పల్లిలో 2.50 ఎకరాల సాగు భూమి. 350 మలబార్ వేప చెట్లు, డ్రిప్ ఇరిగేషన్ మరియు 2 బోర్‌వెల్స్ సదుపాయం.',
+    location: {
+      district: 'Rangareddy',
+      mandal: 'Maheshwaram',
+      village: 'Mansanpally',
+      latitude: 17.1824,
+      longitude: 78.4356,
+      distanceFromOrrKm: 11.5,
+      zone: 'Agricultural & Conservation',
+      tier: 'TIER_2',
+    },
+    land: {
+      totalAcres: 2.5,
+      surveyNumbers: ['184/A', '184/AA'],
+      soilType: 'RED_LOAM',
+      developmentLevel: 'FENCED_WITH_GATE',
+      roadWidthFt: 30,
+      waterAvailable: true,
+      electricityAvailable: true,
+    },
+    pricing: {
+      pricePerAcre: 12500000,
+      totalPrice: 31250000,
+      isNegotiable: true,
+    },
+    boundaryCoordinates: [
+      { lat: 17.1831, lng: 78.4348 },
+      { lat: 17.1832, lng: 78.4365 },
+      { lat: 17.1818, lng: 78.4364 },
+      { lat: 17.1817, lng: 78.4347 },
+    ],
+    mainImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1592417817098-8f3d6910985b?auto=format&fit=crop&w=800&q=80',
+    ],
+    isFeatured: false,
+  });
+
+  // 5. Create / Upsert Exactly 104 Property Documents (13 per property)
+  const verifiedProps = [prop1, prop2, prop3, prop4, prop7, prop8];
   for (const prop of verifiedProps) {
     for (const docType of ALL_13_DOCS) {
       await db.upsertDocument({
@@ -636,10 +737,10 @@ export async function runSeeds() {
   }
 
   console.log('✅ Seeding complete!');
-  console.log(`- Users: 6 (1 Admin, 2 Agents, 3 Sellers)`);
-  console.log(`- Sourced Sellers: 3`);
-  console.log(`- Properties: 6 (4 LIVE & Verified, 1 UNDER_REVIEW, 1 DRAFT)`);
-  console.log(`- Property Documents: 78 (53 Verified, 1 Uploaded, 24 Pending)`);
+  console.log(`- Users: 8 (1 Admin, 2 Agents, 5 Sellers)`);
+  console.log(`- Sourced Sellers: 5`);
+  console.log(`- Properties: 8 (6 LIVE & Verified, 1 UNDER_REVIEW, 1 DRAFT)`);
+  console.log(`- Property Documents: 104 (79 Verified, 1 Uploaded, 24 Pending)`);
   console.log(`- Enquiries: ${existingEnquiries.length > 0 ? existingEnquiries.length : 2}`);
 }
 
