@@ -77,6 +77,7 @@ export interface MockProperty {
   dharaniApproved?: boolean;
   hmdaApproved?: boolean;
   reraApproved?: boolean;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
 }
 
 export const MOCK_PROPERTIES: MockProperty[] = [
@@ -399,5 +400,56 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     isFeatured: true,
     isOrrCorridor: true,
     hmdaApproved: true,
+  },
+  {
+    id: 'PROP-HYD-008',
+    title: '2.50 Acre Managed Agro-Farmland in Maheshwaram Growth Belt',
+    titleTe: 'మహేశ్వరం గ్రోత్ కారిడార్‌లో 2.50 ఎకరాల సాగు భూమి / వ్యవసాయ క్షేత్రం',
+    description: 'Clear-title 2.50 acre fertile agricultural land in Mansanpally Village, Maheshwaram. 350 mature Malabar Neem trees, 40 organic fruit trees, automated micro-drip irrigation, and 2 high-yield borewells. 11.5 km from ORR Exit 14 Tukkuguda.',
+    descriptionTe: 'మహేశ్వరం మండలం మాన్సన్‌పల్లిలో 2.50 ఎకరాల సాగు భూమి. 350 మలబార్ వేప చెట్లు, డ్రిప్ ఇరిగేషన్ మరియు 2 బోర్‌వెల్స్ సదుపాయం.',
+    type: 'LAND',
+    status: 'VERIFIED',
+    location: {
+      village: 'Mansanpally',
+      mandal: 'Maheshwaram',
+      district: 'Rangareddy',
+      distanceFromOrrKm: 11.5,
+      zone: 'Agricultural & Conservation',
+      tier: 'TIER_2',
+      landmark: 'Near Maheshwaram Electronic SEZ / Hardware Park',
+      landmarkTe: 'మహేశ్వరం ఎలక్ట్రానిక్ సెజ్ సమీపంలో',
+      latitude: 17.1824,
+      longitude: 78.4356,
+    },
+    pricing: {
+      totalPrice: 31250000, // ₹3.125 Cr
+      pricePerAcre: 12500000,
+      isNegotiable: true,
+    },
+    land: {
+      totalAcres: 2.5,
+      sqYards: 12100,
+      surveyNumbers: ['184/A', '184/AA'],
+      soilType: 'RED',
+      developmentLevel: 'FENCED',
+      roadWidthFt: 30,
+      waterAvailable: true,
+      electricityAvailable: true,
+    },
+    boundaryCoordinates: [
+      { lat: 17.1831, lng: 78.4348 },
+      { lat: 17.1832, lng: 78.4365 },
+      { lat: 17.1818, lng: 78.4364 },
+      { lat: 17.1817, lng: 78.4347 },
+    ],
+    mainImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1592417817098-8f3d6910985b?auto=format&fit=crop&w=800&q=80',
+    ],
+    verifiedDocsCount: 13,
+    totalDocsRequired: 13,
+    isFeatured: false,
+    isOrrCorridor: false,
+    dharaniApproved: true,
   },
 ];
