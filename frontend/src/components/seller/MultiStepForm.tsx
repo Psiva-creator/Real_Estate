@@ -277,6 +277,20 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         };
       }
 
+      // Villa specifics mapping
+      let villaPayload: CreatePropertyDTO['villa'] = undefined;
+      if (formData.propertyType === 'VILLA') {
+        villaPayload = {
+          plotSqYards: parseFloat(formData.plotSqYards) || 300,
+          builtUpSqft: parseFloat(formData.builtUpSqft) || 3000,
+          bedrooms: parseInt(formData.bedrooms, 10) || 4,
+          bathrooms: parseInt(formData.bathrooms, 10) || 4,
+          floorsConfig: formData.floorsConfig || 'G+2',
+          privateGarden: formData.privateGarden,
+          coveredParking: parseInt(formData.coveredParking, 10) || 2,
+        };
+      }
+
       // Pricing details mapping
       const pricingPayload: CreatePropertyDTO['pricing'] = {
         totalPrice: totalPriceNum,
@@ -290,6 +304,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       const mainImage =
         formData.propertyType === 'LAND'
           ? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
+          : formData.propertyType === 'VILLA'
+          ? 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80'
           : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80';
 
       const payload: CreatePropertyDTO = {
@@ -313,6 +329,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         },
         land: landPayload,
         flat: flatPayload,
+        villa: villaPayload,
+        boundaryCoordinates: formData.boundaryCoordinates,
         pricing: pricingPayload,
         mainImage,
       };
