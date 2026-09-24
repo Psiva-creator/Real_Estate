@@ -1489,6 +1489,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       <span className="font-semibold text-slate-700">Acreage:</span> {formData.totalAcres} Acres{' '}
                       {formData.guntas ? `(${formData.guntas} Guntas)` : ''}
                     </p>
+                  ) : formData.propertyType === 'VILLA' ? (
+                    <p>
+                      <span className="font-semibold text-slate-700">Villa Specs:</span> {formData.bedrooms} BHK ({formData.builtUpSqft} sq.ft / {formData.plotSqYards} sq.yd) - {formData.floorsConfig}
+                    </p>
                   ) : (
                     <p>
                       <span className="font-semibold text-slate-700">Configuration:</span> {formData.bedrooms} BHK ({formData.sqft} sq.ft)
