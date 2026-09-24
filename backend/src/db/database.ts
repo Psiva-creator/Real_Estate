@@ -128,6 +128,15 @@ function mapPropertyRow(row: any): Property {
       amenities: row.amenities || [],
       possessionStatus: row.possession_status || undefined,
     } : undefined,
+    villa: row.type === 'VILLA' ? {
+      plotSqYards: row.total_acres !== null && row.total_acres !== undefined ? Math.round(parseFloat(row.total_acres) * 4840) : undefined,
+      builtUpSqft: row.sqft !== null && row.sqft !== undefined ? parseInt(row.sqft, 10) : undefined,
+      bedrooms: row.bedrooms !== null && row.bedrooms !== undefined ? parseInt(row.bedrooms, 10) : undefined,
+      bathrooms: row.bathrooms !== null && row.bathrooms !== undefined ? parseInt(row.bathrooms, 10) : undefined,
+      floors: row.total_floors !== null && row.total_floors !== undefined ? parseInt(row.total_floors, 10) : undefined,
+      amenities: row.amenities || [],
+      possessionStatus: row.possession_status || undefined,
+    } : undefined,
     pricing: {
       pricePerAcre: row.price_per_acre !== null && row.price_per_acre !== undefined ? parseFloat(row.price_per_acre) : undefined,
       pricePerSqft: row.price_per_sqft !== null && row.price_per_sqft !== undefined ? parseFloat(row.price_per_sqft) : undefined,
@@ -139,6 +148,7 @@ function mapPropertyRow(row: any): Property {
     mainImage: row.main_image,
     galleryImages: row.gallery_images || [],
     sitePlanImage: row.site_plan_image || undefined,
+    boundaryCoordinates: row.boundary_coordinates ?? null,
     isFeatured: !!row.is_featured,
     viewsCount: parseInt(row.views_count || '0', 10),
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
