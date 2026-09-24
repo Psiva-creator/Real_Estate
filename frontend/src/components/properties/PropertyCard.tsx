@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -11,6 +11,8 @@ import {
   Home,
   CheckCircle2,
   Compass,
+  Heart,
+  Sparkles,
 } from 'lucide-react';
 import { Locale } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
@@ -24,12 +26,44 @@ interface PropertyCardProps {
 
 export default function PropertyCard({ property, locale, onBookVisit }: PropertyCardProps) {
   const [imgSrc, setImgSrc] = useState(property.mainImage);
+  const [isFavorite, setIsFavorite] = useState(false);
   const isTe = locale === 'te';
+
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('trh_saved_properties');
+      if (saved) {
+        const list = JSON.parse(saved);
+        if (Array.isArray(list)) {
+          setIsFavorite(list.includes(property.id));
+        }
+      }
+    } catch {}
+  }, [property.id]);
+
+  const toggleFavorite = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    try {
+      const saved = localStorage.getItem('trh_saved_properties');
+      let list: string[] = saved ? JSON.parse(saved) : [];
+      if (!Array.isArray(list)) list = [];
+      if (list.includes(property.id)) {
+        list = list.filter((id) => id !== property.id);
+        setIsFavorite(false);
+      } else {
+        list.push(property.id);
+        setIsFavorite(true);
+      }
+      localStorage.setItem('trh_saved_properties', JSON.stringify(list));
+      window.dispatchEvent(new Event('trh_favorites_updated'));
+    } catch {}
+  };
 
   const title = isTe && property.titleTe ? property.titleTe : property.title;
   const landmark = isTe && property.location.landmarkTe ? property.location.landmarkTe : property.location.landmark;
 
-  // Format area details based on Land or Flat
+  // Format area details based on Land, Flat or Villa
   const getAreaString = () => {
     if (property.type === 'LAND') {
       if (property.land?.totalAcres) {
@@ -39,6 +73,9 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
         return `${property.land.sqYards} Sq.Yds`;
       }
       return 'Plot';
+    }
+    if (property.type === 'VILLA' && property.villa) {
+      return `${property.villa.bedrooms} BHK (${property.villa.builtUpSqft} sq.ft / ${property.villa.plotSqYards} sq.yd)`;
     }
     if (property.type === 'FLAT' && property.flat) {
       return `${property.flat.bedrooms} BHK (${property.flat.sqft} sq.ft)`;
@@ -54,7 +91,7 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
   };
 
   return (
-    <div className="group bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] hover:shadow-[0_16px_40px_-8px_rgba(25,21,18,0.09)] hover:border-[#8C653E]/40 transition-all duration-300 flex flex-col overflow-hidden">
+    <div className="group bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] hover:shadow-[0_16px_40px_-8px_rgba(25,21,18,0.09)] hover:border-[#8C653E]/40 transition-all duration-300 flex flex-col overflow-hidden relative">
       {/* Media & Badges */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F5F1EA]">
         <Image
@@ -70,13 +107,15 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
 
-        {/* Top Badges */}
+        {/* Top Badges & Favorite Toggle */}
         <div className="absolute top-3.5 left-3.5 right-3.5 flex items-center justify-between pointer-events-none">
           {/* Property Type Badge */}
           <span
             className={`px-3 py-1 rounded-full text-[10px] font-semibold uppercase tracking-wider shadow-sm pointer-events-auto backdrop-blur-sm ${
               property.type === 'LAND'
                 ? 'bg-[#8C653E]/90 text-white border border-[#8C653E]/50'
+                : property.type === 'VILLA'
+                ? 'bg-amber-600/90 text-white border border-amber-400/50'
                 : 'bg-[#191512]/90 text-[#FAF8F5] border border-white/20'
             }`}
           >
@@ -84,15 +123,35 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
               ? isTe
                 ? 'భూమి / ప్లాట్'
                 : 'Land Parcel'
+              : property.type === 'VILLA'
+              ? isTe
+                ? 'గేటెడ్ విల్లా'
+                : 'Luxury Villa'
               : isTe
               ? 'ఫ్లాట్ / అపార్ట్‌మెంట్'
               : 'Residence / Flat'}
           </span>
 
-          {/* 13-Doc Verification Shield */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[#191512] text-[11px] font-semibold shadow-sm pointer-events-auto border border-[#E8E2D9]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
-            <span>{isTe ? '13 డాక్స్ వెరిఫైడ్' : '13-Doc Verified'}</span>
+          <div className="flex items-center gap-2 pointer-events-auto">
+            {/* 13-Doc Verification Shield */}
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[#191512] text-[11px] font-semibold shadow-sm border border-[#E8E2D9]">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
+              <span>{isTe ? '13 డాక్స్ వెరిఫైడ్' : '13-Doc Verified'}</span>
+            </div>
+
+            {/* Favorite Bookmark Heart */}
+            <button
+              type="button"
+              onClick={toggleFavorite}
+              title={isFavorite ? 'Remove from Saved' : 'Save Property'}
+              className={`p-1.5 rounded-full backdrop-blur-md transition-all shadow-sm ${
+                isFavorite
+                  ? 'bg-rose-500 text-white hover:bg-rose-600 scale-105'
+                  : 'bg-black/40 text-white/80 hover:bg-black/60 hover:text-white'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${isFavorite ? 'fill-current' : ''}`} />
+            </button>
           </div>
         </div>
 
