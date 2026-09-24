@@ -1,4 +1,4 @@
-export type PropertyType = 'LAND' | 'FLAT';
+export type PropertyType = 'LAND' | 'FLAT' | 'VILLA';
 export type PropertyStatus = 'DRAFT' | 'UNDER_REVIEW' | 'VERIFIED' | 'LIVE' | 'SOLD' | 'OFF_MARKET';
 
 export type DocumentType =

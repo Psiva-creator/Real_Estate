@@ -6,7 +6,7 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- 1. ENUMS (Created idempotently)
 DO $$ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'property_type_enum') THEN
-        CREATE TYPE property_type_enum AS ENUM ('LAND', 'FLAT');
+        CREATE TYPE property_type_enum AS ENUM ('LAND', 'FLAT', 'VILLA');
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'property_status_enum') THEN
         CREATE TYPE property_status_enum AS ENUM ('DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE', 'SOLD', 'OFF_MARKET');
