@@ -37,6 +37,16 @@ export interface FlatDetails {
   furnishingStatus?: 'UNFURNISHED' | 'SEMI_FURNISHED' | 'FULLY_FURNISHED';
 }
 
+export interface VillaDetails {
+  plotSqYards: number;
+  builtUpSqft: number;
+  bedrooms: number;
+  bathrooms: number;
+  floorsConfig: 'G+1' | 'G+2' | 'Triplex';
+  privateGarden: boolean;
+  coveredParking: number;
+}
+
 export interface PricingDetails {
   totalPrice: number;
   pricePerSqft?: number;
@@ -57,6 +67,7 @@ export interface MockProperty {
   pricing: PricingDetails;
   land?: LandDetails;
   flat?: FlatDetails;
+  villa?: VillaDetails;
   mainImage: string;
   galleryImages: string[];
   verifiedDocsCount: number;

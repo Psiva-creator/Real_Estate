@@ -46,5 +46,25 @@
     "distanceOrr": "Distance from ORR (km)",
     "acres": "Acreage",
     "bhk": "Bedrooms (BHK)"
+  },
+  "villa": {
+    "villa": "Villa",
+    "plotArea": "Plot Area",
+    "builtUpArea": "Built-up Area",
+    "floors": "Floor Configuration",
+    "floorG1": "G+1 Duplex",
+    "floorG2": "G+2 Triplex",
+    "privateGarden": "Private Garden",
+    "coveredParking": "Covered Parking",
+    "clubhouseAmenities": "Clubhouse Amenities",
+    "possessionStatus": "Possession Status",
+    "readyToMove": "Ready to Move"
+  },
+  "mapCopy": {
+    "polygonHeading": "Mark Plot Boundary on Map",
+    "polygonInstructions": "Click on map corners to outline the plot boundary. Drag points to adjust. Click the first point again to close the polygon.",
+    "polygonTooltipClick": "Click to place boundary point",
+    "polygonClearButton": "Clear & Redraw Boundary",
+    "polygonAreaLabel": "Approximate Plot Area"
   }
 }

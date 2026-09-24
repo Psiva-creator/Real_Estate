@@ -23,3 +23,9 @@
 - [x] Error logging & health check connected (`/api/health`).
 - [x] Google Maps & ORR Distance Matrix API verified. (Verified by tests/maps.test.ts)
 - [x] WhatsApp/SMS gateway templates verified in English & Telugu. (Verified by tests/enquiries.test.ts)
+
+### 5. Villa, Polygon & Buyer Engagement
+- [ ] Villa type properties display correctly on discovery page (type filter, plot + built-up area badges, floor config label).
+- [ ] Boundary polygon coordinates stored and rendered on map (`boundaryCoordinates` round-trips via POST → GET; invalid payloads rejected with 400).
+- [ ] Buyer favorites persist across sessions (`trh_saved_properties` in localStorage survives page reload; add/remove works correctly).
+- [x] 45/45 backend unit tests passing. (Verified 2026-09-24 — `npm run test:unit`)

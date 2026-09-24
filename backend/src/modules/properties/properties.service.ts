@@ -11,6 +11,7 @@ import {
   LocationDetails,
   LandDetails,
   FlatDetails,
+  VillaDetails,
   PricingDetails,
 } from '../../types/index.js';
 
@@ -27,6 +28,7 @@ export interface CreatePropertyInput {
   };
   land?: LandDetails;
   flat?: FlatDetails;
+  villa?: VillaDetails;
   pricing: PricingDetails;
   mainImage: string;
   galleryImages?: string[];
