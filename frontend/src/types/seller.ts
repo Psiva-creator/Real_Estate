@@ -1,6 +1,6 @@
 import { DocumentKey, DocumentStatus } from '@/lib/constants';
 
-export type PropertyType = 'LAND' | 'FLAT';
+export type PropertyType = 'LAND' | 'FLAT' | 'VILLA';
 
 export interface DocumentUploadItem {
   key: DocumentKey;
@@ -32,7 +32,7 @@ export interface SellerFormData {
   distanceFromOrrKm: string;
   landmark: string;
 
-  // Step 4: Details (Land or Flat)
+  // Step 4: Details (Land, Flat, or Villa)
   totalAcres: string;
   guntas: string;
   sqYards: string;
@@ -50,6 +50,16 @@ export interface SellerFormData {
   possessionStatus: 'READY_TO_MOVE' | 'UNDER_CONSTRUCTION';
   furnishingStatus: 'UNFURNISHED' | 'SEMI_FURNISHED' | 'FULLY_FURNISHED';
   amenities: string;
+
+  // Villa specific
+  plotSqYards: string;
+  builtUpSqft: string;
+  floorsConfig: 'G+1' | 'G+2' | 'Triplex';
+  privateGarden: boolean;
+  coveredParking: string;
+
+  // Boundary coordinates
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
 
   // Step 5: Pricing
   totalPrice: string;
