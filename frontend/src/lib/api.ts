@@ -290,6 +290,18 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
             | undefined,
         }
       : undefined,
+    villa: bp.villa
+      ? {
+          plotSqYards: bp.villa.plotSqYards ?? 0,
+          builtUpSqft: bp.villa.builtUpSqft ?? 0,
+          bedrooms: bp.villa.bedrooms ?? 0,
+          bathrooms: bp.villa.bathrooms ?? 0,
+          floorsConfig: (bp.villa.floorsConfig || (bp.villa.floors ? `G+${bp.villa.floors - 1}` : 'G+2')) as 'G+1' | 'G+2' | 'Triplex',
+          privateGarden: !!bp.villa.privateGarden,
+          coveredParking: bp.villa.coveredParking ?? 2,
+        }
+      : undefined,
+    boundaryCoordinates: bp.boundaryCoordinates ?? null,
     mainImage: bp.mainImage,
     galleryImages: bp.galleryImages,
     verifiedDocsCount,
