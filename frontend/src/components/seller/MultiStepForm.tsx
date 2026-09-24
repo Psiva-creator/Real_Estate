@@ -544,7 +544,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Land Card */}
               <button
                 type="button"
@@ -601,6 +601,38 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </h3>
                   <p className="text-xs text-slate-600 mt-1">
                     {sfDict.typeSelection.flatDesc}
+                  </p>
+                </div>
+              </button>
+
+              {/* Villa Card */}
+              <button
+                type="button"
+                onClick={() => updateField('propertyType', 'VILLA')}
+                className={`p-5 rounded-2xl border-2 text-left transition-all tap-target flex flex-col justify-between space-y-4 ${
+                  formData.propertyType === 'VILLA'
+                    ? 'border-emerald-700 bg-emerald-50/50 shadow-md ring-2 ring-emerald-600/20'
+                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                }`}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6" />
+                  </div>
+                  {formData.propertyType === 'VILLA' && (
+                    <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center">
+                      <Check className="w-4 h-4" />
+                    </div>
+                  )}
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-slate-900">
+                    {isTe ? 'గేటెడ్ లగ్జరీ విల్లా' : 'Luxury Gated Villa'}
+                  </h3>
+                  <p className="text-xs text-slate-600 mt-1">
+                    {isTe
+                      ? 'వ్యక్తిగత స్థలం, తోట మరియు క్లబ్‌హౌస్ సదుపాయాలతో కూడిన ట్రిప్లెక్స్ లేదా డ్యూప్లెక్స్ విల్లా'
+                      : 'Independent duplex / triplex villa with private plot, lawn, and community amenities'}
                   </p>
                 </div>
               </button>
