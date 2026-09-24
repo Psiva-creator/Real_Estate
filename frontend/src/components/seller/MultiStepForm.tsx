@@ -148,6 +148,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           if (!formData.surveyNumbers.trim()) {
             newErrors.surveyNumbers = isTe ? 'సర్వే నంబర్లు తప్పనిసరి' : 'Survey number(s) required';
           }
+        } else if (formData.propertyType === 'VILLA') {
+          if (!formData.plotSqYards.trim() || isNaN(Number(formData.plotSqYards))) {
+            newErrors.plotSqYards = isTe ? 'ప్లాట్ విస్తీర్ణం తప్పనిసరి' : 'Plot area (sq.yds) required';
+          }
+          if (!formData.builtUpSqft.trim() || isNaN(Number(formData.builtUpSqft))) {
+            newErrors.builtUpSqft = isTe ? 'నిర్మాణ విస్తీర్ణం తప్పనిసరి' : 'Built-up sq.ft required';
+          }
         } else {
           if (!formData.sqft.trim() || isNaN(Number(formData.sqft))) {
             newErrors.sqft = isTe ? 'నిర్మాణ విస్తీర్ణం తప్పనిసరి' : 'Built-up sq.ft required';
