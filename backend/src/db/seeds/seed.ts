@@ -1,3 +1,5 @@
+import { db } from '../database.js';
+import { hashPassword } from '../../middleware/auth.js';
 import { ALL_13_DOCS } from '../../middleware/security.js';
 import { User, Owner, Property, PropertyType, UserRole, PropertyStatus } from '../../types/index.js';
 
