@@ -75,7 +75,7 @@ async function upsertOwner(data: {
 async function upsertProperty(data: {
   id?: string;
   sellerId: string;
-  type: 'LAND' | 'FLAT';
+  type: PropertyType;
   status: PropertyStatus;
   titleEn: string;
   titleTe?: string;
@@ -84,10 +84,12 @@ async function upsertProperty(data: {
   location: any;
   land?: any;
   flat?: any;
+  villa?: any;
   pricing: any;
   mainImage: string;
   galleryImages?: string[];
   sitePlanImage?: string;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   isFeatured?: boolean;
 }): Promise<Property> {
   const allProps = await db.listAllProperties();
@@ -108,10 +110,12 @@ async function upsertProperty(data: {
       location: data.location,
       land: data.land,
       flat: data.flat,
+      villa: data.villa,
       pricing: data.pricing,
       mainImage: data.mainImage,
       galleryImages: data.galleryImages || [],
       sitePlanImage: data.sitePlanImage,
+      boundaryCoordinates: data.boundaryCoordinates,
       isFeatured: data.isFeatured ?? false,
     });
     return updated ?? existing;
