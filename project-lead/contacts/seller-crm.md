@@ -50,6 +50,19 @@
 
 ---
 
+### 4. Dr. K. Sitarama Raju
+- **Role:** Direct Property Owner (NRI Physician & Investor)
+- **Phone / WhatsApp:** `+91 98480 33445`
+- **Email:** `dr.raju.mokila@gmail.com`
+- **Aadhar Verification:** Verified (`7812-4567-8901`)
+- **Relationship History:** Repeat client; referred by Vedic Living Developers.
+- **Properties Listed:**
+  - `PROP-007` (4 BHK Ultra-Luxury Triplex Villa, Mokila)
+- **Brokerage Agreement:** Signed 1.0% brokerage mediation mandate.
+- **Notes:** All 13 documents submitted in full; clear title with HMDA layout sanction and individual OC.
+
+---
+
 ## 💼 Broker & Mediation Network
 
 | Partner Name | Focus Area | Phone | Commission Split | Status |
