@@ -197,6 +197,8 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
             <div className="flex items-center gap-1.5 font-medium">
               {property.type === 'LAND' ? (
                 <Layers className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
+              ) : property.type === 'VILLA' ? (
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               ) : (
                 <Home className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
               )}
