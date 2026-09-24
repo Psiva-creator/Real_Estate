@@ -248,7 +248,56 @@ export async function runSeeds() {
     rating: 5.0,
   });
 
-  // 4. Create / Upsert Properties across Tiers 1, 2, 3 (Exactly 6 properties)
+  const seller4User = await upsertUser({
+    name: 'Dr. K. Sitarama Raju',
+    email: 'dr.raju.mokila@gmail.com',
+    phone: '+919848033445',
+    whatsapp: '+919848033445',
+    passwordHash,
+    role: 'SELLER',
+    isActive: true,
+  });
+
+  const seller5User = await upsertUser({
+    name: 'Smt. G. Vasundhara Devi',
+    email: 'vasundhara.devi.farms@gmail.com',
+    phone: '+919440177889',
+    whatsapp: '+919440177889',
+    passwordHash,
+    role: 'SELLER',
+    isActive: true,
+  });
+
+  const owner4Id = allOwners.find((o) => o.userId === seller4User.id || o.phone === '+919848033445')?.id || '78124567-8901-4b12-9c34-d14285703901';
+  const owner5Id = allOwners.find((o) => o.userId === seller5User.id || o.phone === '+919440177889')?.id || '89235678-9012-4c23-8d45-e25396814012';
+
+  const seller4 = await upsertOwner({
+    id: owner4Id,
+    userId: seller4User.id,
+    name: 'Dr. K. Sitarama Raju',
+    phone: '+919848033445',
+    whatsapp: '+919848033445',
+    email: 'dr.raju.mokila@gmail.com',
+    aadharNumber: '781245678901',
+    propertiesCount: 1,
+    dealsCompleted: 2,
+    rating: 5.0,
+  });
+
+  const seller5 = await upsertOwner({
+    id: owner5Id,
+    userId: seller5User.id,
+    name: 'Smt. G. Vasundhara Devi',
+    phone: '+919440177889',
+    whatsapp: '+919440177889',
+    email: 'vasundhara.devi.farms@gmail.com',
+    aadharNumber: '892356789012',
+    propertiesCount: 1,
+    dealsCompleted: 1,
+    rating: 4.9,
+  });
+
+  // 4. Create / Upsert Properties across Tiers 1, 2, 3 (8 properties total)
   const prop1Id = '6787eca4-b72f-4669-bc65-cd2f51f12672';
   const prop2Id = '844e0cc2-72f6-42a7-b991-cbb1d9693737';
 
