@@ -87,6 +87,16 @@ export interface CreatePropertyDTO {
     possessionStatus?: string;
     furnishingStatus?: string;
   };
+  villa?: {
+    plotSqYards: number;
+    builtUpSqft: number;
+    bedrooms: number;
+    bathrooms: number;
+    floorsConfig?: string;
+    privateGarden?: boolean;
+    coveredParking?: number;
+  };
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   pricing: {
     totalPrice: number;
     pricePerAcre?: number;
@@ -162,6 +172,19 @@ interface BackendProperty {
   location: BackendLocation;
   land?: BackendLandDetails;
   flat?: BackendFlatDetails;
+  villa?: {
+    plotSqYards?: number;
+    builtUpSqft?: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    floors?: number;
+    floorsConfig?: string;
+    privateGarden?: boolean;
+    coveredParking?: number;
+    amenities?: string[];
+    possessionStatus?: string;
+  };
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   pricing: BackendPricing;
   mainImage: string;
   galleryImages: string[];
