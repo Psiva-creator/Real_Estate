@@ -76,8 +76,21 @@ export class PropertiesService {
       if (!input.flat.bedrooms || input.flat.bedrooms <= 0) {
         throw new Error('Number of bedrooms is required for Flat listings');
       }
+    } else if (input.type === 'VILLA') {
+      if (!input.villa || !input.villa.plotSqYards || input.villa.plotSqYards <= 0) {
+        throw new Error('Plot area (plotSqYards) is required for Villa listings');
+      }
+      if (!input.villa.builtUpSqft || input.villa.builtUpSqft <= 0) {
+        throw new Error('Built-up area (builtUpSqft) is required for Villa listings');
+      }
+      if (!input.villa.bedrooms || input.villa.bedrooms <= 0) {
+        throw new Error('Number of bedrooms is required for Villa listings');
+      }
+      if (!input.villa.bathrooms || input.villa.bathrooms <= 0) {
+        throw new Error('Number of bathrooms is required for Villa listings');
+      }
     } else {
-      throw new Error('Invalid property type. Must be LAND or FLAT');
+      throw new Error('Invalid property type. Must be LAND, FLAT, or VILLA');
     }
 
     if (!input.mainImage) {
@@ -129,6 +142,7 @@ export class PropertiesService {
       },
       land: input.type === 'LAND' ? input.land : undefined,
       flat: input.type === 'FLAT' ? input.flat : undefined,
+      villa: input.type === 'VILLA' ? input.villa : undefined,
       pricing: input.pricing,
       mainImage: input.mainImage,
       galleryImages: input.galleryImages || [],
