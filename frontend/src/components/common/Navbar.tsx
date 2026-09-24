@@ -18,9 +18,11 @@ import {
   LogOut,
   Archive,
   Layers,
+  Heart,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
+import { useFavorites } from '@/lib/favorites';
 import LanguageToggle from './LanguageToggle';
 
 interface NavbarProps {
@@ -41,6 +43,7 @@ export default function Navbar({ locale }: NavbarProps) {
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
   const { user, isAuthenticated, isSeller, logout } = useAuth();
+  const { savedCount } = useFavorites();
 
   const dashboardHref = isSeller ? '/dashboard/seller' : '/dashboard/properties';
 
@@ -310,6 +313,25 @@ export default function Navbar({ locale }: NavbarProps) {
             {/* Language Switcher */}
             <LanguageToggle currentLocale={locale} />
 
+            {/* Saved / Favorites Indicator */}
+            <Link
+              href={`/${locale}/properties?saved=true`}
+              className="relative p-2.5 rounded-full hover:bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] transition-colors flex items-center justify-center border border-[#E8E2D9] bg-white shadow-xs group"
+              title={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
+              aria-label={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
+            >
+              <Heart
+                className={`w-4 h-4 transition-colors ${
+                  savedCount > 0 ? 'fill-[#8C653E] text-[#8C653E]' : 'text-[#8C653E] group-hover:text-[#191512]'
+                }`}
+              />
+              {savedCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[18px] h-[18px] px-1 bg-[#8C653E] text-white text-[10px] font-bold rounded-full flex items-center justify-center shadow-xs">
+                  {savedCount}
+                </span>
+              )}
+            </Link>
+
             {/* List Property CTA */}
             <Link
               href={`/${locale}/list-property`}
@@ -363,6 +385,23 @@ export default function Navbar({ locale }: NavbarProps) {
           {/* Mobile Menu Button & Language Toggle on Mobile */}
           <div className="flex items-center gap-2 lg:hidden">
             <LanguageToggle currentLocale={locale} className="scale-90" />
+            <Link
+              href={`/${locale}/properties?saved=true`}
+              className="relative p-2 rounded-full bg-white border border-[#E8E2D9] text-[#191512] flex items-center justify-center tap-target"
+              title={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
+              aria-label={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
+            >
+              <Heart
+                className={`w-4 h-4 ${
+                  savedCount > 0 ? 'fill-[#8C653E] text-[#8C653E]' : 'text-[#8C653E]'
+                }`}
+              />
+              {savedCount > 0 && (
+                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-[#8C653E] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                  {savedCount}
+                </span>
+              )}
+            </Link>
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
@@ -470,6 +509,23 @@ export default function Navbar({ locale }: NavbarProps) {
                 })}
               </div>
             </div>
+
+            {/* Saved Properties */}
+            <Link
+              href={`/${locale}/properties?saved=true`}
+              onClick={() => setIsMobileMenuOpen(false)}
+              className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-[#E8E2D9] text-[#191512] font-semibold text-xs uppercase tracking-wider hover:bg-[#F5F1EA] transition-colors"
+            >
+              <div className="flex items-center gap-3">
+                <Heart className={`w-4 h-4 ${savedCount > 0 ? 'fill-[#8C653E] text-[#8C653E]' : 'text-[#8C653E]'}`} />
+                <span>{isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}</span>
+              </div>
+              {savedCount > 0 && (
+                <span className="px-2 py-0.5 rounded-full bg-[#8C653E] text-white text-[10px] font-bold">
+                  {savedCount}
+                </span>
+              )}
+            </Link>
 
             {/* About */}
             <Link

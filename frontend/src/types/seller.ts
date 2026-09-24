@@ -31,6 +31,9 @@ export interface SellerFormData {
   village: string;
   distanceFromOrrKm: string;
   landmark: string;
+  boundaryCoordinates?: Array<[number, number]>;
+  boundaryAreaSqYards?: number;
+  boundaryAreaAcres?: number;
 
   // Step 4: Details (Land, Flat, or Villa)
   totalAcres: string;
@@ -90,6 +93,9 @@ export const INITIAL_SELLER_FORM_DATA: SellerFormData = {
   village: '',
   distanceFromOrrKm: '',
   landmark: '',
+  boundaryCoordinates: [],
+  boundaryAreaSqYards: 0,
+  boundaryAreaAcres: 0,
   totalAcres: '',
   guntas: '',
   sqYards: '',

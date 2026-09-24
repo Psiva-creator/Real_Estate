@@ -176,7 +176,7 @@ interface BackendPricing {
   isNegotiable: boolean;
 }
 
-interface BackendProperty {
+export interface BackendProperty {
   id: string;
   type: PropertyType;
   status: PropertyStatus;
@@ -219,6 +219,10 @@ interface BackendProperty {
   tenureMonths?: number;
   promotedBy?: string;
   reraNumber?: string;
+  acreage?: {
+    acres?: number;
+    guntas?: number;
+  };
   verificationStatus?: {
     totalDocuments: number;
     verifiedDocuments: number;
@@ -230,6 +234,8 @@ interface BackendProperty {
     }>;
   };
 }
+
+export type AdminPropertyItem = BackendProperty;
 
 interface BackendListResponse {
   properties: BackendProperty[];
@@ -375,6 +381,20 @@ function isRealBackend(): boolean {
  *
  * Returns `{ properties, fromBackend }` so callers can distinguish source.
  */
+function logFetchError(endpoint: string, err: unknown) {
+  const anyErr = err as { code?: string; cause?: { code?: string }; message?: string };
+  const isConnRefused =
+    anyErr?.code === 'ECONNREFUSED' ||
+    anyErr?.cause?.code === 'ECONNREFUSED' ||
+    (typeof anyErr?.message === 'string' && anyErr.message.includes('ECONNREFUSED'));
+
+  if (isConnRefused) {
+    console.warn(`[api] Backend offline at 127.0.0.1:5000 (${endpoint}), using fallback mock data.`);
+  } else {
+    console.warn(`[api] Network error fetching ${endpoint}, falling back to mock:`, err);
+  }
+}
+
 export async function getProperties(params?: {
   type?: string;
   status?: string;
@@ -414,7 +434,7 @@ export async function getProperties(params?: {
       const transformed = (data as BackendListResponse).properties.map(transformBackendProperty);
       return { properties: transformed, fromBackend: true };
     } catch (err) {
-      console.warn('[api] Network error fetching /properties, falling back to mock:', err);
+      logFetchError('/properties', err);
       return { properties: MOCK_PROPERTIES, fromBackend: false };
     }
   }
@@ -458,7 +478,7 @@ export async function getPropertyById(id: string): Promise<MockProperty | null> 
 
       return transformBackendProperty((data as { property: BackendProperty }).property);
     } catch (err) {
-      console.warn(`[api] Network error fetching /properties/${id}, falling back to mock:`, err);
+      logFetchError(`/properties/${id}`, err);
       return MOCK_PROPERTIES.find((p) => p.id === id) ?? null;
     }
   }

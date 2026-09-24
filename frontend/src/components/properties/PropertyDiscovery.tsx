@@ -19,10 +19,12 @@ import {
   Compass,
   ArrowRight,
   ChevronDown,
+  Heart,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty, MOCK_PROPERTIES } from '@/lib/mockData';
 import { getProperties } from '@/lib/api';
+import { useFavorites } from '@/lib/favorites';
 import PropertyCard from './PropertyCard';
 import MapView from './MapView';
 
@@ -37,6 +39,7 @@ interface PropertyDiscoveryProps {
     area?: string;
     distance?: string;
     verification?: string;
+    saved?: string;
   };
 }
 
@@ -49,12 +52,14 @@ interface FilterState {
   areaRange: string;
   orrDistance: string;
   verificationStatus: string;
+  savedOnly?: boolean;
 }
 
 export default function PropertyDiscovery({ locale, initialParams }: PropertyDiscoveryProps) {
   const router = useRouter();
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
+  const { savedIds, savedCount } = useFavorites();
 
   // Available Mandal / Location options extracted from mock data
   const MANDAL_OPTIONS = [
@@ -77,6 +82,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     areaRange: initialParams.area || 'ALL',
     orrDistance: initialParams.distance || 'ALL',
     verificationStatus: initialParams.verification || 'ALL',
+    savedOnly: initialParams.saved === 'true',
   });
 
   // Applied state (what currently filters the displayed list)
@@ -89,6 +95,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     areaRange: initialParams.area || 'ALL',
     orrDistance: initialParams.distance || 'ALL',
     verificationStatus: initialParams.verification || 'ALL',
+    savedOnly: initialParams.saved === 'true',
   });
 
   // Backend-fetched properties (falls back to MOCK_PROPERTIES)
@@ -100,9 +107,19 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     let cancelled = false;
     setIsFetchingBackend(true);
     getProperties({ limit: 100 })
-      .then(({ properties }) => {
+      .then(({ properties, fromBackend }) => {
         if (!cancelled) {
-          setAllProperties(properties);
+          if (fromBackend) {
+            // Backend only returns LIVE properties — ensure SOLD entries from
+            // mockData (the 5 real completed projects) are always included so
+            // the Sold filter works correctly.
+            const MOCK_SOLD = MOCK_PROPERTIES.filter((p) => p.status === 'SOLD');
+            const backendIds = new Set(properties.map((p) => p.id));
+            const missingSold = MOCK_SOLD.filter((p) => !backendIds.has(p.id));
+            setAllProperties([...properties, ...missingSold]);
+          } else {
+            setAllProperties(properties);
+          }
         }
       })
       .catch(() => {
@@ -115,6 +132,36 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
       cancelled = true;
     };
   }, []);
+
+  // Re-sync filter state whenever the URL search params change (navbar navigation).
+  // useState initializers only run on first mount, so without this effect
+  // clicking navbar links like "For Sale → Apartments" wouldn't update the filters.
+  useEffect(() => {
+    const newState: FilterState = {
+      status: initialParams.status || 'ALL',
+      type: initialParams.type || 'ALL',
+      query: initialParams.q || '',
+      location: initialParams.location || 'ALL',
+      priceRange: initialParams.price || 'ALL',
+      areaRange: initialParams.area || 'ALL',
+      orrDistance: initialParams.distance || 'ALL',
+      verificationStatus: initialParams.verification || 'ALL',
+      savedOnly: initialParams.saved === 'true',
+    };
+    setFilters(newState);
+    setAppliedFilters(newState);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    initialParams.status,
+    initialParams.type,
+    initialParams.q,
+    initialParams.location,
+    initialParams.price,
+    initialParams.area,
+    initialParams.distance,
+    initialParams.verification,
+    initialParams.saved,
+  ]);
 
   // UI view states
   const [mobileView, setMobileView] = useState<'list' | 'map'>('list');
@@ -133,6 +180,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     if (newApplied.areaRange !== 'ALL') params.set('area', newApplied.areaRange);
     if (newApplied.orrDistance !== 'ALL') params.set('distance', newApplied.orrDistance);
     if (newApplied.verificationStatus !== 'ALL') params.set('verification', newApplied.verificationStatus);
+    if (newApplied.savedOnly) params.set('saved', 'true');
 
     const queryString = params.toString();
     const newUrl = queryString ? `/${locale}/properties?${queryString}` : `/${locale}/properties`;
@@ -150,6 +198,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     if (appliedFilters.areaRange !== 'ALL') count++;
     if (appliedFilters.orrDistance !== 'ALL') count++;
     if (appliedFilters.verificationStatus !== 'ALL') count++;
+    if (appliedFilters.savedOnly) count++;
     return count;
   }, [appliedFilters]);
 
@@ -174,6 +223,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
       areaRange: 'ALL',
       orrDistance: 'ALL',
       verificationStatus: 'ALL',
+      savedOnly: false,
     };
     setFilters(defaultState);
     setIsLoading(true);
@@ -186,7 +236,20 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
   // Quick status tab switch (instantly applies)
   const handleStatusTabClick = (status: string) => {
-    const updated = { ...filters, status };
+    const updated = { ...filters, status, savedOnly: false };
+    setFilters(updated);
+    setIsLoading(true);
+    setAppliedFilters(updated);
+    syncUrlParams(updated);
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 200);
+  };
+
+  // Quick saved filter toggle
+  const handleSavedTabClick = () => {
+    const nextSavedOnly = !appliedFilters.savedOnly;
+    const updated = { ...filters, savedOnly: nextSavedOnly };
     setFilters(updated);
     setIsLoading(true);
     setAppliedFilters(updated);
@@ -213,7 +276,9 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
     return allProperties.filter((prop) => {
       // 0. Status Filter (FOR_SALE vs SOLD)
       if (appliedFilters.status === 'FOR_SALE') {
-        if (prop.status === 'SOLD') return false;
+        // FOR_SALE: only show actively available (LIVE / VERIFIED) properties,
+        // excluding SOLD, DRAFT, UNDER_REVIEW, OFF_MARKET
+        if (prop.status === 'SOLD' || prop.status === 'DRAFT' || prop.status === 'UNDER_REVIEW' || prop.status === 'OFF_MARKET') return false;
       } else if (appliedFilters.status === 'SOLD') {
         if (prop.status !== 'SOLD') return false;
       }
@@ -343,9 +408,14 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
         }
       }
 
+      // 8. Saved Properties Filter
+      if (appliedFilters.savedOnly) {
+        if (!savedIds.includes(prop.id)) return false;
+      }
+
       return true;
     });
-  }, [appliedFilters, allProperties]);
+  }, [appliedFilters, allProperties, savedIds]);
 
   // Counts for quick tabs — derived from whichever source is active
   const landsCount = useMemo(
@@ -433,6 +503,27 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
               }`}
             >
               {dict.nav.sold} ({soldCount})
+            </button>
+            <button
+              type="button"
+              onClick={handleSavedTabClick}
+              className={`px-3.5 py-1.5 rounded-full text-xs font-semibold tracking-wide uppercase transition-all whitespace-nowrap flex items-center gap-1.5 cursor-pointer ${
+                appliedFilters.savedOnly
+                  ? 'bg-rose-700 text-white shadow-sm'
+                  : 'text-[#574F48] hover:text-[#191512]'
+              }`}
+            >
+              <Heart className={`w-3.5 h-3.5 ${appliedFilters.savedOnly ? 'fill-white text-white' : 'text-rose-600'}`} />
+              <span>{isTe ? 'భద్రపరచినవి' : 'Saved'}</span>
+              {savedCount > 0 && (
+                <span
+                  className={`px-1.5 py-0.2 rounded-full text-[10px] font-bold ${
+                    appliedFilters.savedOnly ? 'bg-white/20 text-white' : 'bg-rose-100 text-rose-800'
+                  }`}
+                >
+                  {savedCount}
+                </span>
+              )}
             </button>
           </div>
         </div>
@@ -715,6 +806,32 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
                   <PropertyCard property={prop} locale={locale} />
                 </div>
               ))}
+            </div>
+          ) : appliedFilters.savedOnly ? (
+            /* Dedicated Empty State for Saved Properties */
+            <div className="bg-white rounded-2xl border border-[#E8E2D9] p-10 sm:p-14 text-center space-y-4 shadow-sm">
+              <div className="w-16 h-16 rounded-full bg-rose-50 text-rose-500 border border-rose-200 flex items-center justify-center mx-auto">
+                <Heart className="w-8 h-8" />
+              </div>
+              <div className="max-w-md mx-auto space-y-2">
+                <h3 className="font-serif text-xl sm:text-2xl font-bold text-[#191512]">
+                  {isTe ? 'ఇంకా ఏ ప్రాపర్టీని భద్రపరచలేదు' : 'No Saved Properties Yet'}
+                </h3>
+                <p className="text-xs sm:text-sm text-[#574F48] leading-relaxed">
+                  {isTe
+                    ? 'ప్రాపర్టీ కార్డులపై లేదా వివరాల పేజీలో ఉన్న గుండె గుర్తుపై క్లిక్ చేసి మీకు నచ్చిన ప్రాపర్టీలను ఇక్కడ భద్రపరుచుకోవచ్చు.'
+                    : 'Explore verified properties and tap the heart icon on any property card or detail page to save your shortlist here.'}
+                </p>
+              </div>
+              <div className="pt-2">
+                <button
+                  type="button"
+                  onClick={handleClearFilters}
+                  className="inline-flex items-center gap-2 px-6 py-3 rounded-full bg-[#191512] hover:bg-[#8C653E] text-white font-semibold text-xs tracking-wider uppercase shadow-sm transition-all active:scale-[0.98] cursor-pointer"
+                >
+                  <span>{isTe ? 'అన్ని ప్రాపర్టీలను చూడండి' : 'Explore All Properties'}</span>
+                </button>
+              </div>
             </div>
           ) : (
             /* Proper Empty State when no properties match */

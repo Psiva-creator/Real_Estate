@@ -16,6 +16,7 @@ interface PropertiesPageProps {
     distance?: string;
     verification?: string;
     tier?: string;
+    saved?: string;
   };
 }
 

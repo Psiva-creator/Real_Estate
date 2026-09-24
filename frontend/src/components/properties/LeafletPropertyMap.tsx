@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState, useMemo } from 'react';
+import React, { useEffect, useRef, useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
 import {
   Navigation,
@@ -17,6 +17,14 @@ import {
   Globe,
   Map,
   Eye,
+  Pencil,
+  RotateCcw,
+  Trash2,
+  CheckCircle2,
+  Check,
+  AlertCircle,
+  Info,
+  Plus,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
@@ -27,25 +35,39 @@ import {
   TELANGANA_CORRIDORS,
   CorridorInfo,
 } from '@/lib/telanganaMapData';
+import { calculatePolygonArea, PolygonAreaResult } from '@/lib/polygonArea';
 
-interface LeafletPropertyMapProps {
-  properties: MockProperty[];
+export interface LeafletPropertyMapProps {
+  properties?: MockProperty[];
   locale: Locale;
   selectedPropertyId?: string;
   onSelectProperty?: (id: string) => void;
   className?: string;
   singlePropertyMode?: boolean;
+  // Boundary / Plot demarcation props:
+  boundaryMode?: boolean;
+  initialPolygon?: Array<[number, number]>;
+  onPolygonChange?: (polygon: Array<[number, number]>, areaSqYards: number, areaAcres: number) => void;
+  centerCoordinates?: [number, number];
+  locationName?: string;
+  onApplyAreaToForm?: (acres: number, sqYards: number) => void;
 }
 
 type MapLayerMode = 'satellite' | 'street' | 'imagery';
 
 export default function LeafletPropertyMap({
-  properties,
+  properties = [],
   locale,
   selectedPropertyId,
   onSelectProperty,
   className = '',
   singlePropertyMode = false,
+  boundaryMode = false,
+  initialPolygon = [],
+  onPolygonChange,
+  centerCoordinates,
+  locationName,
+  onApplyAreaToForm,
 }: LeafletPropertyMapProps) {
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
@@ -57,40 +79,72 @@ export default function LeafletPropertyMap({
   const orrLayerRef = useRef<any>(null);
   const singlePropertyCircleRef = useRef<any>(null);
 
-  // Default to High-Definition Satellite view
+  // Boundary specific refs
+  const boundaryLayerRef = useRef<any>(null);
+  const vertexMarkersGroupRef = useRef<any>(null);
+  const midpointMarkersGroupRef = useRef<any>(null);
+  const polygonCoordsRef = useRef<Array<[number, number]>>(initialPolygon || []);
+
+  // Default to High-Definition Satellite view (optimal for land survey & parcels)
   const [mapMode, setMapMode] = useState<MapLayerMode>('satellite');
   const [activeCorridor, setActiveCorridor] = useState<string>('all');
-  const [showOrrLayer, setShowOrrLayer] = useState<boolean>(true);
+  const [showOrrLayer, setShowOrrLayer] = useState<boolean>(!boundaryMode);
   const [propertyTypeFilter, setPropertyTypeFilter] = useState<'ALL' | 'LAND' | 'FLAT'>('ALL');
   const [activeProperty, setActiveProperty] = useState<MockProperty | null>(null);
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
 
+  // Boundary tool state
+  const [polygonCoords, setPolygonCoords] = useState<Array<[number, number]>>(initialPolygon || []);
+  const [isDrawingMode, setIsDrawingMode] = useState<boolean>(() => {
+    return boundaryMode && (!initialPolygon || initialPolygon.length === 0);
+  });
+  const [appliedAreaFeedback, setAppliedAreaFeedback] = useState(false);
+
+  // Synchronize ref with state
+  useEffect(() => {
+    polygonCoordsRef.current = polygonCoords;
+  }, [polygonCoords]);
+
+  // Compute real-time polygon area
+  const areaResult: PolygonAreaResult = useMemo(() => {
+    return calculatePolygonArea(polygonCoords);
+  }, [polygonCoords]);
+
+  // Notify parent on boundary change
+  const triggerPolygonChange = useCallback(
+    (coords: Array<[number, number]>) => {
+      if (onPolygonChange) {
+        const area = calculatePolygonArea(coords);
+        onPolygonChange(coords, area.sqYards, area.acres);
+      }
+    },
+    [onPolygonChange]
+  );
+
   // Filter properties according to active type filter
   const visibleProperties = useMemo(() => {
+    if (boundaryMode) return [];
     if (singlePropertyMode) return properties;
     if (propertyTypeFilter === 'ALL') return properties;
     return properties.filter((p) => p.type === propertyTypeFilter);
-  }, [properties, propertyTypeFilter, singlePropertyMode]);
+  }, [properties, propertyTypeFilter, singlePropertyMode, boundaryMode]);
 
   // Helper to create tile layer based on mode (Zero watermarks, high performance)
   const getTileLayer = (L: any, mode: MapLayerMode) => {
     const tilePerfOptions = {
-      updateWhenZooming: false, // Never request new tiles mid-animation (eliminates zoom lag)
-      updateWhenIdle: true,     // Only fetch tiles when camera is steady
-      keepBuffer: 6,           // Keep existing tiles in GPU memory
+      updateWhenZooming: false,
+      updateWhenIdle: true,
+      keepBuffer: 6,
       maxNativeZoom: 19,
     };
 
     if (mode === 'satellite') {
-      // High-Definition Satellite Hybrid (Aerial photo + crisp road labels, No API key, No watermark)
-      return L.tileLayer(
-        'https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}',
-        {
-          ...tilePerfOptions,
-          maxZoom: 20,
-          subdomains: ['0', '1', '2', '3'],
-        }
-      );
+      // High-Definition Satellite Hybrid (Aerial photo + road labels)
+      return L.tileLayer('https://mt{s}.google.com/vt/lyrs=y&x={x}&y={y}&z={z}', {
+        ...tilePerfOptions,
+        maxZoom: 20,
+        subdomains: ['0', '1', '2', '3'],
+      });
     } else if (mode === 'imagery') {
       // Pure Raw Drone/Satellite Imagery (Esri World Imagery)
       return L.tileLayer(
@@ -102,14 +156,11 @@ export default function LeafletPropertyMap({
       );
     } else {
       // Clean OpenStreetMap Street Tiles
-      return L.tileLayer(
-        'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-        {
-          ...tilePerfOptions,
-          maxZoom: 19,
-          subdomains: ['a', 'b', 'c'],
-        }
-      );
+      return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        ...tilePerfOptions,
+        maxZoom: 19,
+        subdomains: ['a', 'b', 'c'],
+      });
     }
   };
 
@@ -124,15 +175,37 @@ export default function LeafletPropertyMap({
       const L = (await import('leaflet')).default;
       if (isCancelled || !mapContainerRef.current) return;
 
-      // Center on single property or Hyderabad metro center
-      const initialCenter: [number, number] =
-        singlePropertyMode && properties[0]?.location?.latitude && properties[0]?.location?.longitude
-          ? [properties[0].location.latitude, properties[0].location.longitude]
-          : [17.4200, 78.4300];
+      // Determine center coordinates
+      let initialCenter: [number, number] = [17.4065, 78.4772]; // Telangana / Hyderabad core
+      let initialZoom = 12;
 
-      const initialZoom = singlePropertyMode ? 15 : 11;
+      if (boundaryMode) {
+        if (polygonCoordsRef.current.length > 0) {
+          // Center on polygon centroid
+          let sumLat = 0;
+          let sumLng = 0;
+          polygonCoordsRef.current.forEach(([lat, lng]) => {
+            sumLat += lat;
+            sumLng += lng;
+          });
+          initialCenter = [
+            sumLat / polygonCoordsRef.current.length,
+            sumLng / polygonCoordsRef.current.length,
+          ];
+          initialZoom = 17;
+        } else if (centerCoordinates && !isNaN(centerCoordinates[0]) && !isNaN(centerCoordinates[1])) {
+          initialCenter = centerCoordinates;
+          initialZoom = 16;
+        } else {
+          initialCenter = [17.4042, 78.3308]; // Kokapet / West Hyderabad growth corridor
+          initialZoom = 14;
+        }
+      } else if (singlePropertyMode && properties[0]?.location?.latitude && properties[0]?.location?.longitude) {
+        initialCenter = [properties[0].location.latitude, properties[0].location.longitude];
+        initialZoom = 15;
+      }
 
-      // Initialize map with GPU canvas acceleration and smooth zoom controls
+      // Initialize map instance
       const map = L.map(mapContainerRef.current, {
         center: initialCenter,
         zoom: initialZoom,
@@ -140,97 +213,108 @@ export default function LeafletPropertyMap({
         maxZoom: 20,
         zoomControl: false,
         attributionControl: false,
-        preferCanvas: true, // Render polylines & vector circles directly on GPU Canvas (eliminates SVG DOM lag)
-        wheelPxPerZoomLevel: 100, // Buttery smooth scroll wheel zooming
+        preferCanvas: true,
+        wheelPxPerZoomLevel: 100,
         zoomAnimation: true,
         fadeAnimation: true,
         markerZoomAnimation: true,
       });
 
-      // Add Zoom control to top-right
+      // Add Zoom control top-right
       L.control.zoom({ position: 'topright' }).addTo(map);
 
-      // Add default tile layer (Satellite Hybrid)
-      const initialTileLayer = getTileLayer(L, 'satellite').addTo(map);
+      // Default tile layer
+      const initialTileLayer = getTileLayer(L, mapMode).addTo(map);
       tileLayerRef.current = initialTileLayer;
 
-      // Create Layer Groups
-      const orrGroup = L.layerGroup().addTo(map);
+      // Layer groups
+      const orrGroup = L.layerGroup();
       const markersGroup = L.layerGroup().addTo(map);
+      const boundaryLayer = L.layerGroup().addTo(map);
+      const vertexMarkersGroup = L.layerGroup().addTo(map);
+      const midpointMarkersGroup = L.layerGroup().addTo(map);
 
       mapInstanceRef.current = map;
       markersGroupRef.current = markersGroup;
       orrLayerRef.current = orrGroup;
+      boundaryLayerRef.current = boundaryLayer;
+      vertexMarkersGroupRef.current = vertexMarkersGroup;
+      midpointMarkersGroupRef.current = midpointMarkersGroup;
 
-      // Render 158km Outer Ring Road (ORR) on hardware-accelerated canvas
-      const orrPolyline = L.polyline(ORR_LOOP_COORDINATES, {
-        color: '#F59E0B', // Glowing Golden Amber
-        weight: 3.5,
-        opacity: 0.9,
-        dashArray: '8, 6',
-      });
-      orrPolyline.bindTooltip(
-        '<div class="font-bold text-xs" style="color:#D97706;">Hyderabad 158km Outer Ring Road (ORR)</div>',
-        { sticky: true }
-      );
-      orrGroup.addLayer(orrPolyline);
-
-      // Add Key ORR Exit Markers with GPU-friendly CSS (no heavy backdrop-filter)
-      ORR_EXITS.forEach((exit) => {
-        const exitIcon = L.divIcon({
-          className: 'custom-exit-marker',
-          html: `
-            <div style="
-              background: #191512;
-              color: #FBBF24;
-              border: 1.5px solid #F59E0B;
-              border-radius: 9999px;
-              padding: 2px 7px;
-              font-size: 10px;
-              font-weight: 700;
-              box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-              white-space: nowrap;
-              display: flex;
-              align-items: center;
-              gap: 3px;
-              will-change: transform;
-            ">
-              <span style="background:#F59E0B;color:#191512;border-radius:4px;padding:0 3px;font-size:9px;">E${exit.exitNo}</span>
-              <span>${exit.nameEn.split('/')[0]}</span>
-            </div>
-          `,
-          iconSize: [80, 20],
-          iconAnchor: [40, 10],
+      if (!boundaryMode) {
+        // Render 158km Outer Ring Road (ORR)
+        const orrPolyline = L.polyline(ORR_LOOP_COORDINATES, {
+          color: '#F59E0B',
+          weight: 3.5,
+          opacity: 0.9,
+          dashArray: '8, 6',
         });
-
-        const exitMarker = L.marker([exit.lat, exit.lng], { icon: exitIcon });
-        exitMarker.bindTooltip(
-          `<strong>Exit ${exit.exitNo}: ${exit.nameEn}</strong><br/><span style="color:#666">${exit.nameTe}</span>`,
-          { direction: 'top' }
-        );
-        orrGroup.addLayer(exitMarker);
-      });
-
-      // If Single Property Mode: Draw a glowing boundary circle / survey plot highlight
-      if (singlePropertyMode && properties[0]?.location?.latitude && properties[0]?.location?.longitude) {
-        const pLat = properties[0].location.latitude;
-        const pLng = properties[0].location.longitude;
-
-        const surveyCircle = L.circle([pLat, pLng], {
-          radius: 180,
-          color: '#10B981',
-          fillColor: '#10B981',
-          fillOpacity: 0.22,
-          weight: 2,
-          dashArray: '4, 4',
-        }).addTo(map);
-
-        surveyCircle.bindTooltip(
-          '<div style="font-size:11px;font-weight:bold;color:#065F46;">📍 Verified Land Demarcation Zone</div>',
+        orrPolyline.bindTooltip(
+          '<div class="font-bold text-xs" style="color:#D97706;">Hyderabad 158km Outer Ring Road (ORR)</div>',
           { sticky: true }
         );
+        orrGroup.addLayer(orrPolyline);
 
-        singlePropertyCircleRef.current = surveyCircle;
+        // Add Key ORR Exit Markers
+        ORR_EXITS.forEach((exit) => {
+          const exitIcon = L.divIcon({
+            className: 'custom-exit-marker',
+            html: `
+              <div style="
+                background: #191512;
+                color: #FBBF24;
+                border: 1.5px solid #F59E0B;
+                border-radius: 9999px;
+                padding: 2px 7px;
+                font-size: 10px;
+                font-weight: 700;
+                box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                white-space: nowrap;
+                display: flex;
+                align-items: center;
+                gap: 3px;
+              ">
+                <span style="background:#F59E0B;color:#191512;border-radius:4px;padding:0 3px;font-size:9px;">E${exit.exitNo}</span>
+                <span>${exit.nameEn.split('/')[0]}</span>
+              </div>
+            `,
+            iconSize: [80, 20],
+            iconAnchor: [40, 10],
+          });
+
+          const exitMarker = L.marker([exit.lat, exit.lng], { icon: exitIcon });
+          exitMarker.bindTooltip(
+            `<strong>Exit ${exit.exitNo}: ${exit.nameEn}</strong><br/><span style="color:#666">${exit.nameTe}</span>`,
+            { direction: 'top' }
+          );
+          orrGroup.addLayer(exitMarker);
+        });
+
+        if (showOrrLayer) {
+          orrGroup.addTo(map);
+        }
+
+        // Single property survey demarcation circle
+        if (singlePropertyMode && properties[0]?.location?.latitude && properties[0]?.location?.longitude) {
+          const pLat = properties[0].location.latitude;
+          const pLng = properties[0].location.longitude;
+
+          const surveyCircle = L.circle([pLat, pLng], {
+            radius: 180,
+            color: '#10B981',
+            fillColor: '#10B981',
+            fillOpacity: 0.22,
+            weight: 2,
+            dashArray: '4, 4',
+          }).addTo(map);
+
+          surveyCircle.bindTooltip(
+            '<div style="font-size:11px;font-weight:bold;color:#065F46;">📍 Verified Land Demarcation Zone</div>',
+            { sticky: true }
+          );
+
+          singlePropertyCircleRef.current = surveyCircle;
+        }
       }
 
       setIsMapReady(true);
@@ -245,9 +329,18 @@ export default function LeafletPropertyMap({
         mapInstanceRef.current = null;
       }
     };
-  }, [singlePropertyMode]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [singlePropertyMode, boundaryMode, properties]);
 
-  // Handle Layer Mode Switching (Satellite Hybrid vs Street vs Pure Aerial)
+  // Handle center coordinate changes dynamically in boundary mode
+  useEffect(() => {
+    if (!boundaryMode || !isMapReady || !mapInstanceRef.current || !centerCoordinates) return;
+    if (polygonCoords.length === 0 && !isNaN(centerCoordinates[0]) && !isNaN(centerCoordinates[1])) {
+      mapInstanceRef.current.setView(centerCoordinates, 16, { animate: true });
+    }
+  }, [boundaryMode, centerCoordinates, isMapReady, polygonCoords.length]);
+
+  // Handle Layer Mode Switching
   useEffect(() => {
     if (!isMapReady || !mapInstanceRef.current) return;
 
@@ -263,9 +356,215 @@ export default function LeafletPropertyMap({
     });
   }, [mapMode, isMapReady]);
 
-  // Update Property Markers on Map
+  // ─── Interactive Plot Boundary Drawing & Vertex Editing ─────────────────────
+
+  // Synchronize Leaflet map click listener for adding polygon vertices
   useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current || !markersGroupRef.current) return;
+    if (!boundaryMode || !isMapReady || !mapInstanceRef.current) return;
+
+    const map = mapInstanceRef.current;
+
+    const handleMapClick = (e: any) => {
+      if (!isDrawingMode) return;
+      const newPoint: [number, number] = [
+        Number(e.latlng.lat.toFixed(6)),
+        Number(e.latlng.lng.toFixed(6)),
+      ];
+
+      setPolygonCoords((prev) => {
+        const next = [...prev, newPoint];
+        triggerPolygonChange(next);
+        return next;
+      });
+    };
+
+    map.on('click', handleMapClick);
+
+    return () => {
+      map.off('click', handleMapClick);
+    };
+  }, [boundaryMode, isMapReady, isDrawingMode, triggerPolygonChange]);
+
+  // Render Polygon, Vertex Drag Handles, and Midpoint Adders
+  useEffect(() => {
+    if (!boundaryMode || !isMapReady || !mapInstanceRef.current) return;
+    if (!boundaryLayerRef.current || !vertexMarkersGroupRef.current || !midpointMarkersGroupRef.current) return;
+
+    let isMounted = true;
+
+    async function renderBoundary() {
+      const L = (await import('leaflet')).default;
+      if (!isMounted || !mapInstanceRef.current) return;
+
+      const boundaryGroup = boundaryLayerRef.current;
+      const vertexGroup = vertexMarkersGroupRef.current;
+      const midpointGroup = midpointMarkersGroupRef.current;
+
+      boundaryGroup.clearLayers();
+      vertexGroup.clearLayers();
+      midpointGroup.clearLayers();
+
+      const coords = polygonCoords;
+      if (coords.length === 0) return;
+
+      // 1. Render Polygon or Preview Polyline
+      if (coords.length >= 3) {
+        const polygon = L.polygon(coords, {
+          color: '#10B981',
+          fillColor: '#10B981',
+          fillOpacity: 0.28,
+          weight: 3,
+          dashArray: isDrawingMode ? '6, 6' : undefined,
+        });
+
+        const tooltipText = isTe
+          ? `<strong>విస్తీర్ణం:</strong> ${areaResult.formattedAcres} (${areaResult.formattedSqYards})`
+          : `<strong>Parcel Area:</strong> ${areaResult.formattedAcres} (${areaResult.formattedSqYards})`;
+
+        polygon.bindTooltip(
+          `<div style="font-size:11px;font-family:sans-serif;padding:2px 4px;">${tooltipText}</div>`,
+          { sticky: true }
+        );
+
+        boundaryGroup.addLayer(polygon);
+      } else if (coords.length === 2) {
+        const line = L.polyline(coords, {
+          color: '#10B981',
+          weight: 3,
+          dashArray: '6, 6',
+        });
+        boundaryGroup.addLayer(line);
+      }
+
+      // 2. Render Vertex Handles (Draggable Markers)
+      coords.forEach((coord, idx) => {
+        const isFirst = idx === 0;
+        const vertexIcon = L.divIcon({
+          className: 'polygon-vertex-pin',
+          html: `
+            <div style="
+              width: 24px;
+              height: 24px;
+              border-radius: 50%;
+              background: ${isFirst && isDrawingMode && coords.length >= 3 ? '#F59E0B' : '#10B981'};
+              border: 2.5px solid #FFFFFF;
+              box-shadow: 0 2px 8px rgba(0,0,0,0.5);
+              color: #FFFFFF;
+              font-size: 10px;
+              font-weight: 800;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              cursor: grab;
+              transition: transform 0.15s ease;
+              ${isFirst && isDrawingMode && coords.length >= 3 ? 'animation: pulse 1.5s infinite;' : ''}
+            ">
+              ${idx + 1}
+            </div>
+          `,
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
+        });
+
+        const marker = L.marker(coord, {
+          icon: vertexIcon,
+          draggable: true,
+          title: `Vertex ${idx + 1}: Drag to move`,
+        });
+
+        // Update polygon in real-time during drag
+        marker.on('drag', (e: any) => {
+          const latlng = e.latlng;
+          const updated = [...polygonCoordsRef.current];
+          updated[idx] = [Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))];
+
+          const polyLayer = boundaryGroup.getLayers()[0];
+          if (polyLayer) {
+            polyLayer.setLatLngs(updated);
+          }
+        });
+
+        // Commit coordinates on dragend
+        marker.on('dragend', (e: any) => {
+          const latlng = e.latlng;
+          const updated = [...polygonCoordsRef.current];
+          updated[idx] = [Number(latlng.lat.toFixed(6)), Number(latlng.lng.toFixed(6))];
+          setPolygonCoords(updated);
+          triggerPolygonChange(updated);
+        });
+
+        // Click vertex: close polygon if clicking first point while drawing, or open delete option
+        marker.on('click', (e: any) => {
+          L.DomEvent.stopPropagation(e);
+          if (idx === 0 && isDrawingMode && coords.length >= 3) {
+            setIsDrawingMode(false);
+          }
+        });
+
+        vertexGroup.addLayer(marker);
+      });
+
+      // 3. Render Midpoint Insert Handles (Allow adding vertices to any boundary edge)
+      if (coords.length >= 3 && !isDrawingMode) {
+        for (let i = 0; i < coords.length; i++) {
+          const nextIdx = (i + 1) % coords.length;
+          const p1 = coords[i];
+          const p2 = coords[nextIdx];
+          const midLat = (p1[0] + p2[0]) / 2;
+          const midLng = (p1[1] + p2[1]) / 2;
+
+          const midIcon = L.divIcon({
+            className: 'polygon-midpoint-pin',
+            html: `
+              <div style="
+                width: 16px;
+                height: 16px;
+                border-radius: 50%;
+                background: #FFFFFF;
+                border: 2px solid #10B981;
+                box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+                color: #10B981;
+                font-size: 11px;
+                font-weight: 900;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+              ">+</div>
+            `,
+            iconSize: [16, 16],
+            iconAnchor: [8, 8],
+          });
+
+          const midMarker = L.marker([midLat, midLng], {
+            icon: midIcon,
+            title: isTe ? 'కొత్త బిందువును చేర్చండి' : 'Click to insert vertex along this boundary edge',
+          });
+
+          const insertIndex = i + 1;
+          midMarker.on('click', (e: any) => {
+            L.DomEvent.stopPropagation(e);
+            const newCoords = [...polygonCoordsRef.current];
+            newCoords.splice(insertIndex, 0, [Number(midLat.toFixed(6)), Number(midLng.toFixed(6))]);
+            setPolygonCoords(newCoords);
+            triggerPolygonChange(newCoords);
+          });
+
+          midpointGroup.addLayer(midMarker);
+        }
+      }
+    }
+
+    renderBoundary();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [boundaryMode, isMapReady, polygonCoords, isDrawingMode, isTe, areaResult, triggerPolygonChange]);
+
+  // Standard Property Markers on Multi-Property Map
+  useEffect(() => {
+    if (boundaryMode || !isMapReady || !mapInstanceRef.current || !markersGroupRef.current) return;
 
     async function updateMarkers() {
       const L = (await import('leaflet')).default;
@@ -323,7 +622,6 @@ export default function LeafletPropertyMap({
 
         const marker = L.marker([lat, lng], { icon: customIcon });
 
-        // Popup Content
         const popupContent = `
           <div style="font-family: system-ui, -apple-system, sans-serif; min-width: 230px; max-width: 270px; padding: 4px;">
             <div style="font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: ${primaryColor}; margin-bottom: 2px;">
@@ -381,12 +679,12 @@ export default function LeafletPropertyMap({
     }
 
     updateMarkers();
-  }, [visibleProperties, isMapReady, selectedPropertyId, locale, isTe, onSelectProperty]);
+  }, [visibleProperties, isMapReady, selectedPropertyId, locale, isTe, onSelectProperty, boundaryMode]);
 
   // Toggle ORR Layer Visibility
   useEffect(() => {
     if (!orrLayerRef.current || !mapInstanceRef.current) return;
-    if (showOrrLayer) {
+    if (showOrrLayer && !boundaryMode) {
       if (!mapInstanceRef.current.hasLayer(orrLayerRef.current)) {
         mapInstanceRef.current.addLayer(orrLayerRef.current);
       }
@@ -395,7 +693,7 @@ export default function LeafletPropertyMap({
         mapInstanceRef.current.removeLayer(orrLayerRef.current);
       }
     }
-  }, [showOrrLayer]);
+  }, [showOrrLayer, boundaryMode]);
 
   // Jump to Corridor
   const handleCorridorJump = (corridor: CorridorInfo) => {
@@ -407,21 +705,59 @@ export default function LeafletPropertyMap({
     });
   };
 
+  // ─── Boundary Action Handlers ───────────────────────────────────────────────
+
+  const handleClearPolygon = () => {
+    setPolygonCoords([]);
+    setIsDrawingMode(true);
+    triggerPolygonChange([]);
+  };
+
+  const handleUndoPoint = () => {
+    setPolygonCoords((prev) => {
+      const next = prev.slice(0, -1);
+      triggerPolygonChange(next);
+      return next;
+    });
+  };
+
+  const handleFinishBoundary = () => {
+    if (polygonCoords.length >= 3) {
+      setIsDrawingMode(false);
+      triggerPolygonChange(polygonCoords);
+    }
+  };
+
+  const handleApplyArea = () => {
+    if (onApplyAreaToForm && areaResult.acres > 0) {
+      onApplyAreaToForm(areaResult.acres, areaResult.sqYards);
+      setAppliedAreaFeedback(true);
+      setTimeout(() => setAppliedAreaFeedback(false), 2500);
+    }
+  };
+
   return (
     <div className={`relative flex flex-col w-full rounded-2xl overflow-hidden border border-[#E8E2D9] bg-white shadow-sm ${className}`}>
-      {/* Top Corridor & View Controls Bar */}
+      {/* Top Controls Bar */}
       <div className="bg-[#191512] text-white p-3 sm:p-4 border-b border-white/10 flex flex-col gap-3">
-        <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
             <h3 className="font-bold text-xs sm:text-sm tracking-wide flex items-center gap-1.5 text-white">
               <Compass className="w-4 h-4 text-emerald-400" />
               <span>
-                {singlePropertyMode
+                {boundaryMode
+                  ? isTe ? 'ప్లాట్ / ల్యాండ్ సరిహద్దు డ్రాయింగ్ టూల్' : 'Interactive Plot Boundary Tool'
+                  : singlePropertyMode
                   ? isTe ? 'ఆస్తి శాటిలైట్ లొకేషన్ మ్యాప్' : 'Property Satellite Location Map'
                   : isTe ? 'తెలంగాణ శాటిలైట్ మాస్టర్ మ్యాప్' : 'Telangana Satellite Master Map'}
               </span>
             </h3>
+            {boundaryMode && locationName && (
+              <span className="hidden sm:inline-block text-[11px] text-emerald-300/80 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40">
+                📍 {locationName}
+              </span>
+            )}
           </div>
 
           {/* Layer & Mode Controls */}
@@ -456,8 +792,8 @@ export default function LeafletPropertyMap({
               </button>
             </div>
 
-            {/* ORR 158km Layer Toggle */}
-            {!singlePropertyMode && (
+            {/* ORR 158km Layer Toggle (Only in discovery mode) */}
+            {!singlePropertyMode && !boundaryMode && (
               <button
                 type="button"
                 onClick={() => setShowOrrLayer(!showOrrLayer)}
@@ -473,8 +809,8 @@ export default function LeafletPropertyMap({
               </button>
             )}
 
-            {/* Property Type Toggles */}
-            {!singlePropertyMode && (
+            {/* Property Type Toggles (Discovery mode) */}
+            {!singlePropertyMode && !boundaryMode && (
               <div className="hidden sm:flex items-center bg-white/10 rounded-lg p-0.5">
                 {(['ALL', 'LAND', 'FLAT'] as const).map((type) => (
                   <button
@@ -495,8 +831,80 @@ export default function LeafletPropertyMap({
           </div>
         </div>
 
+        {/* Boundary Drawing Action Toolbar (Active in Boundary Mode) */}
+        {boundaryMode && (
+          <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <button
+                type="button"
+                onClick={() => setIsDrawingMode(!isDrawingMode)}
+                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+                  isDrawingMode
+                    ? 'bg-emerald-500 text-slate-950 font-bold'
+                    : 'bg-white/15 text-white hover:bg-white/25'
+                }`}
+                title={isDrawingMode ? 'Drawing mode is active: click map to place corners' : 'Enable drawing mode'}
+              >
+                <Pencil className="w-3.5 h-3.5" />
+                <span>
+                  {isDrawingMode
+                    ? isTe ? 'డ్రాయింగ్ మోడ్ (సక్రియం)' : 'Plotting Mode (Click Map)'
+                    : isTe ? 'బిందువులు జోడించు' : 'Add Points'}
+                </span>
+              </button>
+
+              {isDrawingMode && polygonCoords.length >= 3 && (
+                <button
+                  type="button"
+                  onClick={handleFinishBoundary}
+                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 transition-all shadow-xs"
+                >
+                  <Check className="w-3.5 h-3.5" />
+                  <span>{isTe ? 'సరిహద్దు ముగించు' : 'Close Boundary'}</span>
+                </button>
+              )}
+
+              {polygonCoords.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleUndoPoint}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-slate-200 flex items-center gap-1 transition-all"
+                  title="Remove last corner point"
+                >
+                  <RotateCcw className="w-3.5 h-3.5" />
+                  <span>{isTe ? 'వెనుకకు' : 'Undo'}</span>
+                </button>
+              )}
+
+              {polygonCoords.length > 0 && (
+                <button
+                  type="button"
+                  onClick={handleClearPolygon}
+                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 flex items-center gap-1 transition-all"
+                  title="Clear all points and start over"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>{isTe ? 'క్లియర్ చేయండి' : 'Clear & Redraw'}</span>
+                </button>
+              )}
+            </div>
+
+            {/* Vertices Count */}
+            <div className="text-[11px] text-slate-300 flex items-center gap-2">
+              <span className="bg-white/10 px-2 py-0.5 rounded-full font-mono">
+                {polygonCoords.length} {isTe ? 'మూలలు' : 'Vertices'}
+              </span>
+              {isDrawingMode && (
+                <span className="text-amber-400 text-[11px] animate-pulse hidden xs:inline">
+                  {isTe ? 'మ్యాప్‌పై క్లిక్ చేసి పాయింట్లను సెట్ చేయండి' : 'Click satellite map to plot corners'}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Corridor Selection Pills (Multi-Property Mode) */}
-        {!singlePropertyMode && (
+        {!singlePropertyMode && !boundaryMode && (
           <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none text-[11px]">
             {TELANGANA_CORRIDORS.map((corridor) => (
               <button
@@ -517,24 +925,90 @@ export default function LeafletPropertyMap({
       </div>
 
       {/* Map Presentation Surface */}
-      <div className="relative w-full h-[380px] sm:h-[480px] md:h-[560px] bg-[#141210]">
+      <div className={`relative w-full ${boundaryMode ? 'h-[360px] sm:h-[440px]' : 'h-[380px] sm:h-[480px] md:h-[560px]'} bg-[#141210]`}>
         <div ref={mapContainerRef} className="w-full h-full z-0" />
 
-        {/* Legend Overlay */}
-        <div className="absolute bottom-3 left-3 z-[400] bg-[#191512]/90 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 text-[10px] sm:text-xs flex flex-wrap items-center gap-3 pointer-events-none shadow-lg">
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm" />
-            <span className="text-slate-200 font-medium">{isTe ? 'వ్యవసాయ భూములు (ధరణి)' : 'Agricultural Land'}</span>
+        {/* Boundary Drawing Area HUD (Real-time live calculated metrics) */}
+        {boundaryMode && (
+          <div className="absolute top-3 left-3 right-3 sm:right-auto z-[400] max-w-sm">
+            <div className="bg-[#191512]/95 backdrop-blur-md text-white p-3 sm:p-3.5 rounded-xl border border-white/15 shadow-xl space-y-2">
+              <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 flex items-center gap-1">
+                  <ShieldCheck className="w-3.5 h-3.5" />
+                  <span>{isTe ? 'లెక్కింపు విస్తీర్ణం' : 'Calculated Parcel Area'}</span>
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">
+                  {polygonCoords.length < 3
+                    ? isTe ? 'కనీసం 3 బిందువులు అవసరం' : 'Need ≥ 3 corners'
+                    : `${areaResult.perimeterMeters}m ${isTe ? 'చుట్టుకొలత' : 'Perimeter'}`}
+                </span>
+              </div>
+
+              {polygonCoords.length >= 3 ? (
+                <div className="space-y-1.5">
+                  <div className="flex items-baseline justify-between gap-2">
+                    <span className="text-xl sm:text-2xl font-bold text-white font-mono">
+                      {areaResult.formattedAcres}
+                    </span>
+                    <span className="text-xs sm:text-sm font-semibold text-emerald-400 font-mono">
+                      {areaResult.formattedSqYards}
+                    </span>
+                  </div>
+                  <div className="text-[11px] text-slate-300 flex items-center justify-between">
+                    <span>{Math.round(areaResult.sqMeters).toLocaleString('en-IN')} m²</span>
+                    <span className="text-slate-400">
+                      {areaResult.wholeAcres} Ac {areaResult.wholeGuntas} Guntas
+                    </span>
+                  </div>
+
+                  {onApplyAreaToForm && (
+                    <button
+                      type="button"
+                      onClick={handleApplyArea}
+                      className="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                    >
+                      {appliedAreaFeedback ? (
+                        <>
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+                          <span>{isTe ? 'ఫారమ్‌లోకి జోడించబడింది!' : 'Synced to Form Details!'}</span>
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                          <span>{isTe ? 'ఈ విస్తీర్ణాన్ని ఫారమ్‌లో వాడండి' : 'Apply Area to Listing Details'}</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <p className="text-xs text-slate-300 leading-relaxed">
+                  {isTe
+                    ? 'శాటిలైట్ మ్యాప్‌పై భూమి సరిహద్దు మూలలను క్లిక్ చేసి ప్లాట్ సరిహద్దును గీయండి. పాయింట్లను డ్రాగ్ చేసి ఖచ్చితంగా మార్చవచ్చు.'
+                    : 'Click corners on the satellite map to outline the parcel boundary. Drag pins anytime to fine-tune vertices.'}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block shadow-sm" />
-            <span className="text-slate-200 font-medium">{isTe ? 'అపార్ట్‌మెంట్లు / ఫ్లాట్లు' : 'Flats & Villas'}</span>
+        )}
+
+        {/* Legend Overlay for Discovery Mode */}
+        {!boundaryMode && (
+          <div className="absolute bottom-3 left-3 z-[400] bg-[#191512]/90 backdrop-blur-md text-white px-3 py-2 rounded-xl border border-white/10 text-[10px] sm:text-xs flex flex-wrap items-center gap-3 pointer-events-none shadow-lg">
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block shadow-sm" />
+              <span className="text-slate-200 font-medium">{isTe ? 'వ్యవసాయ భూములు (ధరణి)' : 'Agricultural Land'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-2.5 h-2.5 rounded-full bg-blue-500 inline-block shadow-sm" />
+              <span className="text-slate-200 font-medium">{isTe ? 'అపార్ట్‌మెంట్లు / ఫ్లాట్లు' : 'Flats & Villas'}</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <span className="w-3.5 h-1 bg-amber-500 inline-block rounded shadow-sm" />
+              <span className="text-amber-400 font-semibold">158km ORR</span>
+            </div>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span className="w-3.5 h-1 bg-amber-500 inline-block rounded shadow-sm" />
-            <span className="text-amber-400 font-semibold">158km ORR</span>
-          </div>
-        </div>
+        )}
 
         {/* Top-Left Quick Native GPS Deep Link */}
         {singlePropertyMode && properties[0]?.location && (

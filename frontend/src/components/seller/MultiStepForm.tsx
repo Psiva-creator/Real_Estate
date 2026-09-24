@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import {
   Building,
@@ -19,6 +19,7 @@ import {
   Phone,
   Calendar,
   Check,
+  Compass,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { SellerFormData, INITIAL_SELLER_FORM_DATA, PropertyType } from '@/types/seller';
@@ -26,6 +27,7 @@ import DocumentChecklistUploader from './DocumentChecklistUploader';
 import { formatINR } from '@/lib/formatters';
 import { createProperty, CreatePropertyDTO } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
+import LeafletPropertyMap from '@/components/properties/LeafletPropertyMap';
 
 interface MultiStepFormProps {
   locale: Locale;
@@ -99,6 +101,21 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       });
     }
   };
+
+  // Dynamically resolve map center based on seller location input
+  const resolvedMapCenter = useMemo((): [number, number] => {
+    const loc = `${formData.mandal} ${formData.district} ${formData.village}`.toLowerCase();
+    if (loc.includes('kokapet') || loc.includes('gandipet')) return [17.4042, 78.3308];
+    if (loc.includes('shankarpally') || loc.includes('mokila')) return [17.4526, 78.1342];
+    if (loc.includes('shamshabad') || loc.includes('mamidipally')) return [17.2403, 78.4294];
+    if (loc.includes('kollur') || loc.includes('tellapur')) return [17.4764, 78.2570];
+    if (loc.includes('patancheru') || loc.includes('indresham')) return [17.5312, 78.2612];
+    if (loc.includes('medchal') || loc.includes('kandlakoya')) return [17.6163, 78.4907];
+    if (loc.includes('yadagirigutta') || loc.includes('raigir')) return [17.5872, 78.9482];
+    if (loc.includes('maheshwaram') || loc.includes('mansanpally')) return [17.1350, 78.4320];
+    if (loc.includes('shadnagar') || loc.includes('kothur')) return [17.0722, 78.2089];
+    return [17.4065, 78.4772];
+  }, [formData.mandal, formData.district, formData.village]);
 
   // Step Validation logic
   const validateCurrentStep = (): boolean => {
@@ -824,6 +841,55 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 />
               </div>
             </div>
+
+            {/* Interactive Plot / Land Boundary Demarcation Tool */}
+            <div className="pt-4 border-t border-slate-200 space-y-2.5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                <div>
+                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
+                    <Compass className="w-4 h-4 text-emerald-700" />
+                    <span>{isTe ? 'భూమి / ప్లాట్ సరిహద్దు డ్రాయింగ్ టూల్ (మ్యాప్)' : 'Interactive Plot Boundary Demarcation'}</span>
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    {isTe
+                      ? 'శాటిలైట్ మ్యాప్‌పై భూమి సరిహద్దు మూలలను గుర్తించండి. వైశాల్యం ఆటోమేటిక్‌గా లెక్కించబడుతుంది.'
+                      : 'Plot parcel corners on high-definition satellite imagery. Area is automatically calculated.'}
+                  </p>
+                </div>
+                {formData.boundaryCoordinates && formData.boundaryCoordinates.length >= 3 && (
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200 self-start sm:self-auto shadow-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>
+                      {formData.boundaryCoordinates.length} {isTe ? 'సరిహద్దు బిందువులు' : 'Corners Demarcated'}
+                    </span>
+                  </span>
+                )}
+              </div>
+
+              <LeafletPropertyMap
+                locale={locale}
+                boundaryMode={true}
+                initialPolygon={formData.boundaryCoordinates || []}
+                onPolygonChange={(polygon, areaSqYards, areaAcres) => {
+                  updateField('boundaryCoordinates', polygon);
+                  updateField('boundaryAreaSqYards', areaSqYards);
+                  updateField('boundaryAreaAcres', areaAcres);
+                }}
+                centerCoordinates={resolvedMapCenter}
+                locationName={`${formData.village || ''} ${formData.mandal || ''} ${formData.district || ''}`.trim() || undefined}
+                onApplyAreaToForm={(acres, sqYards) => {
+                  if (acres > 0) {
+                    updateField('totalAcres', acres.toFixed(2));
+                    const guntas = Math.round((acres % 1) * 40);
+                    updateField('guntas', String(guntas));
+                  }
+                  if (sqYards > 0) {
+                    updateField('sqYards', String(Math.round(sqYards)));
+                    updateField('plotAreaSqYards', String(Math.round(sqYards)));
+                  }
+                }}
+              />
+            </div>
           </div>
         )}
 
@@ -1516,6 +1582,18 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     <p>
                       <span className="font-semibold text-slate-700">Landmark:</span> {formData.landmark}
                     </p>
+                  )}
+                  {formData.boundaryCoordinates && formData.boundaryCoordinates.length >= 3 && (
+                    <div className="pt-2 mt-1 border-t border-slate-200">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>
+                          {isTe ? 'సరిహద్దు గుర్తించబడింది:' : 'Boundary Demarcated:'}{' '}
+                          {formData.boundaryAreaAcres ? `${formData.boundaryAreaAcres} Ac` : ''}{' '}
+                          ({formData.boundaryCoordinates.length} {isTe ? 'బిందువులు' : 'corners'})
+                        </span>
+                      </span>
+                    </div>
                   )}
                 </div>
               </div>

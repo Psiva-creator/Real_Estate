@@ -10,12 +10,14 @@ import {
   Clock,
   Share2,
   Check,
+  Heart,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
 import { formatINR } from '@/lib/formatters';
 import { EnquiryType } from '@/lib/api';
 import EnquiryModal from '@/components/enquiry/EnquiryModal';
+import { useFavorites } from '@/lib/favorites';
 
 interface PropertyDetailActionsProps {
   property: MockProperty;
@@ -25,6 +27,8 @@ interface PropertyDetailActionsProps {
 export default function PropertyDetailActions({ property, locale }: PropertyDetailActionsProps) {
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
+  const { isSaved, toggleSave } = useFavorites();
+  const saved = isSaved(property.id);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalType, setModalType] = useState<EnquiryType>('SITE_VISIT');
@@ -185,24 +189,40 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
             {dict.propertyDetail.agentDisclaimer}
           </p>
 
-          {/* Share Button */}
-          <button
-            type="button"
-            onClick={handleShare}
-            className="w-full py-2.5 px-3 rounded-xl border border-[#E8E2D9] hover:bg-[#FAF8F5] text-[#61584F] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors"
-          >
-            {isCopied ? (
-              <>
-                <Check className="w-3.5 h-3.5 text-[#8C653E]" />
-                <span className="text-[#8C653E]">{dict.propertyDetail.copied}</span>
-              </>
-            ) : (
-              <>
-                <Share2 className="w-3.5 h-3.5 text-[#8C653E]" />
-                <span>{dict.propertyDetail.share}</span>
-              </>
-            )}
-          </button>
+          {/* Action Row: Save & Share Buttons */}
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => toggleSave(property.id)}
+              className={`py-2.5 px-3 rounded-xl border text-xs font-semibold flex items-center justify-center gap-1.5 transition-all cursor-pointer ${
+                saved
+                  ? 'border-rose-300 bg-rose-50/70 text-rose-700'
+                  : 'border-[#E8E2D9] hover:bg-[#FAF8F5] text-[#61584F]'
+              }`}
+              title={saved ? (isTe ? 'సేవ్ చేసిన వాటి నుండి తొలగించు' : 'Remove from Saved') : (isTe ? 'ప్రాపర్టీని సేవ్ చేయండి' : 'Save Property')}
+            >
+              <Heart className={`w-3.5 h-3.5 ${saved ? 'fill-rose-500 text-rose-500' : 'text-[#8C653E]'}`} />
+              <span>{saved ? (isTe ? 'భద్రపరచబడింది' : 'Saved') : (isTe ? 'సేవ్ చేయండి' : 'Save Property')}</span>
+            </button>
+
+            <button
+              type="button"
+              onClick={handleShare}
+              className="py-2.5 px-3 rounded-xl border border-[#E8E2D9] hover:bg-[#FAF8F5] text-[#61584F] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+            >
+              {isCopied ? (
+                <>
+                  <Check className="w-3.5 h-3.5 text-[#8C653E]" />
+                  <span className="text-[#8C653E]">{dict.propertyDetail.copied}</span>
+                </>
+              ) : (
+                <>
+                  <Share2 className="w-3.5 h-3.5 text-[#8C653E]" />
+                  <span>{dict.propertyDetail.share}</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
       </div>
 
@@ -220,6 +240,21 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
         </div>
 
         <div className="flex items-center gap-2">
+          {/* Mobile Save Button */}
+          <button
+            type="button"
+            onClick={() => toggleSave(property.id)}
+            className={`p-2.5 rounded-full border shadow-sm active:scale-95 transition-all ${
+              saved
+                ? 'border-rose-300 bg-rose-50 text-rose-600'
+                : 'border-[#E8E2D9] bg-white text-[#574F48]'
+            }`}
+            title={saved ? (isTe ? 'సేవ్ చేసిన వాటి నుండి తొలగించు' : 'Remove from Saved') : (isTe ? 'సేవ్ చేయండి' : 'Save Property')}
+            aria-label={saved ? 'Remove from Saved' : 'Save Property'}
+          >
+            <Heart className={`w-4 h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-[#8C653E]'}`} />
+          </button>
+
           <button
             type="button"
             onClick={() => openEnquiry('CALL')}

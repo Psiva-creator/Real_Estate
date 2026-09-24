@@ -11,10 +11,12 @@ import {
   Home,
   CheckCircle2,
   Compass,
+  Heart,
 } from 'lucide-react';
 import { Locale } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
 import { formatINR, formatAcreage, formatOrrDistance } from '@/lib/formatters';
+import { useFavorites } from '@/lib/favorites';
 
 interface PropertyCardProps {
   property: MockProperty;
@@ -25,6 +27,8 @@ interface PropertyCardProps {
 export default function PropertyCard({ property, locale, onBookVisit }: PropertyCardProps) {
   const [imgSrc, setImgSrc] = useState(property.mainImage);
   const isTe = locale === 'te';
+  const { isSaved, toggleSave } = useFavorites();
+  const saved = isSaved(property.id);
 
   const title = isTe && property.titleTe ? property.titleTe : property.title;
   const landmark = isTe && property.location.landmarkTe ? property.location.landmarkTe : property.location.landmark;
@@ -110,10 +114,30 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
             </span>
           </div>
 
-          {/* 13-Doc Verification Shield */}
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[#191512] text-[11px] font-semibold shadow-sm pointer-events-auto border border-[#E8E2D9]">
-            <ShieldCheck className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
-            <span>{isTe ? '13 డాక్స్ వెరిఫైడ్' : '13-Doc Verified'}</span>
+          {/* Right: 13-Doc Verification Shield & Heart Save Control */}
+          <div className="flex items-center gap-1.5 pointer-events-auto">
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 backdrop-blur-sm text-[#191512] text-[11px] font-semibold shadow-sm border border-[#E8E2D9]">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
+              <span>{isTe ? '13 డాక్స్ వెరిఫైడ్' : '13-Doc Verified'}</span>
+            </div>
+
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                toggleSave(property.id);
+              }}
+              className="w-7 h-7 rounded-full bg-white/95 hover:bg-white text-[#191512] flex items-center justify-center shadow-sm border border-[#E8E2D9] transition-transform active:scale-90 cursor-pointer"
+              title={saved ? (isTe ? 'సేవ్ చేసిన వాటి నుండి తొలగించు' : 'Remove from Saved') : (isTe ? 'ప్రాపర్టీని సేవ్ చేయండి' : 'Save Property')}
+              aria-label={saved ? 'Remove from Saved' : 'Save Property'}
+            >
+              <Heart
+                className={`w-3.5 h-3.5 transition-colors ${
+                  saved ? 'fill-rose-500 text-rose-500' : 'text-[#8C653E] hover:text-rose-500'
+                }`}
+              />
+            </button>
           </div>
         </div>
 

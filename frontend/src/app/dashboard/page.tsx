@@ -94,8 +94,9 @@ export default function ExecutiveCommandCenterPage() {
     let verifiedCount = 0;
 
     properties.forEach((p) => {
-      if (p.acreage?.acres) {
-        totalAcres += p.acreage.acres;
+      const acres = p.land?.totalAcres ?? p.acreage?.acres;
+      if (acres) {
+        totalAcres += acres;
       }
       if (p.pricing?.totalPrice) {
         totalValuation += p.pricing.totalPrice;
@@ -383,7 +384,7 @@ export default function ExecutiveCommandCenterPage() {
                           {formatINR(prop.pricing?.totalPrice || 48000000)}
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          {formatAcreage(prop.acreage?.acres || 8)}
+                          {formatAcreage(prop.land?.totalAcres ?? prop.acreage?.acres ?? 8)}
                         </div>
                       </td>
 
