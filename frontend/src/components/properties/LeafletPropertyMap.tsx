@@ -61,7 +61,7 @@ export default function LeafletPropertyMap({
   const [mapMode, setMapMode] = useState<MapLayerMode>('satellite');
   const [activeCorridor, setActiveCorridor] = useState<string>('all');
   const [showOrrLayer, setShowOrrLayer] = useState<boolean>(true);
-  const [propertyTypeFilter, setPropertyTypeFilter] = useState<'ALL' | 'LAND' | 'FLAT'>('ALL');
+  const [propertyTypeFilter, setPropertyTypeFilter] = useState<'ALL' | 'LAND' | 'FLAT' | 'VILLA'>('ALL');
   const [activeProperty, setActiveProperty] = useState<MockProperty | null>(null);
   const [isMapReady, setIsMapReady] = useState<boolean>(false);
 
@@ -211,26 +211,44 @@ export default function LeafletPropertyMap({
         orrGroup.addLayer(exitMarker);
       });
 
-      // If Single Property Mode: Draw a glowing boundary circle / survey plot highlight
-      if (singlePropertyMode && properties[0]?.location?.latitude && properties[0]?.location?.longitude) {
-        const pLat = properties[0].location.latitude;
-        const pLng = properties[0].location.longitude;
+      // If Single Property Mode: Draw real cadastral boundary polygon if available, else boundary circle
+      if (singlePropertyMode && properties[0]) {
+        const coords = properties[0].boundaryCoordinates;
+        if (coords && Array.isArray(coords) && coords.length >= 3) {
+          const latLngs = coords.map((c: any) => [c.lat ?? c[0], c.lng ?? c[1]]);
+          const surveyPolygon = L.polygon(latLngs, {
+            color: '#F59E0B',
+            fillColor: '#10B981',
+            fillOpacity: 0.28,
+            weight: 2.5,
+          }).addTo(map);
 
-        const surveyCircle = L.circle([pLat, pLng], {
-          radius: 180,
-          color: '#10B981',
-          fillColor: '#10B981',
-          fillOpacity: 0.22,
-          weight: 2,
-          dashArray: '4, 4',
-        }).addTo(map);
+          surveyPolygon.bindTooltip(
+            '<div style="font-size:11px;font-weight:bold;color:#065F46;">📍 Verified Cadastral Plot Boundary</div>',
+            { sticky: true }
+          );
+          singlePropertyCircleRef.current = surveyPolygon;
+          map.fitBounds(surveyPolygon.getBounds(), { padding: [30, 30] });
+        } else if (properties[0]?.location?.latitude && properties[0]?.location?.longitude) {
+          const pLat = properties[0].location.latitude;
+          const pLng = properties[0].location.longitude;
 
-        surveyCircle.bindTooltip(
-          '<div style="font-size:11px;font-weight:bold;color:#065F46;">📍 Verified Land Demarcation Zone</div>',
-          { sticky: true }
-        );
+          const surveyCircle = L.circle([pLat, pLng], {
+            radius: 180,
+            color: '#10B981',
+            fillColor: '#10B981',
+            fillOpacity: 0.22,
+            weight: 2,
+            dashArray: '4, 4',
+          }).addTo(map);
 
-        singlePropertyCircleRef.current = surveyCircle;
+          surveyCircle.bindTooltip(
+            '<div style="font-size:11px;font-weight:bold;color:#065F46;">📍 Verified Land Demarcation Zone</div>',
+            { sticky: true }
+          );
+
+          singlePropertyCircleRef.current = surveyCircle;
+        }
       }
 
       setIsMapReady(true);
