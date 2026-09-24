@@ -94,3 +94,35 @@
   - **Member 5 (Content & Bilingual):** Supply Telugu & English copy for villa specs and polygon drawing instructions.
   - **Member 6 (QA):** Create test matrix for villa intake, map polygon persistence, and regression verification.
 
+---
+
+## 🗓️ Day 6 — UAT, Sourcing Close-Out & Sprint Ticket Dispatch (2026-09-24 | 12:00 PM IST)
+- **Facilitator:** Member 1: Product & Project Lead (Siva Krishna)
+- **Sprint Phase:** Day 6 — Pre-Launch UAT & Go/No-Go Readiness
+
+### ✅ Project Lead Actions Completed Today
+1. **Admin Portal Access Resolved:** Confirmed `/en/trh-internal-desk` is the dedicated staff terminal. Session defaulting to SELLER role now documented; admin credentials communicated to team (`admin@telanganarealty.in` / `Admin@1234`).
+2. **PROP-008 Sourced:** Formally sourced 8th property — 2.50 Acres Managed Agro-Farmland in Maheshwaram Growth Belt, Mansanpally Village. 13/13 documents verified. Asking ₹3.12 Cr.
+3. **Seller CRM Updated:** 5 verified sellers on record covering 8 properties across Kokapet, Kollur, Shamshabad, Financial District, Gachibowli, Tellapur, Mokila, and Maheshwaram.
+4. **Sprint Work Orders Dispatched:** All tickets (BE-101–103, FE-101–103, UX-101–102, CNT-101–102, QA-101) formally authorized for execution.
+
+### 🚦 Sprint Ticket Execution Status (Authorized Today)
+| Ticket | Role | Status |
+| :--- | :--- | :--- |
+| BE-101 (Villa DB Schema) | Backend | 🟡 In Progress |
+| BE-102 (Boundary Polygon DB) | Backend | 🟡 In Progress |
+| BE-103 (Seed PROP-007 Villa) | Backend | 🟡 In Progress |
+| FE-101 (Villa Showcase & Intake) | Frontend | 🟡 In Progress |
+| FE-102 (Leaflet Polygon Drawer) | Frontend | 🟡 In Progress |
+| FE-103 (Buyer Favorites) | Frontend | 🟡 In Progress |
+| UX-101 (Villa Card Wireframes) | UI/UX | 🟡 In Progress |
+| UX-102 (Polygon Tool UI) | UI/UX | 🟡 In Progress |
+| CNT-101 (Villa Localization EN+TE) | Content | 🟡 In Progress |
+| CNT-102 (Map Copy & Tooltips) | Content | 🟡 In Progress |
+| QA-101 (Regression & Villa Test Plan) | QA | 🟡 In Progress |
+
+### ⏳ Remaining (Project Lead — Day 6 Afternoon)
+- [ ] UAT Walkthrough on staging: admin portal, 13-doc verification queue, buyer enquiry flow.
+- [ ] Pre-launch checklist sign-off: SSL, Telugu cross-device, viewport testing.
+- [ ] Final Go / No-Go Launch Decision.
+
