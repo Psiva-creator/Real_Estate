@@ -63,6 +63,19 @@
 
 ---
 
+### 5. Smt. G. Vasundhara Devi
+- **Role:** Sole Legal Heir & Title Owner (Agriculturist)
+- **Phone / WhatsApp:** `+91 94401 77889`
+- **Email:** `vasundhara.devi.farms@gmail.com`
+- **Aadhar Verification:** Verified (`8923-5678-9012`)
+- **Relationship History:** Long-tenure agriculturist; 3rd-generation farmland owner in Maheshwaram belt. Referred by Co-Broker G. Ramesh Babu.
+- **Properties Listed:**
+  - `PROP-008` (2.50 Acres Managed Agro-Farmland, Maheshwaram)
+- **Brokerage Agreement:** Signed 1.0% exclusive brokerage mandate (60-day marketing window).
+- **Notes:** All 13 land documents including Dharani Pattadar Passbook, Pahani, Form 1B, and Sec. 22-A clearance submitted. Zero pending litigation; clear ancestral succession title.
+
+---
+
 ## 💼 Broker & Mediation Network
 
 | Partner Name | Focus Area | Phone | Commission Split | Status |
