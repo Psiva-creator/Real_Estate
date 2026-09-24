@@ -1,12 +1,17 @@
-import { test, describe } from 'node:test';
+import { test, describe, beforeEach } from 'node:test';
 import assert from 'node:assert';
 import request from 'supertest';
 import { app } from '../src/app.js';
 import { generateToken } from '../src/middleware/auth.js';
 import { isOriginAllowed, getAllowedOrigins } from '../src/config/cors.js';
 import { User } from '../src/types/index.js';
+import { initTestDb } from './setup.js';
 
 describe('CORS Configuration & Security Tests', () => {
+  beforeEach(async () => {
+    await initTestDb();
+  });
+
   const prodOrigin = 'https://frontend-six-psi-ecroth2n1r.vercel.app';
   const previewOrigin = 'https://frontend-git-feature-ecroth2n1r.vercel.app';
   const maliciousOrigin = 'https://malicious-attacker.com';
