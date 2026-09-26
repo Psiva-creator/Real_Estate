@@ -138,6 +138,9 @@ CREATE TABLE IF NOT EXISTS properties (
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Migration Alteration for Existing Properties Table
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS boundary_coordinates JSONB DEFAULT NULL;
+
 -- 5. PROPERTY DOCUMENTS TABLE (13 Required Verification Gates)
 CREATE TABLE IF NOT EXISTS property_documents (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
