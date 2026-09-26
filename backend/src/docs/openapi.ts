@@ -58,7 +58,7 @@ export const openApiSpec = {
         type: 'object',
         properties: {
           id: { type: 'string', format: 'uuid' },
-          type: { type: 'string', enum: ['LAND', 'FLAT'] },
+          type: { type: 'string', enum: ['LAND', 'FLAT', 'VILLA'] },
           status: { type: 'string', enum: ['LIVE'] },
           titleEn: { type: 'string' },
           titleTe: { type: 'string' },
@@ -96,6 +96,28 @@ export const openApiSpec = {
               floor: { type: 'integer' },
               amenities: { type: 'array', items: { type: 'string' } },
               possessionStatus: { type: 'string' },
+            },
+          },
+          villa: {
+            type: 'object',
+            properties: {
+              plotSqYards: { type: 'number' },
+              builtUpSqft: { type: 'integer' },
+              bedrooms: { type: 'integer' },
+              bathrooms: { type: 'integer' },
+              floors: { type: 'integer' },
+              amenities: { type: 'array', items: { type: 'string' } },
+              possessionStatus: { type: 'string' },
+            },
+          },
+          boundaryCoordinates: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                lat: { type: 'number' },
+                lng: { type: 'number' },
+              },
             },
           },
           pricing: {
@@ -368,7 +390,7 @@ export const openApiSpec = {
                 type: 'object',
                 required: ['type', 'titleEn', 'descriptionEn', 'location', 'pricing', 'mainImage'],
                 properties: {
-                  type: { type: 'string', enum: ['LAND', 'FLAT'] },
+                  type: { type: 'string', enum: ['LAND', 'FLAT', 'VILLA'] },
                   titleEn: { type: 'string', example: '10 Acres Land near Kollur ORR Exit' },
                   titleTe: { type: 'string', example: 'కొల్లూరు ORR వద్ద 10 ఎకరాల భూమి' },
                   descriptionEn: { type: 'string' },
@@ -398,6 +420,28 @@ export const openApiSpec = {
                       sqft: { type: 'integer', example: 1850 },
                       bedrooms: { type: 'integer', example: 3 },
                       bathrooms: { type: 'integer', example: 3 },
+                    },
+                  },
+                  villa: {
+                    type: 'object',
+                    properties: {
+                      plotSqYards: { type: 'number', example: 350 },
+                      builtUpSqft: { type: 'integer', example: 4200 },
+                      bedrooms: { type: 'integer', example: 4 },
+                      bathrooms: { type: 'integer', example: 5 },
+                      floors: { type: 'integer', example: 3 },
+                      amenities: { type: 'array', items: { type: 'string' } },
+                      possessionStatus: { type: 'string', example: 'READY_TO_MOVE' },
+                    },
+                  },
+                  boundaryCoordinates: {
+                    type: 'array',
+                    items: {
+                      type: 'object',
+                      properties: {
+                        lat: { type: 'number' },
+                        lng: { type: 'number' },
+                      },
                     },
                   },
                   pricing: {
@@ -433,7 +477,7 @@ export const openApiSpec = {
         summary: 'Advanced Search & Filter',
         description: 'Filter verified properties by Type, HMDA Tier, Price, ORR Distance, Acres, and Bedrooms',
         parameters: [
-          { name: 'type', in: 'query', schema: { type: 'string', enum: ['LAND', 'FLAT'] } },
+          { name: 'type', in: 'query', schema: { type: 'string', enum: ['LAND', 'FLAT', 'VILLA'] } },
           { name: 'tier', in: 'query', schema: { type: 'string', enum: ['TIER_1', 'TIER_2', 'TIER_3'] } },
           { name: 'district', in: 'query', schema: { type: 'string' } },
           { name: 'mandal', in: 'query', schema: { type: 'string' } },
@@ -833,6 +877,72 @@ export const openApiSpec = {
               },
             },
           },
+        },
+      },
+    },
+    '/api/admin/properties': {
+      get: {
+        tags: ['Admin & Deal Desk'],
+        summary: 'List All Properties (Unmasked Sellers & Documents)',
+        security: [{ BearerAuth: [] }],
+        parameters: [
+          { name: 'status', in: 'query', schema: { type: 'string', enum: ['DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE', 'SOLD', 'OFF_MARKET'] } },
+        ],
+        responses: {
+          200: {
+            description: 'List of internal property profiles with seller and document verification summaries',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    properties: { type: 'array', items: { type: 'object' } },
+                    count: { type: 'integer' },
+                  },
+                },
+              },
+            },
+          },
+        },
+      },
+    },
+    '/api/admin/properties/{id}': {
+      get: {
+        tags: ['Admin & Deal Desk'],
+        summary: 'Get Internal Property Detail with Full Seller Metadata',
+        security: [{ BearerAuth: [] }],
+        parameters: [{ name: 'id', in: 'path', required: true, schema: { type: 'string', format: 'uuid' } }],
+        responses: {
+          200: { description: 'Full property record with unmasked seller identity' },
+          404: { description: 'Property not found' },
+        },
+      },
+    },
+    '/api/admin/sync-seeds': {
+      post: {
+        tags: ['Admin & Deal Desk'],
+        summary: 'Trigger Database Schema Migrations and Seed Dataset Synchronization',
+        description: 'Synchronizes PostgreSQL schema DDL (including VILLA enum and boundary coordinates) and seeds the 8 properties with 104 compliance documents.',
+        security: [{ BearerAuth: [] }],
+        responses: {
+          200: {
+            description: 'Database schema and dataset synchronized successfully',
+            content: {
+              'application/json': {
+                schema: {
+                  type: 'object',
+                  properties: {
+                    message: { type: 'string', example: 'Database schema, properties, sellers, and documents synchronized successfully' },
+                    totalProperties: { type: 'integer', example: 8 },
+                    totalSellers: { type: 'integer', example: 5 },
+                  },
+                },
+              },
+            },
+          },
+          401: { description: 'Unauthorized — requires valid Admin JWT token' },
+          403: { description: 'Forbidden — requires ADMIN role' },
+          500: { description: 'Database migration or seed error' },
         },
       },
     },

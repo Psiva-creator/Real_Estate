@@ -125,4 +125,78 @@ describe('Properties Module & Seller Privacy Gate', () => {
       assert.ok(prop.flat.bedrooms >= 4);
     }
   });
+
+  test('POST /api/properties creates VILLA listing with boundary coordinates and persists them', async () => {
+    const testCoordinates = [
+      { lat: 17.4201, lng: 78.1923 },
+      { lat: 17.4205, lng: 78.1929 },
+      { lat: 17.4198, lng: 78.1932 },
+    ];
+
+    const res = await request(app)
+      .post('/api/properties')
+      .send({
+        type: 'VILLA',
+        titleEn: '4 BHK Triplex Luxury Villa with Private Garden',
+        descriptionEn: 'Ultra luxury villa in gated community with swimming pool and clubhouse.',
+        location: {
+          district: 'Rangareddy',
+          mandal: 'Shankarpally',
+          village: 'Mokila',
+          latitude: 17.4201,
+          longitude: 78.1923,
+        },
+        villa: {
+          plotSqYards: 350,
+          builtUpSqft: 4200,
+          bedrooms: 4,
+          bathrooms: 5,
+          floors: 3,
+          amenities: ['Clubhouse', 'Private Garden', 'Swimming Pool'],
+          possessionStatus: 'READY_TO_MOVE',
+        },
+        boundaryCoordinates: testCoordinates,
+        pricing: {
+          totalPrice: 48500000,
+          isNegotiable: true,
+        },
+        mainImage: 'https://example.com/villa.jpg',
+        seller: {
+          name: 'Dr. K. Sitarama Raju',
+          phone: '+919876543333',
+        },
+      });
+
+    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.body.property.type, 'VILLA');
+    assert.strictEqual(res.body.property.villa.builtUpSqft, 4200);
+    assert.deepStrictEqual(res.body.property.boundaryCoordinates, testCoordinates);
+
+    // Verify public property endpoint preserves boundaryCoordinates
+    const publicRes = await request(app).get(`/api/properties/${res.body.property.id}`);
+    assert.strictEqual(publicRes.status, 200);
+    assert.strictEqual(publicRes.body.property.type, 'VILLA');
+    assert.deepStrictEqual(publicRes.body.property.boundaryCoordinates, testCoordinates);
+  });
+
+  test('POST /api/admin/sync-seeds requires ADMIN role and synchronizes dataset', async () => {
+    // 1. Unauthenticated request should fail
+    const unauthRes = await request(app).post('/api/admin/sync-seeds');
+    assert.strictEqual(unauthRes.status, 401);
+
+    // 2. Admin login
+    const loginRes = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'admin@telanganarealty.in', password: 'Admin@1234' });
+    assert.strictEqual(loginRes.status, 200);
+    const token = loginRes.body.token;
+
+    // 3. Admin sync execution
+    const syncRes = await request(app)
+      .post('/api/admin/sync-seeds')
+      .set('Authorization', `Bearer ${token}`);
+    assert.strictEqual(syncRes.status, 200);
+    assert.ok(syncRes.body.totalProperties >= 8);
+    assert.ok(syncRes.body.totalSellers >= 5);
+  });
 });
