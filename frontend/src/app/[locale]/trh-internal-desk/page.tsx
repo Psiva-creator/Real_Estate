@@ -266,40 +266,6 @@ function InternalDeskContent({ params }: InternalDeskPageProps) {
                 </>
               )}
             </button>
-
-            {/* 1-Click Fast-Fill Testing Station */}
-            <div className="pt-3 border-t border-slate-800 space-y-2">
-              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 uppercase tracking-wider">
-                <span>⚡ 1-Click Demo Fast-Fill</span>
-                <span>Password: Admin@1234</span>
-              </div>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedRole('ADMIN');
-                    setIdentifier('admin@telanganarealty.in');
-                    setPassword('Admin@1234');
-                    setErrorMessage(null);
-                  }}
-                  className="py-2 px-2.5 rounded-xl bg-slate-950 border border-amber-500/30 hover:border-amber-500 text-[11px] font-semibold text-amber-400 text-center transition-colors shadow-xs"
-                >
-                  Director (Admin)
-                </button>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSelectedRole('AGENT');
-                    setIdentifier('suresh.reddy@telanganarealty.in');
-                    setPassword('Admin@1234');
-                    setErrorMessage(null);
-                  }}
-                  className="py-2 px-2.5 rounded-xl bg-slate-950 border border-blue-500/30 hover:border-blue-500 text-[11px] font-semibold text-blue-400 text-center transition-colors shadow-xs"
-                >
-                  Advisor (Agent)
-                </button>
-              </div>
-            </div>
           </form>
         </div>
 

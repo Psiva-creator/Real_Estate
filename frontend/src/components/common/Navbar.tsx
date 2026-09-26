@@ -133,7 +133,7 @@ export default function Navbar({ locale }: NavbarProps) {
             ) : (
               /* ── Unauthenticated: luxury portal login CTA ───────────────── */
               <Link
-                href={`/${locale}/login?role=ADMIN`}
+                href={`/${locale}/login`}
                 className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-[#E8E2D9] bg-white hover:bg-[#F5F1EA] text-[#191512] text-xs font-semibold tracking-wide uppercase transition-all duration-200 shadow-sm"
                 title={dict.nav.teamLogin}
                 aria-label={dict.nav.teamLogin}
@@ -230,7 +230,7 @@ export default function Navbar({ locale }: NavbarProps) {
               ) : (
                 /* ── Mobile unauthenticated: portal login CTA ─────────────── */
                 <Link
-                  href={`/${locale}/login?role=ADMIN`}
+                  href={`/${locale}/login`}
                   onClick={() => setIsMobileMenuOpen(false)}
                   className="flex items-center justify-center gap-2.5 w-full px-4 py-3.5 rounded-full bg-white border border-[#E8E2D9] text-[#191512] font-semibold tap-target text-xs tracking-wide uppercase shadow-sm hover:bg-[#F5F1EA] transition-colors"
                 >
