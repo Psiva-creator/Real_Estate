@@ -29,6 +29,7 @@ export interface CreatePropertyInput {
   land?: LandDetails;
   flat?: FlatDetails;
   villa?: VillaDetails;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   pricing: PricingDetails;
   mainImage: string;
   galleryImages?: string[];
@@ -147,6 +148,7 @@ export class PropertiesService {
       mainImage: input.mainImage,
       galleryImages: input.galleryImages || [],
       sitePlanImage: input.sitePlanImage,
+      boundaryCoordinates: input.boundaryCoordinates ?? null,
       isFeatured: !!input.isFeatured,
     });
 

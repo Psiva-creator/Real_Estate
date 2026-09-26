@@ -682,7 +682,7 @@ class Database {
           water_available, electricity_available,
           sqft, bedrooms, bathrooms, floor, total_floors, amenities, possession_status,
           price_per_acre, price_per_sqft, total_price, outrate, half_development_value, is_negotiable,
-          main_image, gallery_images, site_plan_image, is_featured, views_count
+          main_image, gallery_images, site_plan_image, is_featured, views_count, boundary_coordinates
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7,
           $8, $9, $10, $11, $12, $13, $14, $15,
@@ -690,7 +690,7 @@ class Database {
           $21, $22,
           $23, $24, $25, $26, $27, $28, $29,
           $30, $31, $32, $33, $34, $35,
-          $36, $37, $38, $39, $40
+          $36, $37, $38, $39, $40, $41
         ) RETURNING *;
       `;
 
@@ -710,20 +710,20 @@ class Database {
         data.location.distanceFromOrrKm ?? null,
         data.location.zone || null,
         data.location.tier,
-        data.land?.totalAcres ?? null,
+        data.type === 'VILLA' && data.villa?.plotSqYards ? data.villa.plotSqYards / 4840 : (data.land?.totalAcres ?? null),
         data.land?.surveyNumbers || null,
         data.land?.soilType || null,
         data.land?.developmentLevel || null,
         data.land?.roadWidthFt ?? null,
         data.land?.waterAvailable ?? false,
         data.land?.electricityAvailable ?? false,
-        data.flat?.sqft ?? null,
-        data.flat?.bedrooms ?? null,
-        data.flat?.bathrooms ?? null,
+        data.type === 'VILLA' ? (data.villa?.builtUpSqft ?? null) : (data.flat?.sqft ?? null),
+        data.type === 'VILLA' ? (data.villa?.bedrooms ?? null) : (data.flat?.bedrooms ?? null),
+        data.type === 'VILLA' ? (data.villa?.bathrooms ?? null) : (data.flat?.bathrooms ?? null),
         data.flat?.floor ?? null,
-        data.flat?.totalFloors ?? null,
-        data.flat?.amenities || null,
-        data.flat?.possessionStatus || null,
+        data.type === 'VILLA' ? (data.villa?.floors ?? null) : (data.flat?.totalFloors ?? null),
+        data.type === 'VILLA' ? (data.villa?.amenities || null) : (data.flat?.amenities || null),
+        data.type === 'VILLA' ? (data.villa?.possessionStatus || null) : (data.flat?.possessionStatus || null),
         data.pricing.pricePerAcre ?? null,
         data.pricing.pricePerSqft ?? null,
         data.pricing.totalPrice,
@@ -735,6 +735,7 @@ class Database {
         data.sitePlanImage || null,
         data.isFeatured ?? false,
         0,
+        data.boundaryCoordinates ? JSON.stringify(data.boundaryCoordinates) : null,
       ];
 
       const res = await client.query(insertQuery, values);
@@ -778,7 +779,9 @@ class Database {
         location: updates.location ? { ...existing.location, ...updates.location } : existing.location,
         land: updates.land ? (existing.land ? { ...existing.land, ...updates.land } : updates.land) : existing.land,
         flat: updates.flat ? (existing.flat ? { ...existing.flat, ...updates.flat } : updates.flat) : existing.flat,
+        villa: updates.villa ? (existing.villa ? { ...existing.villa, ...updates.villa } : updates.villa) : existing.villa,
         pricing: updates.pricing ? { ...existing.pricing, ...updates.pricing } : existing.pricing,
+        boundaryCoordinates: updates.boundaryCoordinates !== undefined ? updates.boundaryCoordinates : existing.boundaryCoordinates,
         id: existing.id,
         updatedAt: new Date().toISOString(),
       };
@@ -950,6 +953,38 @@ class Database {
     if (updates.viewsCount !== undefined) {
       setClauses.push(`views_count = $${idx++}`);
       values.push(updates.viewsCount);
+    }
+    if (updates.boundaryCoordinates !== undefined) {
+      setClauses.push(`boundary_coordinates = $${idx++}`);
+      values.push(updates.boundaryCoordinates ? JSON.stringify(updates.boundaryCoordinates) : null);
+    }
+    if (updates.villa?.plotSqYards !== undefined) {
+      setClauses.push(`total_acres = $${idx++}`);
+      values.push(updates.villa.plotSqYards / 4840);
+    }
+    if (updates.villa?.builtUpSqft !== undefined) {
+      setClauses.push(`sqft = $${idx++}`);
+      values.push(updates.villa.builtUpSqft);
+    }
+    if (updates.villa?.bedrooms !== undefined) {
+      setClauses.push(`bedrooms = $${idx++}`);
+      values.push(updates.villa.bedrooms);
+    }
+    if (updates.villa?.bathrooms !== undefined) {
+      setClauses.push(`bathrooms = $${idx++}`);
+      values.push(updates.villa.bathrooms);
+    }
+    if (updates.villa?.floors !== undefined) {
+      setClauses.push(`total_floors = $${idx++}`);
+      values.push(updates.villa.floors);
+    }
+    if (updates.villa?.amenities !== undefined) {
+      setClauses.push(`amenities = $${idx++}`);
+      values.push(updates.villa.amenities);
+    }
+    if (updates.villa?.possessionStatus !== undefined) {
+      setClauses.push(`possession_status = $${idx++}`);
+      values.push(updates.villa.possessionStatus);
     }
 
     values.push(id);
