@@ -266,20 +266,62 @@ function InternalDeskContent({ params }: InternalDeskPageProps) {
                 </>
               )}
             </button>
+
+            {/* 1-Click Fast-Fill Testing Station */}
+            <div className="pt-3 border-t border-slate-800 space-y-2">
+              <div className="flex items-center justify-between text-[10px] font-mono text-slate-400 uppercase tracking-wider">
+                <span>⚡ 1-Click Demo Fast-Fill</span>
+                <span>Password: Admin@1234</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRole('ADMIN');
+                    setIdentifier('admin@telanganarealty.in');
+                    setPassword('Admin@1234');
+                    setErrorMessage(null);
+                  }}
+                  className="py-2 px-2.5 rounded-xl bg-slate-950 border border-amber-500/30 hover:border-amber-500 text-[11px] font-semibold text-amber-400 text-center transition-colors shadow-xs"
+                >
+                  Director (Admin)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedRole('AGENT');
+                    setIdentifier('suresh.reddy@telanganarealty.in');
+                    setPassword('Admin@1234');
+                    setErrorMessage(null);
+                  }}
+                  className="py-2 px-2.5 rounded-xl bg-slate-950 border border-blue-500/30 hover:border-blue-500 text-[11px] font-semibold text-blue-400 text-center transition-colors shadow-xs"
+                >
+                  Advisor (Agent)
+                </button>
+              </div>
+            </div>
           </form>
         </div>
 
-        {/* Legal & Security Warning Footer */}
+        {/* Legal & Navigation Links */}
         <div className="text-center space-y-2">
-          <Link
-            href={getPublicUrl(`/${locale}`)}
-            className="inline-flex items-center gap-1.5 text-xs font-semibold text-slate-500 hover:text-slate-300 transition-colors"
-          >
-            <ArrowLeft className="w-3.5 h-3.5" />
-            <span>Return to Public Website</span>
-          </Link>
-          <div className="text-[10px] text-slate-600">
-            Strictly Private • Monitored & Protected by Edge Security
+          <div className="flex items-center justify-center gap-4 text-xs font-semibold">
+            <Link
+              href={`/${locale}/login`}
+              className="text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              ← Unified Role Portal & Seller Login
+            </Link>
+            <span className="text-slate-700">•</span>
+            <Link
+              href={getPublicUrl(`/${locale}`)}
+              className="text-slate-400 hover:text-slate-200 transition-colors"
+            >
+              Public Website
+            </Link>
+          </div>
+          <div className="text-[10px] text-slate-500">
+            Telangana Realty Hub • Monitored & Protected by Edge Security
           </div>
         </div>
       </div>
