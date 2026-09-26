@@ -162,6 +162,7 @@ export function middleware(request: NextRequest) {
   if (pathname.startsWith('/dashboard')) {
     if (!token) {
       const isStaffRoute =
+        pathname === '/dashboard' ||
         pathname.startsWith('/dashboard/verification') ||
         pathname.startsWith('/dashboard/properties') ||
         pathname.startsWith('/dashboard/enquiries');
@@ -203,9 +204,11 @@ export function middleware(request: NextRequest) {
       }
     }
 
-    // Root /dashboard dispatcher
+    // Root /dashboard dispatcher: strictly staff only. Sellers redirected to /dashboard/seller
     if (pathname === '/dashboard') {
-      if (role === 'SELLER') return NextResponse.redirect(new URL('/dashboard/seller', request.url));
+      if (role === 'SELLER' || !role) {
+        return NextResponse.redirect(new URL('/dashboard/seller', request.url));
+      }
       return NextResponse.next();
     }
 
