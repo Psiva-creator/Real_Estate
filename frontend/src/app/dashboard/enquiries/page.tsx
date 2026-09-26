@@ -145,9 +145,19 @@ function transformBackendEnquiry(be: BackendEnquiry): Lead {
   };
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function DashboardEnquiriesPage() {
-  const { token } = useAuth();
+  const router = useRouter();
+  const { token, isStaff, isSeller, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!token || !isStaff) {
+        router.replace('/en/trh-internal-desk');
+      } else if (isSeller) {
+        router.replace('/dashboard/seller');
+      }
+    }
+  }, [authLoading, token, isStaff, isSeller, router]);
   const [leads, setLeads] = useState<Lead[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
