@@ -204,6 +204,8 @@ export interface BackendProperty {
   };
 }
 
+export type AdminPropertyItem = BackendProperty;
+
 interface BackendListResponse {
   properties: BackendProperty[];
   total: number;
