@@ -1,4 +1,4 @@
-export type PropertyType = 'LAND' | 'FLAT';
+export type PropertyType = 'LAND' | 'FLAT' | 'VILLA';
 export type PropertyStatus = 'DRAFT' | 'UNDER_REVIEW' | 'VERIFIED' | 'LIVE' | 'SOLD' | 'OFF_MARKET';
 export type ServiceTier = 'TIER_1' | 'TIER_2' | 'TIER_3';
 
@@ -11,6 +11,8 @@ export interface LocationDetails {
   tier: ServiceTier;
   landmark?: string;
   landmarkTe?: string;
+  latitude?: number;
+  longitude?: number;
 }
 
 export interface LandDetails {
@@ -35,6 +37,16 @@ export interface FlatDetails {
   furnishingStatus?: 'UNFURNISHED' | 'SEMI_FURNISHED' | 'FULLY_FURNISHED';
 }
 
+export interface VillaDetails {
+  plotSqYards: number;
+  builtUpSqft: number;
+  bedrooms: number;
+  bathrooms: number;
+  floorsConfig: 'G+1' | 'G+2' | 'Triplex';
+  privateGarden: boolean;
+  coveredParking: number;
+}
+
 export interface PricingDetails {
   totalPrice: number;
   pricePerSqft?: number;
@@ -55,6 +67,7 @@ export interface MockProperty {
   pricing: PricingDetails;
   land?: LandDetails;
   flat?: FlatDetails;
+  villa?: VillaDetails;
   mainImage: string;
   galleryImages: string[];
   verifiedDocsCount: number;
@@ -64,6 +77,7 @@ export interface MockProperty {
   dharaniApproved?: boolean;
   hmdaApproved?: boolean;
   reraApproved?: boolean;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
 }
 
 export const MOCK_PROPERTIES: MockProperty[] = [
@@ -84,6 +98,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: 'Near Neopolis Financial SEZ, Exit 1',
       landmarkTe: 'నియోపోలిస్ ఫైనాన్షియల్ సెజ్ సమీపంలో, ఎగ్జిట్ 1',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.3986,
+      longitude: 78.3245,
     },
     pricing: {
       totalPrice: 28500000, // ₹2.85 Cr
@@ -129,6 +146,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: 'Near ICFAI University Campus',
       landmarkTe: 'ఐసీఎఫ్‌ఏఐ యూనివర్సిటీ క్యాంపస్ సమీపంలో',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.4258,
+      longitude: 78.1882,
     },
     pricing: {
       totalPrice: 6800000, // ₹68 Lakhs
@@ -172,6 +192,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: '8 mins to Rajiv Gandhi International Airport',
       landmarkTe: 'రాజీవ్ గాంధీ అంతర్జాతీయ విమానాశ్రయం నుండి 8 నిమిషాలు',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.2580,
+      longitude: 78.4610,
     },
     pricing: {
       totalPrice: 33750000, // ₹3.375 Cr
@@ -214,6 +237,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_2',
       landmark: 'Beside ORR Exit 2, Tellapur Extension',
       landmarkTe: 'ORR ఎగ్జిట్ 2 పక్కన, తెల్లాపూర్ ఎక్స్‌టెన్షన్',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.4728,
+      longitude: 78.2491,
     },
     pricing: {
       totalPrice: 9200000, // ₹92 Lakhs
@@ -258,6 +284,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_1',
       landmark: 'Near Citizens Hospital & Lingampally MMTS',
       landmarkTe: 'సిటిజన్స్ హాస్పిటల్ & లింగంపల్లి ఎంఎంటిఎస్ సమీపంలో',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.4780,
+      longitude: 78.3120,
     },
     pricing: {
       totalPrice: 112000000, // ₹11.2 Cr
@@ -300,6 +329,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
       tier: 'TIER_3',
       landmark: '10 mins to Sri Lakshmi Narasimha Swamy Temple',
       landmarkTe: 'లక్ష్మీ నరసింహ స్వామి ఆలయానికి 10 నిమిషాలు',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.5840,
+      longitude: 78.9320,
     },
     pricing: {
       totalPrice: 2200000, // ₹22 Lakhs
@@ -317,6 +349,102 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     mainImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
     galleryImages: [
       'https://images.unsplash.com/photo-1628624747186-a941c476b7ef?auto=format&fit=crop&w=800&q=80',
+    ],
+    verifiedDocsCount: 13,
+    totalDocsRequired: 13,
+    isFeatured: false,
+    isOrrCorridor: false,
+    dharaniApproved: true,
+  },
+  {
+    id: 'PROP-HYD-007',
+    title: 'Luxury G+2 Villa with Private Garden in Narsingi',
+    titleTe: 'నార్సింగిలో ప్రైవేట్ గార్డెన్‌తో G+2 విల్లా',
+    description: 'Sprawling G+2 independent villa in HMDA-approved venture. 400 sq.yd plot with 3,200 sq.ft built-up area, manicured private garden, 2 covered car parks, and clear 30-year EC.',
+    descriptionTe: 'HMDA ఆమోదిత వెంచర్‌లో 400 గజాల స్థలంపై 3,200 చదరపు అడుగుల G+2 ఇండిపెండెంట్ విల్లా. ప్రైవేట్ తోట, 2 కవర్డ్ కార్ పార్కింగ్ మరియు 30 ఏళ్ల క్లియర్ ఈసీ.',
+    type: 'VILLA',
+    status: 'VERIFIED',
+    location: {
+      village: 'Narsingi',
+      mandal: 'Gandipet',
+      district: 'Rangareddy',
+      distanceFromOrrKm: 3.2,
+      zone: 'Residential R1',
+      tier: 'TIER_2',
+      landmark: 'Near Narsingi Police Station, ORR Exit 14',
+      landmarkTe: 'నార్సింగి పోలీస్ స్టేషన్ సమీపంలో, ORR ఎగ్జిట్ 14',
+      // Development/sample coordinates for local testing — not survey verified
+      latitude: 17.3950,
+      longitude: 78.3180,
+    },
+    pricing: {
+      totalPrice: 35000000, // ₹3.5 Cr
+      pricePerSqft: 10937,
+      isNegotiable: true,
+    },
+    villa: {
+      plotSqYards: 400,
+      builtUpSqft: 3200,
+      bedrooms: 4,
+      bathrooms: 4,
+      floorsConfig: 'G+2',
+      privateGarden: true,
+      coveredParking: 2,
+    },
+    mainImage: 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1000&q=80',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1568605114967-8130f3a36994?auto=format&fit=crop&w=800&q=80',
+    ],
+    verifiedDocsCount: 13,
+    totalDocsRequired: 13,
+    isFeatured: true,
+    isOrrCorridor: true,
+    hmdaApproved: true,
+  },
+  {
+    id: 'PROP-HYD-008',
+    title: '2.50 Acre Managed Agro-Farmland in Maheshwaram Growth Belt',
+    titleTe: 'మహేశ్వరం గ్రోత్ కారిడార్‌లో 2.50 ఎకరాల సాగు భూమి / వ్యవసాయ క్షేత్రం',
+    description: 'Clear-title 2.50 acre fertile agricultural land in Mansanpally Village, Maheshwaram. 350 mature Malabar Neem trees, 40 organic fruit trees, automated micro-drip irrigation, and 2 high-yield borewells. 11.5 km from ORR Exit 14 Tukkuguda.',
+    descriptionTe: 'మహేశ్వరం మండలం మాన్సన్‌పల్లిలో 2.50 ఎకరాల సాగు భూమి. 350 మలబార్ వేప చెట్లు, డ్రిప్ ఇరిగేషన్ మరియు 2 బోర్‌వెల్స్ సదుపాయం.',
+    type: 'LAND',
+    status: 'VERIFIED',
+    location: {
+      village: 'Mansanpally',
+      mandal: 'Maheshwaram',
+      district: 'Rangareddy',
+      distanceFromOrrKm: 11.5,
+      zone: 'Agricultural & Conservation',
+      tier: 'TIER_2',
+      landmark: 'Near Maheshwaram Electronic SEZ / Hardware Park',
+      landmarkTe: 'మహేశ్వరం ఎలక్ట్రానిక్ సెజ్ సమీపంలో',
+      latitude: 17.1824,
+      longitude: 78.4356,
+    },
+    pricing: {
+      totalPrice: 31250000, // ₹3.125 Cr
+      pricePerAcre: 12500000,
+      isNegotiable: true,
+    },
+    land: {
+      totalAcres: 2.5,
+      sqYards: 12100,
+      surveyNumbers: ['184/A', '184/AA'],
+      soilType: 'RED',
+      developmentLevel: 'FENCED',
+      roadWidthFt: 30,
+      waterAvailable: true,
+      electricityAvailable: true,
+    },
+    boundaryCoordinates: [
+      { lat: 17.1831, lng: 78.4348 },
+      { lat: 17.1832, lng: 78.4365 },
+      { lat: 17.1818, lng: 78.4364 },
+      { lat: 17.1817, lng: 78.4347 },
+    ],
+    mainImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1592417817098-8f3d6910985b?auto=format&fit=crop&w=800&q=80',
     ],
     verifiedDocsCount: 13,
     totalDocsRequired: 13,

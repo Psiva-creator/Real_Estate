@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Building2,
@@ -14,18 +14,23 @@ import {
   Sparkles,
   Maximize2,
   Compass,
+  Loader2,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MOCK_PROPERTIES, MockProperty } from '@/lib/mockData';
+import { getProperties, submitEnquiry } from '@/lib/api';
 
 interface FeaturedSectionProps {
   locale: Locale;
+  initialProperties?: MockProperty[];
 }
 
-export default function FeaturedSection({ locale }: FeaturedSectionProps) {
+export default function FeaturedSection({ locale, initialProperties }: FeaturedSectionProps) {
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
 
+  const [properties, setProperties] = useState<MockProperty[]>(initialProperties || []);
+  const [isLoading, setIsLoading] = useState(!initialProperties || initialProperties.length === 0);
   const [activeFilter, setActiveFilter] = useState<'ALL' | 'LAND' | 'FLAT' | 'ORR'>('ALL');
   const [selectedVisitProperty, setSelectedVisitProperty] = useState<MockProperty | null>(null);
   const [visitSubmitted, setVisitSubmitted] = useState(false);
@@ -33,7 +38,38 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
   const [buyerPhone, setBuyerPhone] = useState('');
   const [preferredDate, setPreferredDate] = useState('');
 
-  const filteredProperties = MOCK_PROPERTIES.filter((prop) => {
+  // Fetch from backend API if initialProperties was not supplied
+  useEffect(() => {
+    if (initialProperties && initialProperties.length > 0) {
+      setProperties(initialProperties);
+      setIsLoading(false);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoading(true);
+    getProperties({ limit: 12 })
+      .then(({ properties: props }) => {
+        if (!cancelled) {
+          setProperties(props);
+        }
+      })
+      .catch((err) => {
+        console.error('[FeaturedSection] Failed to load properties from backend:', err);
+        if (!cancelled) {
+          setProperties(MOCK_PROPERTIES);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [initialProperties]);
+
+  const filteredProperties = properties.filter((prop) => {
     if (activeFilter === 'LAND') return prop.type === 'LAND';
     if (activeFilter === 'FLAT') return prop.type === 'FLAT';
     if (activeFilter === 'ORR') return prop.isOrrCorridor;
@@ -48,9 +84,26 @@ export default function FeaturedSection({ locale }: FeaturedSectionProps) {
     setVisitSubmitted(false);
   };
 
-  const handleSubmitVisit = (e: React.FormEvent) => {
+  const handleSubmitVisit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setVisitSubmitted(true);
+    if (!selectedVisitProperty) return;
+    try {
+      await submitEnquiry({
+        propertyId: selectedVisitProperty.id,
+        propertyTitle:
+          isTe && selectedVisitProperty.titleTe
+            ? selectedVisitProperty.titleTe
+            : selectedVisitProperty.title,
+        buyerName: buyerName.trim(),
+        phone: buyerPhone.trim(),
+        enquiryType: 'SITE_VISIT',
+        preferredDate: preferredDate || undefined,
+      });
+    } catch (err) {
+      console.warn('[FeaturedSection] Error booking site visit:', err);
+    } finally {
+      setVisitSubmitted(true);
+    }
   };
 
   const formatPrice = (price: number) => {

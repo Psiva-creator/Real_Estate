@@ -14,6 +14,49 @@ import {
   EnquiryStatus,
 } from '../types/index.js';
 
+// Phone number normalization helper
+export function normalizePhoneNumber(phone: string): string {
+  if (!phone) return phone;
+  const stripped = phone.trim().replace(/[\s\-\(\)\.]/g, '');
+
+  if (/^\+91\d{10}$/.test(stripped)) {
+    return stripped;
+  }
+  if (/^91\d{10}$/.test(stripped)) {
+    return `+${stripped}`;
+  }
+  if (/^0\d{10}$/.test(stripped)) {
+    return `+91${stripped.slice(1)}`;
+  }
+  if (/^\d{10}$/.test(stripped)) {
+    return `+91${stripped}`;
+  }
+  return stripped;
+}
+
+export function getPhoneCandidates(phone: string): string[] {
+  const trimmed = phone.trim();
+  const cleaned = trimmed.replace(/[\s\-\(\)\.]/g, '');
+  const digitsOnly = trimmed.replace(/\D/g, '');
+  const last10 = digitsOnly.slice(-10);
+
+  const candidates = new Set<string>();
+  candidates.add(phone);
+  candidates.add(trimmed);
+  candidates.add(cleaned);
+
+  if (last10.length === 10) {
+    candidates.add(`+91${last10}`);
+    candidates.add(`+91 ${last10}`);
+    candidates.add(`91${last10}`);
+    candidates.add(`91 ${last10}`);
+    candidates.add(last10);
+    candidates.add(`0${last10}`);
+  }
+
+  return Array.from(candidates).filter(Boolean);
+}
+
 // Row mapper helpers to convert PostgreSQL snake_case to application camelCase
 function mapUserRow(row: any): User {
   return {
@@ -85,6 +128,15 @@ function mapPropertyRow(row: any): Property {
       amenities: row.amenities || [],
       possessionStatus: row.possession_status || undefined,
     } : undefined,
+    villa: row.type === 'VILLA' ? {
+      plotSqYards: row.total_acres !== null && row.total_acres !== undefined ? Math.round(parseFloat(row.total_acres) * 4840) : undefined,
+      builtUpSqft: row.sqft !== null && row.sqft !== undefined ? parseInt(row.sqft, 10) : undefined,
+      bedrooms: row.bedrooms !== null && row.bedrooms !== undefined ? parseInt(row.bedrooms, 10) : undefined,
+      bathrooms: row.bathrooms !== null && row.bathrooms !== undefined ? parseInt(row.bathrooms, 10) : undefined,
+      floors: row.total_floors !== null && row.total_floors !== undefined ? parseInt(row.total_floors, 10) : undefined,
+      amenities: row.amenities || [],
+      possessionStatus: row.possession_status || undefined,
+    } : undefined,
     pricing: {
       pricePerAcre: row.price_per_acre !== null && row.price_per_acre !== undefined ? parseFloat(row.price_per_acre) : undefined,
       pricePerSqft: row.price_per_sqft !== null && row.price_per_sqft !== undefined ? parseFloat(row.price_per_sqft) : undefined,
@@ -96,6 +148,7 @@ function mapPropertyRow(row: any): Property {
     mainImage: row.main_image,
     galleryImages: row.gallery_images || [],
     sitePlanImage: row.site_plan_image || undefined,
+    boundaryCoordinates: row.boundary_coordinates ?? null,
     isFeatured: !!row.is_featured,
     viewsCount: parseInt(row.views_count || '0', 10),
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
@@ -152,9 +205,10 @@ class Database {
   constructor() {
     if (config.databaseUrl) {
       try {
+        const useSsl = config.dbSsl || config.databaseUrl.includes('sslmode=require') || config.databaseUrl.includes('ssl=true');
         this.pool = new Pool({
           connectionString: config.databaseUrl,
-          ssl: config.dbSsl ? { rejectUnauthorized: false } : false,
+          ssl: useSsl ? { rejectUnauthorized: false } : false,
           connectionTimeoutMillis: 5000,
         });
       } catch (err) {
@@ -189,9 +243,10 @@ class Database {
     if (this.pool) {
       await this.pool.end().catch(() => {});
     }
+    const useSsl = config.dbSsl || connectionString.includes('sslmode=require') || connectionString.includes('ssl=true');
     this.pool = new Pool({
       connectionString,
-      ssl: config.dbSsl ? { rejectUnauthorized: false } : false,
+      ssl: useSsl ? { rejectUnauthorized: false } : false,
       connectionTimeoutMillis: 5000,
     });
     this.testMemoryMode = false;
@@ -295,15 +350,22 @@ class Database {
   }
 
   async findUserByPhone(phone: string): Promise<User | null> {
+    const candidates = getPhoneCandidates(phone);
     if (this.isTestMemoryMode) {
       for (const u of this.memory.users.values()) {
-        if (u.phone === phone) return u;
+        const uCandidates = getPhoneCandidates(u.phone);
+        if (candidates.some((c) => uCandidates.includes(c))) {
+          return u;
+        }
       }
       return null;
     }
 
     const pool = this.ensurePool();
-    const res = await pool.query('SELECT * FROM users WHERE phone = $1', [phone]);
+    const res = await pool.query(
+      'SELECT * FROM users WHERE phone = ANY($1::text[]) LIMIT 1',
+      [candidates]
+    );
     if (res.rows.length === 0) return null;
     return mapUserRow(res.rows[0]);
   }
@@ -320,6 +382,72 @@ class Database {
     const res = await pool.query('SELECT * FROM users WHERE LOWER(email) = LOWER($1)', [email]);
     if (res.rows.length === 0) return null;
     return mapUserRow(res.rows[0]);
+  }
+
+  async updateUser(id: string, updates: Partial<User>): Promise<User> {
+    if (this.isTestMemoryMode) {
+      const existing = this.memory.users.get(id);
+      if (!existing) throw new Error(`User ${id} not found`);
+      const updated: User = {
+        ...existing,
+        ...updates,
+        id: existing.id,
+        updatedAt: new Date().toISOString(),
+      };
+      this.memory.users.set(id, updated);
+      return updated;
+    }
+
+    const pool = this.ensurePool();
+    const setClauses: string[] = ['updated_at = NOW()'];
+    const values: any[] = [];
+    let idx = 1;
+
+    if (updates.name !== undefined) {
+      setClauses.push(`name = $${idx++}`);
+      values.push(updates.name);
+    }
+    if (updates.email !== undefined) {
+      setClauses.push(`email = $${idx++}`);
+      values.push(updates.email);
+    }
+    if (updates.phone !== undefined) {
+      setClauses.push(`phone = $${idx++}`);
+      values.push(updates.phone);
+    }
+    if (updates.whatsapp !== undefined) {
+      setClauses.push(`whatsapp = $${idx++}`);
+      values.push(updates.whatsapp);
+    }
+    if (updates.role !== undefined) {
+      setClauses.push(`role = $${idx++}`);
+      values.push(updates.role);
+    }
+    if (updates.passwordHash !== undefined) {
+      setClauses.push(`password_hash = $${idx++}`);
+      values.push(updates.passwordHash);
+    }
+    if (updates.isActive !== undefined) {
+      setClauses.push(`is_active = $${idx++}`);
+      values.push(updates.isActive);
+    }
+
+    values.push(id);
+    const query = `
+      UPDATE users
+      SET ${setClauses.join(', ')}
+      WHERE id = $${idx}
+      RETURNING *;
+    `;
+
+    try {
+      const res = await pool.query(query, values);
+      if (res.rows.length === 0) throw new Error(`User ${id} not found`);
+      return mapUserRow(res.rows[0]);
+    } catch (err) {
+      console.error('PostgreSQL updateUser error:', (err as Error).message);
+      throw err;
+    }
   }
 
   async listUsers(): Promise<User[]> {
@@ -386,15 +514,36 @@ class Database {
   }
 
   async findOwnerByPhone(phone: string): Promise<Owner | null> {
+    const candidates = getPhoneCandidates(phone);
     if (this.isTestMemoryMode) {
       for (const o of this.memory.owners.values()) {
-        if (o.phone === phone) return o;
+        const oCandidates = getPhoneCandidates(o.phone);
+        if (candidates.some((c) => oCandidates.includes(c))) {
+          return o;
+        }
       }
       return null;
     }
 
     const pool = this.ensurePool();
-    const res = await pool.query('SELECT * FROM owners WHERE phone = $1', [phone]);
+    const res = await pool.query(
+      'SELECT * FROM owners WHERE phone = ANY($1::text[]) LIMIT 1',
+      [candidates]
+    );
+    if (res.rows.length === 0) return null;
+    return mapOwnerRow(res.rows[0]);
+  }
+
+  async findOwnerByEmail(email: string): Promise<Owner | null> {
+    if (this.isTestMemoryMode) {
+      for (const o of this.memory.owners.values()) {
+        if (o.email && o.email.toLowerCase() === email.toLowerCase()) return o;
+      }
+      return null;
+    }
+
+    const pool = this.ensurePool();
+    const res = await pool.query('SELECT * FROM owners WHERE LOWER(email) = LOWER($1)', [email]);
     if (res.rows.length === 0) return null;
     return mapOwnerRow(res.rows[0]);
   }
@@ -442,6 +591,10 @@ class Database {
     const values: any[] = [];
     let idx = 1;
 
+    if (updates.userId !== undefined) {
+      setClauses.push(`user_id = $${idx++}`);
+      values.push(updates.userId);
+    }
     if (updates.name !== undefined) {
       setClauses.push(`name = $${idx++}`);
       values.push(updates.name);
@@ -638,6 +791,10 @@ class Database {
     const values: any[] = [];
     let idx = 1;
 
+    if (updates.sellerId !== undefined) {
+      setClauses.push(`seller_id = $${idx++}`);
+      values.push(updates.sellerId);
+    }
     if (updates.type !== undefined) {
       setClauses.push(`type = $${idx++}`);
       values.push(updates.type);
@@ -1384,6 +1541,7 @@ class Database {
   getUserByPhone = this.findUserByPhone.bind(this);
   getOwnerById = this.findOwnerById.bind(this);
   getOwnerByUserId = this.findOwnerByUserId.bind(this);
+  getOwnerByEmail = this.findOwnerByEmail.bind(this);
   getPropertyById = this.findPropertyById.bind(this);
   upsertPropertyDocument = this.upsertDocument.bind(this);
   getDocumentsByPropertyId = this.findDocumentsByPropertyId.bind(this);

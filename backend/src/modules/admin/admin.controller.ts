@@ -1,6 +1,8 @@
 import { Response } from 'express';
 import { AuthRequest } from '../../middleware/auth.js';
 import { db } from '../../db/database.js';
+import { runMigrations } from '../../db/migrate.js';
+import { runSeeds } from '../../db/seeds/seed.js';
 
 export class AdminController {
   /**
@@ -80,6 +82,25 @@ export class AdminController {
       );
 
       return res.json({ properties: results, count: results.length });
+    } catch (err) {
+      return res.status(500).json({ error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Sync database migrations and seed full 8 properties and 104 documents
+   */
+  async syncSeeds(_req: AuthRequest, res: Response) {
+    try {
+      await runMigrations();
+      await runSeeds();
+      const properties = await db.listAllProperties();
+      const owners = await db.listOwners();
+      return res.json({
+        message: 'Database schema, properties, sellers, and documents synchronized successfully',
+        totalProperties: properties.length,
+        totalSellers: owners.length,
+      });
     } catch (err) {
       return res.status(500).json({ error: (err as Error).message });
     }

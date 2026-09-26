@@ -20,7 +20,7 @@ import {
   FileCheck,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { getAdminPropertyDetailApi, InternalPropertyDetail } from '@/lib/api';
+import { getAdminPropertyDetailApi, InternalPropertyDetail, resolveUploadUrl } from '@/lib/api';
 import { formatINR } from '@/lib/formatters';
 import DocumentVerificationReviewer from '@/components/dashboard/DocumentVerificationReviewer';
 
@@ -361,10 +361,7 @@ export default function PropertyInternalReviewPage() {
                 .filter(Boolean)
                 .slice(0, 9)
                 .map((imgUrl, i) => {
-                  const apiBase =
-                    process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/api', '') ||
-                    'http://localhost:5000';
-                  const absUrl = imgUrl.startsWith('http') ? imgUrl : `${apiBase}${imgUrl}`;
+                  const absUrl = resolveUploadUrl(imgUrl);
                   return (
                     <a
                       key={i}

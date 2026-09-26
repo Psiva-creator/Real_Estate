@@ -1,4 +1,4 @@
-export type PropertyType = 'LAND' | 'FLAT';
+export type PropertyType = 'LAND' | 'FLAT' | 'VILLA';
 export type PropertyStatus = 'DRAFT' | 'UNDER_REVIEW' | 'VERIFIED' | 'LIVE' | 'SOLD' | 'OFF_MARKET';
 
 export type DocumentType =
@@ -92,6 +92,16 @@ export interface FlatDetails {
   possessionStatus?: string;
 }
 
+export interface VillaDetails {
+  plotSqYards?: number;
+  builtUpSqft?: number;
+  bedrooms?: number;
+  bathrooms?: number;
+  floors?: number;
+  amenities?: string[];
+  possessionStatus?: string;
+}
+
 export interface PricingDetails {
   pricePerAcre?: number;
   pricePerSqft?: number;
@@ -126,10 +136,12 @@ export interface Property {
   location: LocationDetails;
   land?: LandDetails;
   flat?: FlatDetails;
+  villa?: VillaDetails;
   pricing: PricingDetails;
   mainImage: string;
   galleryImages: string[];
   sitePlanImage?: string;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   isFeatured: boolean;
   viewsCount: number;
   documents?: Record<string, DocumentStatus>;

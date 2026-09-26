@@ -62,4 +62,107 @@ describe('Auth & RBAC Module', () => {
     assert.strictEqual(res.status, 200);
     assert.ok(res.body.totalProperties > 0);
   });
+
+  test('POST /api/auth/login should authenticate agent with email', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'suresh.reddy@telanganarealty.in',
+        password: 'Admin@1234',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.role, 'AGENT');
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/login should authenticate seller with email', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'kvrao.hyderabad@gmail.com',
+        password: 'Admin@1234',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.role, 'SELLER');
+    assert.strictEqual(res.body.user.name, 'K. Venkateshwara Rao');
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/login should authenticate seller with 10-digit phone format', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: '9848011223',
+        password: 'Admin@1234',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.role, 'SELLER');
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/login should authenticate seller with +91 phone format', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: '+919848011223',
+        password: 'Admin@1234',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.role, 'SELLER');
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/login should authenticate seller with +91 space phone format', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: '+91 9848011223',
+        password: 'Admin@1234',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.role, 'SELLER');
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/login should authenticate seller with 91 space phone format', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: '91 9848011223',
+        password: 'Admin@1234',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.role, 'SELLER');
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/login should reject invalid credentials (wrong password)', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'kvrao.hyderabad@gmail.com',
+        password: 'WrongPassword!',
+      });
+
+    assert.strictEqual(res.status, 401);
+    assert.strictEqual(res.body.error, 'Invalid credentials');
+  });
+
+  test('POST /api/auth/login should reject invalid credentials (nonexistent user)', async () => {
+    const res = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'nonexistent@telanganarealty.in',
+        password: 'Admin@1234',
+      });
+
+    assert.strictEqual(res.status, 401);
+    assert.strictEqual(res.body.error, 'Invalid credentials');
+  });
 });

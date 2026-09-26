@@ -8,14 +8,22 @@ export async function runMigrations(databaseUrl?: string) {
   console.log('🔄 Connecting to PostgreSQL database for migration...');
   console.log(`📡 URL: ${targetUrl.replace(/:[^:@]+@/, ':****@')}`);
 
+  const useSsl = config.dbSsl || targetUrl.includes('sslmode=require') || targetUrl.includes('ssl=true');
   const pool = new Pool({
     connectionString: targetUrl,
-    ssl: config.dbSsl ? { rejectUnauthorized: false } : false,
+    ssl: useSsl ? { rejectUnauthorized: false } : false,
   });
 
-  const schemaPath = path.resolve(process.cwd(), 'src/db/schema/schema.sql');
-  if (!fs.existsSync(schemaPath)) {
-    throw new Error(`Schema file not found at ${schemaPath}`);
+  const possiblePaths = [
+    path.resolve(process.cwd(), 'src/db/schema/schema.sql'),
+    path.resolve(process.cwd(), 'backend/src/db/schema/schema.sql'),
+    typeof __dirname !== 'undefined' ? path.resolve(__dirname, 'schema/schema.sql') : '',
+    typeof __dirname !== 'undefined' ? path.resolve(__dirname, '../../src/db/schema/schema.sql') : '',
+  ].filter(Boolean);
+
+  const schemaPath = possiblePaths.find((p) => fs.existsSync(p));
+  if (!schemaPath) {
+    throw new Error(`Schema file not found in searched locations: ${possiblePaths.join(', ')}`);
   }
 
   const sql = fs.readFileSync(schemaPath, 'utf-8');

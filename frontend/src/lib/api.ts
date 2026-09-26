@@ -87,6 +87,16 @@ export interface CreatePropertyDTO {
     possessionStatus?: string;
     furnishingStatus?: string;
   };
+  villa?: {
+    plotSqYards: number;
+    builtUpSqft: number;
+    bedrooms: number;
+    bathrooms: number;
+    floorsConfig?: string;
+    privateGarden?: boolean;
+    coveredParking?: number;
+  };
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   pricing: {
     totalPrice: number;
     pricePerAcre?: number;
@@ -151,7 +161,7 @@ interface BackendPricing {
   isNegotiable: boolean;
 }
 
-interface BackendProperty {
+export interface BackendProperty {
   id: string;
   type: PropertyType;
   status: PropertyStatus;
@@ -162,6 +172,19 @@ interface BackendProperty {
   location: BackendLocation;
   land?: BackendLandDetails;
   flat?: BackendFlatDetails;
+  villa?: {
+    plotSqYards?: number;
+    builtUpSqft?: number;
+    bedrooms?: number;
+    bathrooms?: number;
+    floors?: number;
+    floorsConfig?: string;
+    privateGarden?: boolean;
+    coveredParking?: number;
+    amenities?: string[];
+    possessionStatus?: string;
+  };
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   pricing: BackendPricing;
   mainImage: string;
   galleryImages: string[];
@@ -180,6 +203,8 @@ interface BackendProperty {
     }>;
   };
 }
+
+export type AdminPropertyItem = BackendProperty;
 
 interface BackendListResponse {
   properties: BackendProperty[];
@@ -224,6 +249,8 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
       tier: bp.location.tier,
       landmark: bp.location.landmark,
       landmarkTe: bp.location.landmarkTe,
+      latitude: bp.location.latitude,
+      longitude: bp.location.longitude,
     },
     pricing: {
       totalPrice: bp.pricing.totalPrice,
@@ -265,6 +292,18 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
             | undefined,
         }
       : undefined,
+    villa: bp.villa
+      ? {
+          plotSqYards: bp.villa.plotSqYards ?? 0,
+          builtUpSqft: bp.villa.builtUpSqft ?? 0,
+          bedrooms: bp.villa.bedrooms ?? 0,
+          bathrooms: bp.villa.bathrooms ?? 0,
+          floorsConfig: (bp.villa.floorsConfig || (bp.villa.floors ? `G+${bp.villa.floors - 1}` : 'G+2')) as 'G+1' | 'G+2' | 'Triplex',
+          privateGarden: !!bp.villa.privateGarden,
+          coveredParking: bp.villa.coveredParking ?? 2,
+        }
+      : undefined,
+    boundaryCoordinates: bp.boundaryCoordinates ?? null,
     mainImage: bp.mainImage,
     galleryImages: bp.galleryImages,
     verifiedDocsCount,
@@ -280,7 +319,7 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 
-const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL || '';
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telangana-realty-backend.onrender.com/api').replace(/\/+$/, '');
 
 /** Returns true if the API_BASE_URL is configured and points to the real backend. */
 function isRealBackend(): boolean {
@@ -709,7 +748,7 @@ export interface AdminDashboardStats {
  * Backend endpoint: POST /api/auth/login
  */
 export async function loginApi(identifier: string, password?: string): Promise<AuthResponse> {
-  const url = isRealBackend() ? `${API_BASE_URL}/auth/login` : 'http://localhost:5000/api/auth/login';
+  const url = isRealBackend() ? `${API_BASE_URL}/auth/login` : 'https://telangana-realty-backend.onrender.com/api/auth/login';
 
   try {
     const res = await fetch(url, {
@@ -738,6 +777,9 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   const cleanId = identifier.trim().toLowerCase();
 
   if (cleanId === 'admin@telanganarealty.in') {
+    if (password !== 'Director@Telangana2026!' && password !== 'Admin@1234') {
+      throw new Error('Invalid staff security credentials. Access denied.');
+    }
     return {
       token: 'mock-jwt-admin-token-2026',
       user: {
@@ -753,6 +795,9 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   }
 
   if (cleanId === 'suresh.reddy@telanganarealty.in') {
+    if (password !== 'Advisor@Telangana2026!' && password !== 'Agent@1234') {
+      throw new Error('Invalid advisor credentials. Access denied.');
+    }
     return {
       token: 'mock-jwt-agent-token-2026',
       user: {
@@ -823,7 +868,7 @@ export async function loginApi(identifier: string, password?: string): Promise<A
  * Backend endpoint: POST /api/auth/register
  */
 export async function registerApi(input: RegisterInput): Promise<AuthResponse> {
-  const url = isRealBackend() ? `${API_BASE_URL}/auth/register` : 'http://localhost:5000/api/auth/register';
+  const url = isRealBackend() ? `${API_BASE_URL}/auth/register` : 'https://telangana-realty-backend.onrender.com/api/auth/register';
 
   try {
     const res = await fetch(url, {
@@ -897,7 +942,7 @@ export async function getMeApi(token: string): Promise<AuthUser> {
     };
   }
 
-  const url = isRealBackend() ? `${API_BASE_URL}/auth/me` : 'http://localhost:5000/api/auth/me';
+  const url = isRealBackend() ? `${API_BASE_URL}/auth/me` : 'https://telangana-realty-backend.onrender.com/api/auth/me';
 
   try {
     const res = await fetch(url, {
@@ -1035,7 +1080,7 @@ function mockPropertyToBackend(mp: MockProperty): BackendProperty {
  * Backend endpoint: GET /api/owners/me
  */
 export async function getSellerProfileApi(token: string): Promise<SellerProfileResponse> {
-  const url = isRealBackend() ? `${API_BASE_URL}/owners/me` : 'http://localhost:5000/api/owners/me';
+  const url = isRealBackend() ? `${API_BASE_URL}/owners/me` : 'https://telangana-realty-backend.onrender.com/api/owners/me';
 
   try {
     const res = await fetch(url, {
@@ -1078,7 +1123,7 @@ export async function getSellerProfileApi(token: string): Promise<SellerProfileR
  * Backend endpoint: GET /api/admin/dashboard
  */
 export async function getAdminDashboardApi(token: string): Promise<AdminDashboardStats> {
-  const url = isRealBackend() ? `${API_BASE_URL}/admin/dashboard` : 'http://localhost:5000/api/admin/dashboard';
+  const url = isRealBackend() ? `${API_BASE_URL}/admin/dashboard` : 'https://telangana-realty-backend.onrender.com/api/admin/dashboard';
 
   try {
     const res = await fetch(url, {
@@ -1115,7 +1160,7 @@ export async function getAdminPropertiesApi(
   token: string,
   status?: string
 ): Promise<{ properties: BackendProperty[]; total: number }> {
-  const base = isRealBackend() ? `${API_BASE_URL}/admin/properties` : 'http://localhost:5000/api/admin/properties';
+  const base = isRealBackend() ? `${API_BASE_URL}/admin/properties` : 'https://telangana-realty-backend.onrender.com/api/admin/properties';
   const url = new URL(base);
   if (status && status !== 'ALL') {
     url.searchParams.set('status', status);
@@ -1192,7 +1237,7 @@ export async function getAdminPropertyDetailApi(
 ): Promise<InternalPropertyDetail> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/admin/properties/${encodeURIComponent(propertyId)}`
-    : `http://localhost:5000/api/admin/properties/${encodeURIComponent(propertyId)}`;
+    : `https://telangana-realty-backend.onrender.com/api/admin/properties/${encodeURIComponent(propertyId)}`;
 
   try {
     const res = await fetch(base, {
@@ -1253,7 +1298,7 @@ export async function getPropertyDocumentsApi(
 ): Promise<PropertyDocumentRecord[]> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents`
-    : `http://localhost:5000/api/properties/${encodeURIComponent(propertyId)}/documents`;
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents`;
 
   try {
     const res = await fetch(base, {
@@ -1297,7 +1342,7 @@ export async function getPropertyDocumentApi(
 ): Promise<PropertyDocumentRecord | null> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`
-    : `http://localhost:5000/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`;
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`;
 
   try {
     const res = await fetch(base, {
@@ -1350,7 +1395,7 @@ export async function verifyPropertyDocumentApi(
 ): Promise<VerifyDocumentResult> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`
-    : `http://localhost:5000/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`;
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`;
 
   try {
     const res = await fetch(base, {
@@ -1384,4 +1429,135 @@ export async function verifyPropertyDocumentApi(
     },
     propertyStatus: 'LIVE',
   };
+}
+
+// ─── Backend URL & Upload Path Helpers ────────────────────────────────────────
+
+/**
+ * Returns the backend server base URL without the `/api` prefix.
+ * e.g., 'https://backend.example.com/api' -> 'https://backend.example.com'
+ * or 'https://telangana-realty-backend.onrender.com/api' -> 'http://localhost:5000'
+ */
+export function getBackendRootUrl(): string {
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telangana-realty-backend.onrender.com/api';
+  return base.replace(/\/api\/?$/, '');
+}
+
+/**
+ * Resolves an uploaded document or photo URL to an absolute backend URL.
+ * If url already begins with 'http://' or 'https://', it is returned unchanged.
+ * Relative paths starting with `/uploads/` are prepended with the dynamic backend root.
+ */
+export function resolveUploadUrl(url?: string): string {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const root = getBackendRootUrl();
+  const normalizedPath = url.startsWith('/') ? url : `/${url}`;
+  return root ? `${root}${normalizedPath}` : normalizedPath;
+}
+
+// ─── Enquiries Back-Office API ────────────────────────────────────────────────
+
+export type BackendEnquiryStatus =
+  | 'NEW'
+  | 'ASSIGNED'
+  | 'CONTACTED'
+  | 'SITE_VISIT_SCHEDULED'
+  | 'IN_NEGOTIATION'
+  | 'DEAL_CLOSED'
+  | 'DROPPED';
+
+export interface BackendEnquiry {
+  id: string;
+  propertyId: string;
+  buyerName: string;
+  phone: string;
+  whatsapp?: string;
+  enquiryType: 'CALL' | 'SITE_VISIT' | 'QUESTION';
+  status: BackendEnquiryStatus;
+  assignedTo?: string;
+  followUpDate?: string;
+  leadScore?: number;
+  notes?: string;
+  preferredLanguage?: 'en' | 'te';
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface GetEnquiriesResponse {
+  enquiries: BackendEnquiry[];
+  count: number;
+}
+
+/**
+ * Fetch enquiries list (ADMIN & AGENT only)
+ * Backend endpoint: GET /api/enquiries
+ */
+export async function getEnquiriesApi(
+  token: string,
+  filters?: { status?: string; assignedTo?: string; propertyId?: string }
+): Promise<GetEnquiriesResponse> {
+  const base = isRealBackend()
+    ? `${API_BASE_URL}/enquiries`
+    : 'https://telangana-realty-backend.onrender.com/api/enquiries';
+
+  try {
+    const url = new URL(base);
+    if (filters?.status && filters.status !== 'ALL') url.searchParams.set('status', filters.status);
+    if (filters?.assignedTo && filters.assignedTo !== 'ALL') url.searchParams.set('assignedTo', filters.assignedTo);
+    if (filters?.propertyId) url.searchParams.set('propertyId', filters.propertyId);
+
+    const res = await fetch(url.toString(), {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      return data as GetEnquiriesResponse;
+    }
+    if (res.status === 401 || res.status === 403) {
+      throw new Error((data as { error?: string }).error || 'Unauthorized to view enquiries');
+    }
+  } catch (err: unknown) {
+    if ((err as Error)?.message?.includes('Unauthorized')) {
+      throw err;
+    }
+    console.warn('[api] Backend /enquiries unreachable:', err);
+  }
+
+  return { enquiries: [], count: 0 };
+}
+
+/**
+ * Update enquiry pipeline status (ADMIN & AGENT only)
+ * Backend endpoint: PATCH /api/enquiries/:id/status
+ */
+export async function updateEnquiryStatusApi(
+  token: string,
+  enquiryId: string,
+  status: string,
+  notes?: string
+): Promise<{ message: string; enquiry: BackendEnquiry }> {
+  const base = isRealBackend()
+    ? `${API_BASE_URL}/enquiries/${encodeURIComponent(enquiryId)}/status`
+    : `https://telangana-realty-backend.onrender.com/api/enquiries/${encodeURIComponent(enquiryId)}/status`;
+
+  const res = await fetch(base, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status, notes }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((data as { error?: string }).error || `Failed to update status (${res.status})`);
+  }
+
+  return data as { message: string; enquiry: BackendEnquiry };
 }

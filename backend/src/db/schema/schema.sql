@@ -3,31 +3,50 @@
 
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
--- 1. ENUMS
-CREATE TYPE property_type_enum AS ENUM ('LAND', 'FLAT');
-CREATE TYPE property_status_enum AS ENUM ('DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE', 'SOLD', 'OFF_MARKET');
-CREATE TYPE doc_type_enum AS ENUM (
-    'SALE_DEED',
-    'EC',
-    'LINK_DOCUMENTS',
-    'PAHANI',
-    'FORM_1B',
-    'FMB',
-    'PATTADAR_PASSBOOK',
-    'HMDA_DTCP_APPROVAL',
-    'MUTATION',
-    'TAX_RECEIPT',
-    'MASTER_PLAN',
-    'GPA',
-    'SALE_AGREEMENT'
-);
-CREATE TYPE doc_status_enum AS ENUM ('PENDING', 'UPLOADED', 'VERIFIED', 'REJECTED');
-CREATE TYPE enquiry_type_enum AS ENUM ('CALL', 'SITE_VISIT', 'QUESTION');
-CREATE TYPE enquiry_status_enum AS ENUM ('NEW', 'ASSIGNED', 'CONTACTED', 'SITE_VISIT_SCHEDULED', 'IN_NEGOTIATION', 'DEAL_CLOSED', 'DROPPED');
-CREATE TYPE user_role_enum AS ENUM ('ADMIN', 'AGENT', 'SELLER');
+-- 1. ENUMS (Created idempotently)
+DO $$ BEGIN
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'property_type_enum') THEN
+        CREATE TYPE property_type_enum AS ENUM ('LAND', 'FLAT', 'VILLA');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'property_status_enum') THEN
+        CREATE TYPE property_status_enum AS ENUM ('DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE', 'SOLD', 'OFF_MARKET');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'doc_type_enum') THEN
+        CREATE TYPE doc_type_enum AS ENUM (
+            'SALE_DEED',
+            'EC',
+            'LINK_DOCUMENTS',
+            'PAHANI',
+            'FORM_1B',
+            'FMB',
+            'PATTADAR_PASSBOOK',
+            'HMDA_DTCP_APPROVAL',
+            'MUTATION',
+            'TAX_RECEIPT',
+            'MASTER_PLAN',
+            'GPA',
+            'SALE_AGREEMENT'
+        );
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'doc_status_enum') THEN
+        CREATE TYPE doc_status_enum AS ENUM ('PENDING', 'UPLOADED', 'VERIFIED', 'REJECTED');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enquiry_type_enum') THEN
+        CREATE TYPE enquiry_type_enum AS ENUM ('CALL', 'SITE_VISIT', 'QUESTION');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'enquiry_status_enum') THEN
+        CREATE TYPE enquiry_status_enum AS ENUM ('NEW', 'ASSIGNED', 'CONTACTED', 'SITE_VISIT_SCHEDULED', 'IN_NEGOTIATION', 'DEAL_CLOSED', 'DROPPED');
+    END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'user_role_enum') THEN
+        CREATE TYPE user_role_enum AS ENUM ('ADMIN', 'AGENT', 'SELLER');
+    END IF;
+END $$;
+
+-- Migration Alteration for Existing Databases
+ALTER TYPE property_type_enum ADD VALUE IF NOT EXISTS 'VILLA';
 
 -- 2. USERS TABLE (Internal team & sellers)
-CREATE TABLE users (
+CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     name VARCHAR(255) NOT NULL,
     email VARCHAR(255) UNIQUE,
@@ -41,7 +60,7 @@ CREATE TABLE users (
 );
 
 -- 3. OWNERS / SELLERS TABLE
-CREATE TABLE owners (
+CREATE TABLE IF NOT EXISTS owners (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID REFERENCES users(id) ON DELETE SET NULL,
     name VARCHAR(255) NOT NULL,
@@ -57,7 +76,7 @@ CREATE TABLE owners (
 );
 
 -- 4. PROPERTIES TABLE
-CREATE TABLE properties (
+CREATE TABLE IF NOT EXISTS properties (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     seller_id UUID NOT NULL REFERENCES owners(id) ON DELETE CASCADE,
     type property_type_enum NOT NULL,
@@ -113,13 +132,17 @@ CREATE TABLE properties (
     -- Stats
     is_featured BOOLEAN DEFAULT FALSE,
     views_count INT DEFAULT 0,
+    boundary_coordinates JSONB DEFAULT NULL,
     
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+-- Migration Alteration for Existing Properties Table
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS boundary_coordinates JSONB DEFAULT NULL;
+
 -- 5. PROPERTY DOCUMENTS TABLE (13 Required Verification Gates)
-CREATE TABLE property_documents (
+CREATE TABLE IF NOT EXISTS property_documents (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
     document_type doc_type_enum NOT NULL,
@@ -134,7 +157,7 @@ CREATE TABLE property_documents (
 );
 
 -- 6. ENQUIRIES & LEAD PIPELINE TABLE (Mediated deal pipeline)
-CREATE TABLE enquiries (
+CREATE TABLE IF NOT EXISTS enquiries (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     property_id UUID NOT NULL REFERENCES properties(id) ON DELETE CASCADE,
     buyer_name VARCHAR(255) NOT NULL,
@@ -151,10 +174,10 @@ CREATE TABLE enquiries (
 );
 
 -- INDEXES
-CREATE INDEX idx_properties_status ON properties(status);
-CREATE INDEX idx_properties_type ON properties(type);
-CREATE INDEX idx_properties_location ON properties(district, mandal, village);
-CREATE INDEX idx_properties_orr_distance ON properties(distance_from_orr_km);
-CREATE INDEX idx_enquiries_status ON enquiries(status);
-CREATE INDEX idx_enquiries_assigned_to ON enquiries(assigned_to);
-CREATE INDEX idx_property_documents_status ON property_documents(status);
+CREATE INDEX IF NOT EXISTS idx_properties_status ON properties(status);
+CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(type);
+CREATE INDEX IF NOT EXISTS idx_properties_location ON properties(district, mandal, village);
+CREATE INDEX IF NOT EXISTS idx_properties_orr_distance ON properties(distance_from_orr_km);
+CREATE INDEX IF NOT EXISTS idx_enquiries_status ON enquiries(status);
+CREATE INDEX IF NOT EXISTS idx_enquiries_assigned_to ON enquiries(assigned_to);
+CREATE INDEX IF NOT EXISTS idx_property_documents_status ON property_documents(status);

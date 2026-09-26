@@ -5,6 +5,7 @@ dotenv.config();
 
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
+  host: process.env.HOST || '0.0.0.0',
   nodeEnv: process.env.NODE_ENV || 'development',
   apiPrefix: process.env.API_PREFIX || '/api',
 
@@ -35,6 +36,12 @@ export const config = {
   // Team & Alerts
   adminAlertPhone: process.env.ADMIN_ALERT_PHONE || '+919876543210',
   adminAlertWhatsApp: process.env.ADMIN_ALERT_WHATSAPP || '+919876543210',
-  frontendUrl: process.env.FRONTEND_URL || 'http://localhost:3000',
   googleMapsApiKey: process.env.GOOGLE_MAPS_API_KEY || '',
+
+  // CORS & Frontend Security
+  frontendUrl: process.env.FRONTEND_URL || 'https://frontend-six-psi-ecroth2n1r.vercel.app',
+  allowedOrigins: process.env.ALLOWED_ORIGINS
+    ? process.env.ALLOWED_ORIGINS.split(',').map((o) => o.trim()).filter(Boolean)
+    : [],
+  vercelPreviewPattern: process.env.VERCEL_PREVIEW_PATTERN || '^https:\\/\\/frontend(-[a-z0-9-]+)?-ecroth2n1r\\.vercel\\.app$',
 };

@@ -1,0 +1,36 @@
+services:
+  - type: web
+    name: telangana-realty-backend
+    runtime: node
+    plan: free
+    region: singapore
+    rootDir: backend
+    buildCommand: npm install --include=dev && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    autoDeploy: false
+    envVars:
+      - key: NODE_VERSION
+        value: 20.18.0
+      - key: NODE_ENV
+        value: production
+      - key: HOST
+        value: 0.0.0.0
+      - key: API_PREFIX
+        value: /api
+      - key: FRONTEND_URL
+        value: https://frontend-six-psi-ecroth2n1r.vercel.app
+      - key: ALLOWED_ORIGINS
+        value: https://frontend-six-psi-ecroth2n1r.vercel.app
+      - key: DATABASE_URL
+        sync: false
+      - key: DB_SSL
+        value: "true"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 7d
+      - key: STORAGE_DRIVER
+        value: local
+      - key: NOTIFICATION_PROVIDER
+        value: mock

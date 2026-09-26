@@ -2,7 +2,7 @@ import { Property, PublicProperty, DocumentType, DocumentStatus } from '../types
 import { db } from '../db/database.js';
 
 // Mandatory document requirements per property type according to Architecture §4
-export const MANDATORY_DOCS: Record<'LAND' | 'FLAT', DocumentType[]> = {
+export const MANDATORY_DOCS: Record<'LAND' | 'FLAT' | 'VILLA', DocumentType[]> = {
   LAND: [
     'SALE_DEED',
     'EC',
@@ -23,6 +23,18 @@ export const MANDATORY_DOCS: Record<'LAND' | 'FLAT', DocumentType[]> = {
     'LINK_DOCUMENTS',
     'HMDA_DTCP_APPROVAL',
     'TAX_RECEIPT',
+    'SALE_AGREEMENT',
+  ],
+  VILLA: [
+    'SALE_DEED',
+    'EC',
+    'LINK_DOCUMENTS',
+    'PAHANI',
+    'HMDA_DTCP_APPROVAL',
+    'MUTATION',
+    'TAX_RECEIPT',
+    'MASTER_PLAN',
+    'GPA',
     'SALE_AGREEMENT',
   ],
 };

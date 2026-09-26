@@ -14,41 +14,60 @@ import { requireAuth, requireRole, optionalAuth } from './middleware/auth.js';
 import swaggerUi from 'swagger-ui-express';
 import { openApiSpec } from './docs/openapi.js';
 
+import { getCorsOptions } from './config/cors.js';
+
 export const app = express();
 app.disable('x-powered-by');
 
 // Global Middlewares
-app.use(
-  cors({
-    origin: config.nodeEnv === 'production'
-      ? [config.frontendUrl]
-      : ['http://localhost:3000', 'http://localhost:5173', 'http://127.0.0.1:3000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  })
-);
+app.use(cors(getCorsOptions()));
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
 // Static uploads serving (for local file driver)
 app.use('/uploads', express.static(path.resolve(config.uploadDir)));
 
+// --- ROOT & SERVICE DISCOVERY ---
+app.get('/', (_req: Request, res: Response) => {
+  res.json({
+    service: 'Telangana & Hyderabad Real-Estate Brokerage Backend API',
+    status: 'healthy',
+    version: '1.0.0',
+    documentation: '/api/docs/',
+    health: '/api/health',
+    endpoints: {
+      properties: '/api/properties',
+      search: '/api/properties/search',
+      enquiries: '/api/enquiries',
+      maps: '/api/maps',
+      auth: '/api/auth',
+    },
+  });
+});
+
 // --- API DOCUMENTATION (SWAGGER UI) ---
+app.get('/docs.json', (_req: Request, res: Response) => {
+  res.json(openApiSpec);
+});
 app.get('/api/docs.json', (_req: Request, res: Response) => {
   res.json(openApiSpec);
 });
-app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec));
+app.use('/docs', (_req: Request, res: Response) => res.redirect(301, '/api/docs/'));
+app.use('/api/docs', swaggerUi.serve, swaggerUi.setup(openApiSpec, {
+  customSiteTitle: 'Telangana Real-Estate Brokerage API Docs',
+}));
 
 // --- HEALTH CHECK ---
-app.get('/api/health', (_req: Request, res: Response) => {
+const handleHealthCheck = (_req: Request, res: Response) => {
   res.json({
     status: 'healthy',
     timestamp: new Date().toISOString(),
     service: 'Telangana Real-Estate Brokerage Backend',
     version: '1.0.0',
   });
-});
+};
+app.get('/api/health', handleHealthCheck);
+app.get('/health', handleHealthCheck);
 
 // --- AUTH ROUTES ---
 const authRouter = express.Router();
@@ -56,6 +75,7 @@ authRouter.post('/register', authController.register.bind(authController));
 authRouter.post('/login', authController.login.bind(authController));
 authRouter.get('/me', requireAuth, authController.me.bind(authController));
 app.use('/api/auth', authRouter);
+app.use('/auth', authRouter);
 
 // --- PROPERTIES ROUTES (PUBLIC & SELLER) ---
 const propertiesRouter = express.Router();
@@ -80,6 +100,7 @@ propertiesRouter.delete(
   propertiesController.deleteProperty.bind(propertiesController)
 );
 app.use('/api/properties', propertiesRouter);
+app.use('/properties', propertiesRouter);
 
 // --- DOCUMENTS & 13-VERIFICATION GATE ROUTES ---
 const documentsRouter = express.Router();
@@ -151,6 +172,7 @@ enquiriesRouter.patch(
   enquiriesController.scheduleSiteVisit.bind(enquiriesController)
 );
 app.use('/api/enquiries', enquiriesRouter);
+app.use('/enquiries', enquiriesRouter);
 
 // --- OWNERS / SELLERS ROUTES ---
 const ownersRouter = express.Router();
@@ -163,6 +185,7 @@ app.use('/api/owners', ownersRouter);
 const mapsRouter = express.Router();
 mapsRouter.get('/distance', mapsController.calculateOrrDistance.bind(mapsController));
 app.use('/api/maps', mapsRouter);
+app.use('/maps', mapsRouter);
 
 // --- ADMIN / TEAM BACK-OFFICE ROUTES ---
 const adminRouter = express.Router();
@@ -184,13 +207,20 @@ adminRouter.get(
   requireRole(['ADMIN', 'AGENT']),
   propertiesController.getInternalDetail.bind(propertiesController)
 );
+adminRouter.post(
+  '/sync-seeds',
+  requireAuth,
+  requireRole(['ADMIN']),
+  adminController.syncSeeds.bind(adminController)
+);
 app.use('/api/admin', adminRouter);
 
 // Centralized error handler
 app.use((err: Error, _req: Request, res: Response, _next: NextFunction) => {
   console.error('Unhandled API Error:', err);
+  const isProduction = config.nodeEnv === 'production';
   res.status(500).json({
     error: 'Internal Server Error',
-    message: err.message,
+    message: isProduction ? 'An unexpected internal error occurred' : err.message,
   });
 });

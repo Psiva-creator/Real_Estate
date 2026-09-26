@@ -1,6 +1,7 @@
 import { app } from './app.js';
 import { config } from './config/index.js';
 import { db } from './db/database.js';
+import { runMigrations } from './db/migrate.js';
 import { runSeeds } from './db/seeds/seed.js';
 
 async function startServer() {
@@ -10,21 +11,51 @@ async function startServer() {
   const pgConnected = await db.testConnection();
   if (pgConnected) {
     console.log('✅ PostgreSQL database connected successfully');
+    try {
+      console.log('🔄 Ensuring database schema and tables exist...');
+      await runMigrations();
+    } catch (migErr) {
+      console.warn('⚠️ Migration note:', (migErr as Error).message);
+    }
   } else if (config.nodeEnv !== 'test') {
     throw new Error('Fatal: PostgreSQL connection failed. Production runtime requires a working PostgreSQL database.');
   }
 
   // Seed default data if store is empty
-  const users = await db.listUsers();
-  if (users.length === 0) {
-    await runSeeds();
+  try {
+    const users = await db.listUsers();
+    if (users.length === 0) {
+      await runSeeds();
+    }
+  } catch (seedErr) {
+    console.warn('⚠️ Seed check note:', (seedErr as Error).message);
   }
 
-  const server = app.listen(config.port, () => {
-    console.log(`🚀 Server ready at http://localhost:${config.port}`);
-    console.log(`📡 Health check: http://localhost:${config.port}/api/health`);
-    console.log(`🔍 Public properties: http://localhost:${config.port}/api/properties`);
+  const server = app.listen(config.port, config.host, () => {
+    const displayHost = config.host === '0.0.0.0' ? 'localhost' : config.host;
+    console.log(`🚀 Server ready at http://${displayHost}:${config.port} (bound to ${config.host}:${config.port})`);
+    console.log(`📡 Health check: http://${displayHost}:${config.port}/api/health`);
+    console.log(`🔍 Public properties: http://${displayHost}:${config.port}/api/properties`);
   });
+
+  const shutdown = async (signal: string) => {
+    console.log(`Received ${signal}. Gracefully shutting down...`);
+    server.close(async () => {
+      console.log('HTTP server closed.');
+      try {
+        await db.getPool().end();
+      } catch {}
+      process.exit(0);
+    });
+
+    setTimeout(() => {
+      console.error('Forceful shutdown after timeout');
+      process.exit(1);
+    }, 10000).unref();
+  };
+
+  process.on('SIGTERM', () => shutdown('SIGTERM'));
+  process.on('SIGINT', () => shutdown('SIGINT'));
 
   return server;
 }

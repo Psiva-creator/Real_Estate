@@ -22,6 +22,7 @@ import {
   getPropertyDocumentsApi,
   verifyPropertyDocumentApi,
   PropertyDocumentRecord,
+  resolveUploadUrl,
 } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
@@ -246,12 +247,7 @@ export default function DocumentVerificationReviewer({
 
       // fileUrl is a relative server path like /uploads/propId/doctype_filename.pdf
       // Construct absolute URL pointing to backend uploads
-      const apiBase =
-        process.env.NEXT_PUBLIC_API_BASE_URL?.replace('/api', '') ||
-        'http://localhost:5000';
-      const absUrl = row.fileUrl.startsWith('http')
-        ? row.fileUrl
-        : `${apiBase}${row.fileUrl}`;
+      const absUrl = resolveUploadUrl(row.fileUrl);
 
       window.open(absUrl, '_blank', 'noopener,noreferrer');
     },
