@@ -207,6 +207,12 @@ adminRouter.get(
   requireRole(['ADMIN', 'AGENT']),
   propertiesController.getInternalDetail.bind(propertiesController)
 );
+adminRouter.post(
+  '/sync-seeds',
+  requireAuth,
+  requireRole(['ADMIN']),
+  adminController.syncSeeds.bind(adminController)
+);
 app.use('/api/admin', adminRouter);
 
 // Centralized error handler
