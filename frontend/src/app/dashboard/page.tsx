@@ -384,7 +384,15 @@ export default function ExecutiveCommandCenterPage() {
                           {formatINR(prop.pricing?.totalPrice || 48000000)}
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          {formatAcreage(prop.acreage?.acres || 8)}
+                          {prop.land?.totalAcres
+                            ? formatAcreage(prop.land.totalAcres)
+                            : prop.flat?.sqft
+                            ? `${prop.flat.sqft} sq.ft`
+                            : prop.villa?.builtUpSqft
+                            ? `${prop.villa.builtUpSqft} sq.ft`
+                            : (prop as any).acreage?.acres
+                            ? formatAcreage((prop as any).acreage.acres)
+                            : 'N/A'}
                         </div>
                       </td>
 
