@@ -94,8 +94,9 @@ export default function ExecutiveCommandCenterPage() {
     let verifiedCount = 0;
 
     properties.forEach((p) => {
-      if (p.acreage?.acres) {
-        totalAcres += p.acreage.acres;
+      const acres = p.land?.totalAcres || (p as any).acreage?.acres || 0;
+      if (acres) {
+        totalAcres += acres;
       }
       if (p.pricing?.totalPrice) {
         totalValuation += p.pricing.totalPrice;
