@@ -11,6 +11,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith('/api') ||
     pathname.startsWith('/locales') ||
     pathname.startsWith('/images') ||
+    pathname === '/robots.txt' ||
+    pathname === '/sitemap.xml' ||
     pathname.includes('.') // file extension like favicon.ico
   ) {
     return NextResponse.next();
