@@ -48,12 +48,16 @@ export default function ExecutiveCommandCenterPage() {
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Redirect seller role to their dedicated portal
+  // Strict Staff Guard: Redirect unauthenticated or non-staff users away
   useEffect(() => {
-    if (!isLoading && isAuthenticated && isSeller) {
-      router.replace('/dashboard/seller');
+    if (!isLoading) {
+      if (!isAuthenticated || (!isAdmin && !isAgent)) {
+        router.replace('/en/trh-internal-desk');
+      } else if (isSeller) {
+        router.replace('/dashboard/seller');
+      }
     }
-  }, [isLoading, isAuthenticated, isSeller, router]);
+  }, [isLoading, isAuthenticated, isAdmin, isAgent, isSeller, router]);
 
   // Load metrics and properties
   const loadDashboardData = useCallback(async () => {
