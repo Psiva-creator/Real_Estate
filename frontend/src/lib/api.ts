@@ -161,7 +161,7 @@ interface BackendPricing {
   isNegotiable: boolean;
 }
 
-interface BackendProperty {
+export interface BackendProperty {
   id: string;
   type: PropertyType;
   status: PropertyStatus;
