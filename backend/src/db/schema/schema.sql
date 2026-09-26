@@ -42,6 +42,9 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- Migration Alteration for Existing Databases
+ALTER TYPE property_type_enum ADD VALUE IF NOT EXISTS 'VILLA';
+
 -- 2. USERS TABLE (Internal team & sellers)
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
