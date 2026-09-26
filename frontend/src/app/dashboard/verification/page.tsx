@@ -87,9 +87,16 @@ function DocProgress({ verified, total }: { verified: number; total: number }) {
 // ─── Main Content Component ───────────────────────────────────────────────────
 
 function VerificationContent() {
-  const { token, isAdmin } = useAuth();
+  const router = useRouter();
+  const { token, isAdmin, isLoading: authLoading } = useAuth();
   const searchParams = useSearchParams();
   const propertyIdParam = searchParams.get('propertyId');
+
+  useEffect(() => {
+    if (!authLoading && !isAdmin) {
+      router.replace('/en/trh-internal-desk');
+    }
+  }, [authLoading, isAdmin, router]);
 
   const [queue, setQueue] = useState<QueueProperty[]>([]);
   const [isLoading, setIsLoading] = useState(false);
