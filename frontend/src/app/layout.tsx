@@ -45,6 +45,30 @@ export const metadata: Metadata = {
   icons: {
     icon: '/favicon.ico',
   },
+  openGraph: {
+    title: 'Telangana Realty Hub | 100% Verified Land & Flat Brokerage',
+    description:
+      'Telangana’s premier real estate mediator & brokerage. 13-point revenue document verification, Dharani clearance, and end-to-end deal mediation in Hyderabad.',
+    url: 'https://frontend-six-psi-ecroth2n1r.vercel.app',
+    siteName: 'Telangana Realty Hub',
+    images: [
+      {
+        url: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80',
+        width: 1200,
+        height: 630,
+        alt: 'Telangana Realty Hub - 100% Legal Verification',
+      },
+    ],
+    locale: 'en_IN',
+    type: 'website',
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Telangana Realty Hub | 100% Verified Land & Flat Brokerage',
+    description:
+      '13-point revenue document verification and direct mediated land & flat brokerage across Hyderabad.',
+    images: ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'],
+  },
 };
 
 export const viewport: Viewport = {

@@ -48,12 +48,16 @@ export default function ExecutiveCommandCenterPage() {
   const [isDataLoading, setIsDataLoading] = useState(true);
   const [refreshKey, setRefreshKey] = useState(0);
 
-  // Redirect seller role to their dedicated portal
+  // Strict Staff Guard: Redirect unauthenticated or non-staff users away
   useEffect(() => {
-    if (!isLoading && isAuthenticated && isSeller) {
-      router.replace('/dashboard/seller');
+    if (!isLoading) {
+      if (!isAuthenticated || (!isAdmin && !isAgent)) {
+        router.replace('/en/trh-internal-desk');
+      } else if (isSeller) {
+        router.replace('/dashboard/seller');
+      }
     }
-  }, [isLoading, isAuthenticated, isSeller, router]);
+  }, [isLoading, isAuthenticated, isAdmin, isAgent, isSeller, router]);
 
   // Load metrics and properties
   const loadDashboardData = useCallback(async () => {
@@ -94,7 +98,7 @@ export default function ExecutiveCommandCenterPage() {
     let verifiedCount = 0;
 
     properties.forEach((p) => {
-      const acres = p.land?.totalAcres ?? p.acreage?.acres;
+      const acres = p.land?.totalAcres || (p as any).acreage?.acres || 0;
       if (acres) {
         totalAcres += acres;
       }
@@ -384,7 +388,15 @@ export default function ExecutiveCommandCenterPage() {
                           {formatINR(prop.pricing?.totalPrice || 48000000)}
                         </div>
                         <div className="text-[11px] text-slate-400">
-                          {formatAcreage(prop.land?.totalAcres ?? prop.acreage?.acres ?? 8)}
+                          {prop.land?.totalAcres
+                            ? formatAcreage(prop.land.totalAcres)
+                            : prop.flat?.sqft
+                            ? `${prop.flat.sqft} sq.ft`
+                            : (prop.villa?.builtUpSqft ?? prop.villa?.builtUpAreaSqFt)
+                            ? `${prop.villa?.builtUpSqft ?? prop.villa?.builtUpAreaSqFt} sq.ft`
+                            : (prop as any).acreage?.acres
+                            ? formatAcreage((prop as any).acreage.acres)
+                            : 'N/A'}
                         </div>
                       </td>
 

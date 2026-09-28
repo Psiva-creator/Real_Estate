@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { formatINR } from '@/lib/formatters';
 import { useAuth } from '@/lib/auth-context';
 import { getAdminPropertiesApi } from '@/lib/api';
@@ -61,9 +62,19 @@ function StatusBadge({ status }: { status: string }) {
   return <span className={map[status] ?? 'badge-draft'}>{status.replace(/_/g, ' ')}</span>;
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
 export default function DashboardPropertiesPage() {
-  const { token, isStaff } = useAuth();
+  const router = useRouter();
+  const { token, isStaff, isSeller, isLoading: authLoading } = useAuth();
+
+  useEffect(() => {
+    if (!authLoading) {
+      if (!token || !isStaff) {
+        router.replace('/en/trh-internal-desk');
+      } else if (isSeller) {
+        router.replace('/dashboard/seller');
+      }
+    }
+  }, [authLoading, token, isStaff, isSeller, router]);
 
   const [allProperties, setAllProperties] = useState<AdminProperty[]>([]);
   const [isLoading, setIsLoading] = useState(false);

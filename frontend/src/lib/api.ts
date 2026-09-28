@@ -389,7 +389,7 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telangana-realty-backend.onrender.com/api').replace(/\/+$/, '');
 
 /** Returns true if the API_BASE_URL is configured and points to the real backend. */
 function isRealBackend(): boolean {
@@ -842,7 +842,7 @@ export interface AdminDashboardStats {
  * Backend endpoint: POST /api/auth/login
  */
 export async function loginApi(identifier: string, password?: string): Promise<AuthResponse> {
-  const url = isRealBackend() ? `${API_BASE_URL}/auth/login` : 'http://localhost:5000/api/auth/login';
+  const url = isRealBackend() ? `${API_BASE_URL}/auth/login` : 'https://telangana-realty-backend.onrender.com/api/auth/login';
 
   try {
     const res = await fetch(url, {
@@ -962,7 +962,7 @@ export async function loginApi(identifier: string, password?: string): Promise<A
  * Backend endpoint: POST /api/auth/register
  */
 export async function registerApi(input: RegisterInput): Promise<AuthResponse> {
-  const url = isRealBackend() ? `${API_BASE_URL}/auth/register` : 'http://localhost:5000/api/auth/register';
+  const url = isRealBackend() ? `${API_BASE_URL}/auth/register` : 'https://telangana-realty-backend.onrender.com/api/auth/register';
 
   try {
     const res = await fetch(url, {
@@ -1036,7 +1036,7 @@ export async function getMeApi(token: string): Promise<AuthUser> {
     };
   }
 
-  const url = isRealBackend() ? `${API_BASE_URL}/auth/me` : 'http://localhost:5000/api/auth/me';
+  const url = isRealBackend() ? `${API_BASE_URL}/auth/me` : 'https://telangana-realty-backend.onrender.com/api/auth/me';
 
   try {
     const res = await fetch(url, {
@@ -1175,7 +1175,7 @@ function mockPropertyToBackend(mp: MockProperty): BackendProperty {
  * Backend endpoint: GET /api/owners/me
  */
 export async function getSellerProfileApi(token: string): Promise<SellerProfileResponse> {
-  const url = isRealBackend() ? `${API_BASE_URL}/owners/me` : 'http://localhost:5000/api/owners/me';
+  const url = isRealBackend() ? `${API_BASE_URL}/owners/me` : 'https://telangana-realty-backend.onrender.com/api/owners/me';
 
   try {
     const res = await fetch(url, {
@@ -1218,7 +1218,7 @@ export async function getSellerProfileApi(token: string): Promise<SellerProfileR
  * Backend endpoint: GET /api/admin/dashboard
  */
 export async function getAdminDashboardApi(token: string): Promise<AdminDashboardStats> {
-  const url = isRealBackend() ? `${API_BASE_URL}/admin/dashboard` : 'http://localhost:5000/api/admin/dashboard';
+  const url = isRealBackend() ? `${API_BASE_URL}/admin/dashboard` : 'https://telangana-realty-backend.onrender.com/api/admin/dashboard';
 
   try {
     const res = await fetch(url, {
@@ -1255,7 +1255,7 @@ export async function getAdminPropertiesApi(
   token: string,
   status?: string
 ): Promise<{ properties: BackendProperty[]; total: number }> {
-  const base = isRealBackend() ? `${API_BASE_URL}/admin/properties` : 'http://localhost:5000/api/admin/properties';
+  const base = isRealBackend() ? `${API_BASE_URL}/admin/properties` : 'https://telangana-realty-backend.onrender.com/api/admin/properties';
   const url = new URL(base);
   if (status && status !== 'ALL') {
     url.searchParams.set('status', status);
@@ -1333,7 +1333,7 @@ export async function getAdminPropertyDetailApi(
 ): Promise<InternalPropertyDetail> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/admin/properties/${encodeURIComponent(propertyId)}`
-    : `http://localhost:5000/api/admin/properties/${encodeURIComponent(propertyId)}`;
+    : `https://telangana-realty-backend.onrender.com/api/admin/properties/${encodeURIComponent(propertyId)}`;
 
   try {
     const res = await fetch(base, {
@@ -1462,7 +1462,7 @@ export async function getPropertyDocumentsApi(
 ): Promise<PropertyDocumentRecord[]> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents`
-    : `http://localhost:5000/api/properties/${encodeURIComponent(propertyId)}/documents`;
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents`;
 
   try {
     const res = await fetch(base, {
@@ -1506,7 +1506,7 @@ export async function getPropertyDocumentApi(
 ): Promise<PropertyDocumentRecord | null> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`
-    : `http://localhost:5000/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`;
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`;
 
   try {
     const res = await fetch(base, {
@@ -1559,7 +1559,7 @@ export async function verifyPropertyDocumentApi(
 ): Promise<VerifyDocumentResult> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`
-    : `http://localhost:5000/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`;
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`;
 
   try {
     const res = await fetch(base, {
@@ -1600,10 +1600,10 @@ export async function verifyPropertyDocumentApi(
 /**
  * Returns the backend server base URL without the `/api` prefix.
  * e.g., 'https://backend.example.com/api' -> 'https://backend.example.com'
- * or 'http://localhost:5000/api' -> 'http://localhost:5000'
+ * or 'https://telangana-realty-backend.onrender.com/api' -> 'http://localhost:5000'
  */
 export function getBackendRootUrl(): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api';
+  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telangana-realty-backend.onrender.com/api';
   return base.replace(/\/api\/?$/, '');
 }
 
@@ -1663,7 +1663,7 @@ export async function getEnquiriesApi(
 ): Promise<GetEnquiriesResponse> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/enquiries`
-    : 'http://localhost:5000/api/enquiries';
+    : 'https://telangana-realty-backend.onrender.com/api/enquiries';
 
   try {
     const url = new URL(base);
@@ -1707,7 +1707,7 @@ export async function updateEnquiryStatusApi(
 ): Promise<{ message: string; enquiry: BackendEnquiry }> {
   const base = isRealBackend()
     ? `${API_BASE_URL}/enquiries/${encodeURIComponent(enquiryId)}/status`
-    : `http://localhost:5000/api/enquiries/${encodeURIComponent(enquiryId)}/status`;
+    : `https://telangana-realty-backend.onrender.com/api/enquiries/${encodeURIComponent(enquiryId)}/status`;
 
   const res = await fetch(base, {
     method: 'PATCH',

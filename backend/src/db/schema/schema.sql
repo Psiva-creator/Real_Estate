@@ -44,6 +44,9 @@ DO $$ BEGIN
     END IF;
 END $$;
 
+-- Migration Alteration for Existing Databases
+ALTER TYPE property_type_enum ADD VALUE IF NOT EXISTS 'VILLA';
+
 -- 2. USERS TABLE (Internal team & sellers)
 CREATE TABLE IF NOT EXISTS users (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
@@ -149,6 +152,9 @@ CREATE TABLE IF NOT EXISTS properties (
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Migration Alteration for Existing Properties Table
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS boundary_coordinates JSONB DEFAULT NULL;
 
 -- 5. PROPERTY DOCUMENTS TABLE (13 Required Verification Gates)
 CREATE TABLE IF NOT EXISTS property_documents (
