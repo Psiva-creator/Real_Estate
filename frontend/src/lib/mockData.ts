@@ -996,9 +996,6 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     totalDocsRequired: 13,
     isFeatured: true,
     isOrrCorridor: true,
-=======
-    isOrrCorridor: false,
     dharaniApproved: true,
->>>>>>> origin/main
   },
 ];
