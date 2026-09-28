@@ -412,69 +412,69 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
   // Render Submission Success Screen
   if (submittedRefId) {
     return (
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-xl p-6 sm:p-10 max-w-2xl mx-auto text-center space-y-6 animate-in zoom-in-95 duration-200">
-        <div className="w-16 h-16 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center mx-auto shadow-sm">
-          <CheckCircle2 className="w-10 h-10 text-emerald-700" />
+      <div className="bg-[#FAF8F3] rounded-2xl border border-[#E2CFB6] shadow-[0_16px_50px_-20px_rgba(32,21,18,0.12)] p-6 sm:p-10 max-w-2xl mx-auto text-center space-y-6 animate-in zoom-in-95 duration-200">
+        <div className="w-16 h-16 rounded-2xl bg-[#201512] border border-[#3A241C] text-[#C79A6B] flex items-center justify-center mx-auto shadow-md">
+          <CheckCircle2 className="w-9 h-9 text-[#C79A6B]" />
         </div>
 
         <div className="space-y-2">
-          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200">
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F0E8] text-[#8B624C] text-[11px] font-semibold uppercase tracking-[0.18em] border border-[#E2CFB6]">
+            <ShieldCheck className="w-3.5 h-3.5 text-[#C79A6B]" />
             {sfDict.review.successTitle}
           </span>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-serif font-normal text-[#201512] tracking-tight">
             {isTe ? 'ప్రాపర్టీ లిస్టింగ్ పరిశీలనకు చేరింది' : 'Listing Queued for 13-Doc Verification'}
           </h2>
-          <p className="text-sm text-slate-600 max-w-md mx-auto leading-relaxed">
+          <p className="text-xs sm:text-sm text-[#8B624C] max-w-md mx-auto leading-relaxed">
             {sfDict.review.successSubtitle}
           </p>
         </div>
 
         {/* Reference ID card */}
-        <div className="bg-slate-50 rounded-xl p-4 border border-slate-200 inline-block text-left min-w-[280px]">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 block">
+        <div className="bg-[#F5F0E8] rounded-xl p-4 border border-[#E2CFB6] inline-block text-left min-w-[280px]">
+          <span className="text-[11px] font-semibold uppercase tracking-wider text-[#8B624C] block">
             {sfDict.review.successRef}
           </span>
-          <span className="text-base sm:text-lg font-extrabold text-emerald-800 font-mono break-all mt-0.5 block">
+          <span className="text-base sm:text-lg font-bold text-[#201512] font-mono break-all mt-0.5 block">
             {submittedRefId}
           </span>
-          <span className="text-xs text-slate-500 mt-1 block">
+          <span className="text-xs text-[#8B624C] mt-1 block">
             {uploadedDocsCount} / 13 documents submitted in packet
           </span>
         </div>
 
         {/* What happens next box */}
-        <div className="bg-emerald-50/60 rounded-2xl p-5 border border-emerald-100 text-left space-y-3">
-          <h4 className="text-sm font-bold text-emerald-950 flex items-center gap-2">
-            <Sparkles className="w-4 h-4 text-emerald-700" />
+        <div className="bg-[#F5F0E8] rounded-2xl p-5 border border-[#E2CFB6] text-left space-y-3">
+          <h4 className="text-sm font-serif font-medium text-[#201512] flex items-center gap-2">
+            <Sparkles className="w-4 h-4 text-[#C79A6B]" />
             <span>{sfDict.review.nextStepsTitle}</span>
           </h4>
-          <div className="space-y-2.5 text-xs text-emerald-900">
+          <div className="space-y-2.5 text-xs text-[#5A382B]">
             <div className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-emerald-200 text-emerald-800 font-bold flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
+              <span className="w-5 h-5 rounded-full bg-[#201512] text-[#C79A6B] font-semibold flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
                 1
               </span>
               <div>
-                <span className="font-bold block">{sfDict.review.step1Title}</span>
-                <span className="text-emerald-800/80">{sfDict.review.step1Desc}</span>
+                <span className="font-semibold text-[#201512] block">{sfDict.review.step1Title}</span>
+                <span className="text-[#8B624C]">{sfDict.review.step1Desc}</span>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-emerald-200 text-emerald-800 font-bold flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
+              <span className="w-5 h-5 rounded-full bg-[#201512] text-[#C79A6B] font-semibold flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
                 2
               </span>
               <div>
-                <span className="font-bold block">{sfDict.review.step2Title}</span>
-                <span className="text-emerald-800/80">{sfDict.review.step2Desc}</span>
+                <span className="font-semibold text-[#201512] block">{sfDict.review.step2Title}</span>
+                <span className="text-[#8B624C]">{sfDict.review.step2Desc}</span>
               </div>
             </div>
             <div className="flex items-start gap-2.5">
-              <span className="w-5 h-5 rounded-full bg-emerald-200 text-emerald-800 font-bold flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
+              <span className="w-5 h-5 rounded-full bg-[#201512] text-[#C79A6B] font-semibold flex items-center justify-center shrink-0 mt-0.5 text-[11px]">
                 3
               </span>
               <div>
-                <span className="font-bold block">{sfDict.review.step3Title}</span>
-                <span className="text-emerald-800/80">{sfDict.review.step3Desc}</span>
+                <span className="font-semibold text-[#201512] block">{sfDict.review.step3Title}</span>
+                <span className="text-[#8B624C]">{sfDict.review.step3Desc}</span>
               </div>
             </div>
           </div>
@@ -484,15 +484,15 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
           <Link
             href={`/${locale}/properties`}
-            className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white font-bold text-sm shadow-md transition-colors tap-target flex items-center justify-center gap-2"
+            className="w-full sm:w-auto px-7 py-3.5 rounded-xl bg-[#201512] hover:bg-[#3A241C] text-[#F5F0E8] font-semibold text-xs sm:text-sm uppercase tracking-wider shadow-md transition-colors tap-target flex items-center justify-center gap-2 group"
           >
             <span>{sfDict.review.btnExplore}</span>
-            <ArrowRight className="w-4 h-4" />
+            <ArrowRight className="w-4 h-4 text-[#C79A6B] transition-transform group-hover:translate-x-1" />
           </Link>
           <button
             type="button"
             onClick={handleResetForm}
-            className="w-full sm:w-auto px-5 py-3 rounded-xl border border-slate-300 text-slate-700 hover:bg-slate-50 font-semibold text-sm transition-colors tap-target"
+            className="w-full sm:w-auto px-6 py-3.5 rounded-xl border border-[#E2CFB6] text-[#5A382B] hover:bg-[#F5F0E8] font-medium text-xs sm:text-sm uppercase tracking-wider transition-colors tap-target"
           >
             {sfDict.review.btnSubmitAnother}
           </button>
@@ -502,34 +502,34 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
   }
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-200/90 shadow-lg overflow-hidden">
-      {/* Visual Stepper Bar */}
-      <div className="bg-slate-900 text-white p-4 sm:p-6 border-b border-slate-800">
-        <div className="flex items-center justify-between mb-4">
+    <div className="bg-[#FAF8F3] overflow-hidden">
+      {/* Luxury Editorial Stepper Bar */}
+      <div className="bg-[#F5F0E8] text-[#201512] p-4 sm:p-6 border-b border-[#E2CFB6]">
+        <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-emerald-400">
+            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5A382B]">
               {sfDict.navigation.stepIndicator
                 .replace('{current}', (currentStepIndex + 1).toString())
                 .replace('{total}', steps.length.toString())
                 .replace('{name}', currentStep.label)}
             </span>
           </div>
-          <span className="text-xs text-slate-400 font-mono">
+          <span className="text-xs font-mono font-medium text-[#8B624C] tracking-wider">
             {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
           </span>
         </div>
 
         {/* Stepper Dots & Progress Track */}
         <div className="relative">
-          <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full h-1 bg-[#E2CFB6]/80 rounded-full overflow-hidden">
             <div
-              className="h-full bg-emerald-500 transition-all duration-300 rounded-full"
+              className="h-full bg-gradient-to-r from-[#C79A6B] via-[#8B624C] to-[#5A382B] transition-all duration-300 rounded-full"
               style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
             />
           </div>
 
           {/* Step Pill Icons (scrollable on narrow mobile screens) */}
-          <div className="flex items-center justify-between gap-1 mt-3 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex items-center justify-between gap-1 mt-3.5 overflow-x-auto pb-1 no-scrollbar">
             {steps.map((step, idx) => {
               const Icon = step.icon;
               const isCompleted = idx < currentStepIndex;
@@ -545,19 +545,19 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       setCurrentStepIndex(idx);
                     }
                   }}
-                  className={`flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold whitespace-nowrap transition-colors tap-target ${
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap transition-all duration-200 tap-target ${
                     isCurrent
-                      ? 'bg-emerald-600 text-white shadow-xs'
+                      ? 'bg-[#201512] text-[#F5F0E8] shadow-sm ring-1 ring-[#C79A6B]/50'
                       : isCompleted
-                      ? 'text-emerald-400 hover:bg-slate-800'
-                      : 'text-slate-500 hover:text-slate-300'
+                      ? 'text-[#5A382B] hover:text-[#201512] hover:bg-[#E2CFB6]/40'
+                      : 'text-[#8B624C]/60 hover:text-[#5A382B]'
                   }`}
                   aria-current={isCurrent ? 'step' : undefined}
                 >
                   {isCompleted ? (
-                    <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                    <Check className="w-3.5 h-3.5 text-[#C79A6B] shrink-0" />
                   ) : (
-                    <Icon className="w-3.5 h-3.5 shrink-0" />
+                    <Icon className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-[#C79A6B]' : ''}`} />
                   )}
                   <span className="hidden sm:inline">{step.label}</span>
                 </button>
@@ -573,10 +573,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         {currentStep.id === 'type' && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
                 {sfDict.typeSelection.heading}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-[#8B624C]">
                 {sfDict.typeSelection.subheading}
               </p>
             </div>
@@ -586,27 +586,31 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <button
                 type="button"
                 onClick={() => updateField('propertyType', 'LAND')}
-                className={`p-5 rounded-2xl border-2 text-left transition-all tap-target flex flex-col justify-between space-y-4 ${
+                className={`p-5 sm:p-6 rounded-xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-4 group ${
                   formData.propertyType === 'LAND'
-                    ? 'border-emerald-700 bg-emerald-50/50 shadow-md ring-2 ring-emerald-600/20'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_10px_25px_-8px_rgba(32,21,18,0.12)] -translate-y-0.5'
+                    : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:bg-[#F5F0E8]/50 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-amber-100 text-amber-800 flex items-center justify-center">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                    formData.propertyType === 'LAND'
+                      ? 'bg-[#201512] border border-[#3A241C] text-[#C79A6B]'
+                      : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#8B624C] group-hover:text-[#5A382B]'
+                  }`}>
                     <Layers className="w-6 h-6" />
                   </div>
                   {formData.propertyType === 'LAND' && (
-                    <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center">
-                      <Check className="w-4 h-4" />
+                    <div className="w-6 h-6 rounded-full bg-[#201512] text-[#C79A6B] border border-[#C79A6B]/50 flex items-center justify-center shadow-xs">
+                      <Check className="w-3.5 h-3.5" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
+                  <h3 className="font-serif text-lg font-medium text-[#201512] tracking-tight">
                     {sfDict.typeSelection.landTitle}
                   </h3>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-[#8B624C] mt-1.5 leading-relaxed">
                     {sfDict.typeSelection.landDesc}
                   </p>
                 </div>
@@ -616,27 +620,31 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <button
                 type="button"
                 onClick={() => updateField('propertyType', 'FLAT')}
-                className={`p-5 rounded-2xl border-2 text-left transition-all tap-target flex flex-col justify-between space-y-4 ${
+                className={`p-5 sm:p-6 rounded-xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-4 group ${
                   formData.propertyType === 'FLAT'
-                    ? 'border-emerald-700 bg-emerald-50/50 shadow-md ring-2 ring-emerald-600/20'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_10px_25px_-8px_rgba(32,21,18,0.12)] -translate-y-0.5'
+                    : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:bg-[#F5F0E8]/50 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                    formData.propertyType === 'FLAT'
+                      ? 'bg-[#201512] border border-[#3A241C] text-[#C79A6B]'
+                      : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#8B624C] group-hover:text-[#5A382B]'
+                  }`}>
                     <Home className="w-6 h-6" />
                   </div>
                   {formData.propertyType === 'FLAT' && (
-                    <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center">
-                      <Check className="w-4 h-4" />
+                    <div className="w-6 h-6 rounded-full bg-[#201512] text-[#C79A6B] border border-[#C79A6B]/50 flex items-center justify-center shadow-xs">
+                      <Check className="w-3.5 h-3.5" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
+                  <h3 className="font-serif text-lg font-medium text-[#201512] tracking-tight">
                     {sfDict.typeSelection.flatTitle}
                   </h3>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-[#8B624C] mt-1.5 leading-relaxed">
                     {sfDict.typeSelection.flatDesc}
                   </p>
                 </div>
@@ -646,27 +654,31 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <button
                 type="button"
                 onClick={() => updateField('propertyType', 'VILLA')}
-                className={`p-5 rounded-2xl border-2 text-left transition-all tap-target flex flex-col justify-between space-y-4 ${
+                className={`p-5 sm:p-6 rounded-xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-4 group ${
                   formData.propertyType === 'VILLA'
-                    ? 'border-emerald-700 bg-emerald-50/50 shadow-md ring-2 ring-emerald-600/20'
-                    : 'border-slate-200 hover:border-slate-300 hover:bg-slate-50'
+                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_10px_25px_-8px_rgba(32,21,18,0.12)] -translate-y-0.5'
+                    : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:bg-[#F5F0E8]/50 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center">
+                  <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
+                    formData.propertyType === 'VILLA'
+                      ? 'bg-[#201512] border border-[#3A241C] text-[#C79A6B]'
+                      : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#8B624C] group-hover:text-[#5A382B]'
+                  }`}>
                     <Sparkles className="w-6 h-6" />
                   </div>
                   {formData.propertyType === 'VILLA' && (
-                    <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center">
-                      <Check className="w-4 h-4" />
+                    <div className="w-6 h-6 rounded-full bg-[#201512] text-[#C79A6B] border border-[#C79A6B]/50 flex items-center justify-center shadow-xs">
+                      <Check className="w-3.5 h-3.5" />
                     </div>
                   )}
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-slate-900">
+                  <h3 className="font-serif text-lg font-medium text-[#201512] tracking-tight">
                     {isTe ? 'గేటెడ్ లగ్జరీ విల్లా' : 'Luxury Gated Villa'}
                   </h3>
-                  <p className="text-xs text-slate-600 mt-1">
+                  <p className="text-xs text-[#8B624C] mt-1.5 leading-relaxed">
                     {isTe
                       ? 'వ్యక్తిగత స్థలం, తోట మరియు క్లబ్‌హౌస్ సదుపాయాలతో కూడిన ట్రిప్లెక్స్ లేదా డ్యూప్లెక్స్ విల్లా'
                       : 'Independent duplex / triplex villa with private plot, lawn, and community amenities'}
@@ -681,10 +693,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         {currentStep.id === 'basic' && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
                 {sfDict.basicInfo.heading}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-[#8B624C]">
                 {sfDict.basicInfo.subheading}
               </p>
             </div>
@@ -692,7 +704,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             <div className="space-y-4">
               {/* Title */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.basicInfo.titleLabel} *
                 </label>
                 <input
@@ -700,8 +712,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.title}
                   onChange={(e) => updateField('title', e.target.value)}
                   placeholder={sfDict.basicInfo.titlePlaceholder}
-                  className={`w-full h-12 px-3.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                    errors.title ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                  className={`w-full h-12 px-3.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                    errors.title ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                   }`}
                 />
                 {errors.title && (
@@ -714,7 +726,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.basicInfo.descLabel} *
                 </label>
                 <textarea
@@ -722,8 +734,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.description}
                   onChange={(e) => updateField('description', e.target.value)}
                   placeholder={sfDict.basicInfo.descPlaceholder}
-                  className={`w-full p-3.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                    errors.description ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                  className={`w-full p-3.5 rounded-xl border text-sm transition-all focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                    errors.description ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                   }`}
                 />
                 {errors.description && (
@@ -736,7 +748,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* Zone */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.basicInfo.zoneLabel}
                 </label>
                 <input
@@ -744,7 +756,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.zone}
                   onChange={(e) => updateField('zone', e.target.value)}
                   placeholder={sfDict.basicInfo.zonePlaceholder}
-                  className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                 />
               </div>
             </div>
@@ -755,10 +767,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         {currentStep.id === 'location' && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
                 {sfDict.location.heading}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-[#8B624C]">
                 {sfDict.location.subheading}
               </p>
             </div>
@@ -766,7 +778,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* District */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.location.districtLabel} *
                 </label>
                 <input
@@ -774,8 +786,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.district}
                   onChange={(e) => updateField('district', e.target.value)}
                   placeholder={sfDict.location.districtPlaceholder}
-                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                    errors.district ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                    errors.district ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                   }`}
                 />
                 {errors.district && (
@@ -785,7 +797,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* Mandal */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.location.mandalLabel} *
                 </label>
                 <input
@@ -793,8 +805,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.mandal}
                   onChange={(e) => updateField('mandal', e.target.value)}
                   placeholder={sfDict.location.mandalPlaceholder}
-                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                    errors.mandal ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                    errors.mandal ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                   }`}
                 />
                 {errors.mandal && (
@@ -804,7 +816,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* Village */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.location.villageLabel} *
                 </label>
                 <input
@@ -812,8 +824,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.village}
                   onChange={(e) => updateField('village', e.target.value)}
                   placeholder={sfDict.location.villagePlaceholder}
-                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                    errors.village ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                    errors.village ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                   }`}
                 />
                 {errors.village && (
@@ -823,7 +835,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* ORR Distance */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.location.orrDistanceLabel} *
                 </label>
                 <input
@@ -832,8 +844,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.distanceFromOrrKm}
                   onChange={(e) => updateField('distanceFromOrrKm', e.target.value)}
                   placeholder={sfDict.location.orrDistancePlaceholder}
-                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 font-mono ${
-                    errors.distanceFromOrrKm ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] font-mono ${
+                    errors.distanceFromOrrKm ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                   }`}
                 />
                 {errors.distanceFromOrrKm && (
@@ -843,7 +855,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* Landmark */}
               <div className="sm:col-span-2">
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.location.landmarkLabel}
                 </label>
                 <input
@@ -851,28 +863,28 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.landmark}
                   onChange={(e) => updateField('landmark', e.target.value)}
                   placeholder={sfDict.location.landmarkPlaceholder}
-                  className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                 />
               </div>
             </div>
 
             {/* Interactive Plot / Land Boundary Demarcation Tool */}
-            <div className="pt-4 border-t border-slate-200 space-y-2.5">
+            <div className="pt-4 border-t border-[#E2CFB6] space-y-2.5">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900 flex items-center gap-1.5">
-                    <Compass className="w-4 h-4 text-emerald-700" />
+                  <h3 className="text-sm font-serif font-medium text-[#201512] flex items-center gap-1.5">
+                    <Compass className="w-4 h-4 text-[#C79A6B]" />
                     <span>{isTe ? 'భూమి / ప్లాట్ సరిహద్దు డ్రాయింగ్ టూల్ (మ్యాప్)' : 'Interactive Plot Boundary Demarcation'}</span>
                   </h3>
-                  <p className="text-xs text-slate-500">
+                  <p className="text-xs text-[#8B624C]">
                     {isTe
                       ? 'శాటిలైట్ మ్యాప్‌పై భూమి సరిహద్దు మూలలను గుర్తించండి. వైశాల్యం ఆటోమేటిక్‌గా లెక్కించబడుతుంది.'
                       : 'Plot parcel corners on high-definition satellite imagery. Area is automatically calculated.'}
                   </p>
                 </div>
                 {formData.boundaryCoordinates && formData.boundaryCoordinates.length >= 3 && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 text-xs font-bold border border-emerald-200 self-start sm:self-auto shadow-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F0E8] text-[#5A382B] text-xs font-semibold border border-[#E2CFB6] self-start sm:self-auto shadow-xs">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C79A6B]" />
                     <span>
                       {formData.boundaryCoordinates.length} {isTe ? 'సరిహద్దు బిందువులు' : 'Corners Demarcated'}
                     </span>
@@ -911,14 +923,14 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         {currentStep.id === 'details' && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
                 {formData.propertyType === 'LAND'
                   ? sfDict.details.headingLand
                   : formData.propertyType === 'VILLA'
                   ? (isTe ? 'విల్లా వివరాలు & స్పెసిఫికేషన్లు' : 'Villa Details & Specifications')
                   : sfDict.details.headingFlat}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-[#8B624C]">
                 {sfDict.details.subheading}
               </p>
             </div>
@@ -928,7 +940,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.totalAcresLabel} *
                     </label>
                     <input
@@ -937,12 +949,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.totalAcres}
                       onChange={(e) => updateField('totalAcres', e.target.value)}
                       placeholder="e.g. 2.5"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.guntasLabel}
                     </label>
                     <input
@@ -950,12 +962,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.guntas}
                       onChange={(e) => updateField('guntas', e.target.value)}
                       placeholder="0-39"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.sqYardsLabel}
                     </label>
                     <input
@@ -963,7 +975,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.sqYards}
                       onChange={(e) => updateField('sqYards', e.target.value)}
                       placeholder="e.g. 300"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     />
                   </div>
                 </div>
@@ -975,7 +987,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   {/* Survey Numbers */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.surveyNumbersLabel} *
                     </label>
                     <input
@@ -983,8 +995,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.surveyNumbers}
                       onChange={(e) => updateField('surveyNumbers', e.target.value)}
                       placeholder={sfDict.details.surveyPlaceholder}
-                      className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 font-mono ${
-                        errors.surveyNumbers ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] font-mono ${
+                        errors.surveyNumbers ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                       }`}
                     />
                     {errors.surveyNumbers && (
@@ -994,7 +1006,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
                   {/* Road Width */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.roadWidthLabel}
                     </label>
                     <input
@@ -1002,20 +1014,20 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.roadWidthFt}
                       onChange={(e) => updateField('roadWidthFt', e.target.value)}
                       placeholder={sfDict.details.roadWidthPlaceholder}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 font-mono"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] font-mono"
                     />
                   </div>
                 </div>
 
                 {/* Development Level */}
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                     {sfDict.details.developmentLevelLabel}
                   </label>
                   <select
                     value={formData.developmentLevel}
                     onChange={(e) => updateField('developmentLevel', e.target.value as any)}
-                    className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                   >
                     <option value="RAW">{sfDict.details.devRaw}</option>
                     <option value="FENCED">{sfDict.details.devFenced}</option>
@@ -1026,26 +1038,26 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
                 {/* Utilities Checkboxes */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2">
-                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] hover:bg-[#F5F0E8] cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={formData.waterAvailable}
                       onChange={(e) => updateField('waterAvailable', e.target.checked)}
-                      className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                      className="w-4 h-4 text-[#201512] rounded focus:ring-[#C79A6B]"
                     />
-                    <span className="text-xs font-medium text-slate-700">
+                    <span className="text-xs font-medium text-[#5A382B]">
                       {sfDict.details.waterAvailable}
                     </span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] hover:bg-[#F5F0E8] cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={formData.electricityAvailable}
                       onChange={(e) => updateField('electricityAvailable', e.target.checked)}
-                      className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                      className="w-4 h-4 text-[#201512] rounded focus:ring-[#C79A6B]"
                     />
-                    <span className="text-xs font-medium text-slate-700">
+                    <span className="text-xs font-medium text-[#5A382B]">
                       {sfDict.details.electricityAvailable}
                     </span>
                   </label>
@@ -1058,13 +1070,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.bedroomsLabel} *
                     </label>
                     <select
                       value={formData.bedrooms}
                       onChange={(e) => updateField('bedrooms', e.target.value)}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="1">1 BHK</option>
                       <option value="2">2 BHK</option>
@@ -1077,13 +1089,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.bathroomsLabel}
                     </label>
                     <select
                       value={formData.bathrooms}
                       onChange={(e) => updateField('bathrooms', e.target.value)}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="1">1</option>
                       <option value="2">2</option>
@@ -1093,7 +1105,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.sqftLabel} *
                     </label>
                     <input
@@ -1101,8 +1113,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.sqft}
                       onChange={(e) => updateField('sqft', e.target.value)}
                       placeholder="e.g. 1850"
-                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                        errors.sqft ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                        errors.sqft ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                       }`}
                     />
                     {errors.sqft && (
@@ -1113,13 +1125,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.possessionLabel}
                     </label>
                     <select
                       value={formData.possessionStatus}
                       onChange={(e) => updateField('possessionStatus', e.target.value as any)}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="READY_TO_MOVE">{sfDict.details.readyToMove}</option>
                       <option value="UNDER_CONSTRUCTION">{sfDict.details.underConstruction}</option>
@@ -1127,13 +1139,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.furnishingLabel}
                     </label>
                     <select
                       value={formData.furnishingStatus}
                       onChange={(e) => updateField('furnishingStatus', e.target.value as any)}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="UNFURNISHED">{sfDict.details.unfurnished}</option>
                       <option value="SEMI_FURNISHED">{sfDict.details.semiFurnished}</option>
@@ -1143,7 +1155,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                     {sfDict.details.amenitiesLabel}
                   </label>
                   <input
@@ -1151,7 +1163,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     value={formData.amenities}
                     onChange={(e) => updateField('amenities', e.target.value)}
                     placeholder={sfDict.details.amenitiesPlaceholder}
-                    className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                   />
                 </div>
               </div>
@@ -1162,7 +1174,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <div className="space-y-4">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {isTe ? 'ప్లాట్ విస్తీర్ణం (చదరపు గజాలు)' : 'Plot Area (Sq. Yards)'} *
                     </label>
                     <input
@@ -1173,8 +1185,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                         updateField('plotAreaSqYards', e.target.value);
                       }}
                       placeholder="e.g. 350"
-                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                        errors.plotSqYards ? 'border-rose-400 bg-rose-50/30' : 'border-slate-300'
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                        errors.plotSqYards ? 'border-rose-400 bg-rose-50/30' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                       }`}
                     />
                     {errors.plotSqYards && (
@@ -1183,7 +1195,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {isTe ? 'నిర్మిత విస్తీర్ణం (చదరపు అడుగులు)' : 'Built-up Area (Sq. Ft)'} *
                     </label>
                     <input
@@ -1194,8 +1206,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                         updateField('builtUpAreaSqFt', e.target.value);
                       }}
                       placeholder="e.g. 4200"
-                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                        errors.builtUpSqft ? 'border-rose-400 bg-rose-50/30' : 'border-slate-300'
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                        errors.builtUpSqft ? 'border-rose-400 bg-rose-50/30' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                       }`}
                     />
                     {errors.builtUpSqft && (
@@ -1206,13 +1218,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.bedroomsLabel}
                     </label>
                     <select
                       value={formData.bedrooms}
                       onChange={(e) => updateField('bedrooms', e.target.value)}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="3">3 BHK</option>
                       <option value="4">4 BHK</option>
@@ -1222,13 +1234,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.details.bathroomsLabel}
                     </label>
                     <select
                       value={formData.bathrooms}
                       onChange={(e) => updateField('bathrooms', e.target.value)}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="3">3</option>
                       <option value="4">4</option>
@@ -1238,7 +1250,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {isTe ? 'అంతస్తుల నిర్మాణం' : 'Floor Configuration'}
                     </label>
                     <select
@@ -1247,7 +1259,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                         updateField('floorsConfig', e.target.value as any);
                         updateField('floors', e.target.value);
                       }}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="G+1">G+1 Duplex</option>
                       <option value="G+2">G+2 Triplex</option>
@@ -1256,13 +1268,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {isTe ? 'ఫేసింగ్' : 'Facing'}
                     </label>
                     <select
                       value={formData.facing}
                       onChange={(e) => updateField('facing', e.target.value as 'EAST' | 'WEST' | 'NORTH' | 'SOUTH' | '')}
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     >
                       <option value="EAST">{isTe ? 'తూర్పు (East)' : 'East'}</option>
                       <option value="WEST">{isTe ? 'పడమర (West)' : 'West'}</option>
@@ -1274,7 +1286,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {isTe ? 'కమ్యూనిటీ / గేటెడ్ లేఅవుట్ పేరు' : 'Community / Project Name'}
                     </label>
                     <input
@@ -1282,12 +1294,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.communityName}
                       onChange={(e) => updateField('communityName', e.target.value)}
                       placeholder="e.g. Prestige Glenwood, Boulder Hills"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {isTe ? 'కవర్డ్ కార్ పార్కింగ్ సంఖ్య' : 'Covered Car Parking Bays'}
                     </label>
                     <input
@@ -1295,39 +1307,39 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.coveredParking}
                       onChange={(e) => updateField('coveredParking', e.target.value)}
                       placeholder="e.g. 2"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     />
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
-                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] hover:bg-[#F5F0E8] cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={formData.gatedCommunity}
                       onChange={(e) => updateField('gatedCommunity', e.target.checked)}
-                      className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                      className="w-4 h-4 text-[#201512] rounded focus:ring-[#C79A6B]"
                     />
-                    <span className="text-xs font-medium text-slate-700">
+                    <span className="text-xs font-medium text-[#5A382B]">
                       {isTe ? 'గేటెడ్ కమ్యూనిటీ విల్లా (24/7 సెక్యూరిటీ)' : 'Gated Community Villa (24/7 Security)'}
                     </span>
                   </label>
 
-                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] hover:bg-[#F5F0E8] cursor-pointer transition-colors">
                     <input
                       type="checkbox"
                       checked={formData.privateGarden}
                       onChange={(e) => updateField('privateGarden', e.target.checked)}
-                      className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                      className="w-4 h-4 text-[#201512] rounded focus:ring-[#C79A6B]"
                     />
-                    <span className="text-xs font-medium text-slate-700">
+                    <span className="text-xs font-medium text-[#5A382B]">
                       {isTe ? 'సొంత తోట / ప్రైవేట్ గార్డెన్ కలదు' : 'Private Landscaped Garden Available'}
                     </span>
                   </label>
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-slate-700 mb-1">
+                  <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                     {sfDict.details.amenitiesLabel}
                   </label>
                   <input
@@ -1335,7 +1347,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     value={formData.amenities}
                     onChange={(e) => updateField('amenities', e.target.value)}
                     placeholder={isTe ? 'ఉదా. ప్రైవేట్ గార్డెన్, క్లబ్‌హౌస్, స్విమ్మింగ్ పూల్, పవర్ బ్యాకప్' : 'e.g. Private Lawn, Swimming Pool, 100% Power Backup, Clubhouse'}
-                    className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                   />
                 </div>
               </div>
@@ -1347,21 +1359,21 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         {currentStep.id === 'pricing' && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
                 {sfDict.pricing.heading}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-[#8B624C]">
                 {sfDict.pricing.subheading}
               </p>
             </div>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.pricing.totalPriceLabel} *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-sm">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B624C] font-serif font-bold text-base">
                     ₹
                   </span>
                   <input
@@ -1369,8 +1381,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     value={formData.totalPrice}
                     onChange={(e) => updateField('totalPrice', e.target.value)}
                     placeholder={sfDict.pricing.totalPricePlaceholder}
-                    className={`w-full h-12 pl-8 pr-4 rounded-xl border text-base font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                      errors.totalPrice ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                    className={`w-full h-12 pl-8 pr-4 rounded-xl border text-base font-mono font-bold focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                      errors.totalPrice ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512]'
                     }`}
                   />
                 </div>
@@ -1378,7 +1390,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   <p className="text-xs text-rose-600 mt-1">{errors.totalPrice}</p>
                 )}
                 {formData.totalPrice && Number(formData.totalPrice) > 0 && (
-                  <p className="text-xs text-emerald-800 font-semibold mt-1">
+                  <p className="text-xs text-[#5A382B] font-semibold mt-1">
                     Formatted: {formatINR(Number(formData.totalPrice))}
                   </p>
                 )}
@@ -1389,7 +1401,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 {formData.propertyType === 'LAND' ? (
                   <>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                         {sfDict.pricing.pricePerAcreLabel}
                       </label>
                       <input
@@ -1397,11 +1409,11 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                         value={formData.pricePerAcre}
                         onChange={(e) => updateField('pricePerAcre', e.target.value)}
                         placeholder="e.g. 15000000"
-                        className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                        className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                       />
                     </div>
                     <div>
-                      <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                         {sfDict.pricing.pricePerSqYardLabel}
                       </label>
                       <input
@@ -1409,13 +1421,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                         value={formData.pricePerSqYard}
                         onChange={(e) => updateField('pricePerSqYard', e.target.value)}
                         placeholder="e.g. 25000"
-                        className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                        className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                       />
                     </div>
                   </>
                 ) : (
                   <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                    <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                       {sfDict.pricing.pricePerSqftLabel}
                     </label>
                     <input
@@ -1423,29 +1435,29 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       value={formData.pricePerSqft}
                       onChange={(e) => updateField('pricePerSqft', e.target.value)}
                       placeholder="e.g. 6500"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                     />
                   </div>
                 )}
               </div>
 
               {/* Negotiable Checkbox */}
-              <label className="flex items-center gap-2.5 p-3.5 rounded-xl border border-slate-200 bg-slate-50 hover:bg-slate-100/70 cursor-pointer">
+              <label className="flex items-center gap-2.5 p-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] hover:bg-[#F5F0E8] cursor-pointer transition-colors">
                 <input
                   type="checkbox"
                   checked={formData.isNegotiable}
                   onChange={(e) => updateField('isNegotiable', e.target.checked)}
-                  className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                  className="w-4 h-4 text-[#201512] rounded focus:ring-[#C79A6B]"
                 />
-                <span className="text-xs sm:text-sm font-medium text-slate-800">
+                <span className="text-xs sm:text-sm font-medium text-[#3A241C]">
                   {sfDict.pricing.negotiableLabel}
                 </span>
               </label>
 
               {/* Brokerage note */}
-              <div className="bg-amber-50/70 border border-amber-200 rounded-xl p-3 text-xs text-amber-900 flex items-start gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-700 shrink-0 mt-0.5" />
-                <p>{sfDict.pricing.brokerageNote}</p>
+              <div className="bg-[#F5F0E8] border border-[#E2CFB6] rounded-xl p-3.5 text-xs text-[#5A382B] flex items-start gap-2.5">
+                <AlertCircle className="w-4 h-4 text-[#C79A6B] shrink-0 mt-0.5" />
+                <p className="leading-relaxed">{sfDict.pricing.brokerageNote}</p>
               </div>
             </div>
           </div>
@@ -1465,10 +1477,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         {currentStep.id === 'contact' && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
                 {sfDict.contact.heading}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-[#8B624C]">
                 {sfDict.contact.subheading}
               </p>
             </div>
@@ -1476,41 +1488,41 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             <div className="space-y-4">
               {/* Role */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-2">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-2">
                   {sfDict.contact.roleLabel} *
                 </label>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   <button
                     type="button"
                     onClick={() => updateField('sellerRole', 'OWNER')}
-                    className={`p-3.5 rounded-xl border text-xs sm:text-sm font-semibold text-left transition-all tap-target flex items-center justify-between ${
+                    className={`p-3.5 rounded-xl border text-xs sm:text-sm text-left transition-all tap-target flex items-center justify-between ${
                       formData.sellerRole === 'OWNER'
-                        ? 'border-emerald-700 bg-emerald-50 text-emerald-950 font-bold'
-                        : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                        ? 'border-[#201512] bg-[#F5F0E8] text-[#201512] ring-1 ring-[#201512] font-semibold shadow-xs'
+                        : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#5A382B] hover:border-[#8B624C] hover:bg-[#F5F0E8]/50'
                     }`}
                   >
                     <span>{sfDict.contact.roleOwner}</span>
-                    {formData.sellerRole === 'OWNER' && <Check className="w-4 h-4 text-emerald-700" />}
+                    {formData.sellerRole === 'OWNER' && <Check className="w-4 h-4 text-[#C79A6B]" />}
                   </button>
 
                   <button
                     type="button"
                     onClick={() => updateField('sellerRole', 'GPA')}
-                    className={`p-3.5 rounded-xl border text-xs sm:text-sm font-semibold text-left transition-all tap-target flex items-center justify-between ${
+                    className={`p-3.5 rounded-xl border text-xs sm:text-sm text-left transition-all tap-target flex items-center justify-between ${
                       formData.sellerRole === 'GPA'
-                        ? 'border-emerald-700 bg-emerald-50 text-emerald-950 font-bold'
-                        : 'border-slate-300 text-slate-700 hover:bg-slate-50'
+                        ? 'border-[#201512] bg-[#F5F0E8] text-[#201512] ring-1 ring-[#201512] font-semibold shadow-xs'
+                        : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#5A382B] hover:border-[#8B624C] hover:bg-[#F5F0E8]/50'
                     }`}
                   >
                     <span>{sfDict.contact.roleGpa}</span>
-                    {formData.sellerRole === 'GPA' && <Check className="w-4 h-4 text-emerald-700" />}
+                    {formData.sellerRole === 'GPA' && <Check className="w-4 h-4 text-[#C79A6B]" />}
                   </button>
                 </div>
               </div>
 
               {/* Name */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.contact.fullNameLabel} *
                 </label>
                 <input
@@ -1518,8 +1530,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.sellerName}
                   onChange={(e) => updateField('sellerName', e.target.value)}
                   placeholder={sfDict.contact.fullNamePlaceholder}
-                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                    errors.sellerName ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                  className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                    errors.sellerName ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                   }`}
                 />
                 {errors.sellerName && (
@@ -1529,11 +1541,11 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* Phone */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.contact.phoneLabel} *
                 </label>
                 <div className="relative">
-                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 font-mono text-sm">
+                  <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#8B624C] font-mono text-sm">
                     +91
                   </span>
                   <input
@@ -1541,8 +1553,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     value={formData.sellerPhone}
                     onChange={(e) => updateField('sellerPhone', e.target.value)}
                     placeholder={sfDict.contact.phonePlaceholder}
-                    className={`w-full h-12 pl-12 pr-4 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                      errors.sellerPhone ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                    className={`w-full h-12 pl-12 pr-4 rounded-xl border text-sm font-mono focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
+                      errors.sellerPhone ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
                     }`}
                   />
                 </div>
@@ -1553,7 +1565,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
               {/* Email */}
               <div>
-                <label className="block text-xs font-semibold text-slate-700 mb-1">
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
                   {sfDict.contact.emailLabel}
                 </label>
                 <input
@@ -1561,13 +1573,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   value={formData.sellerEmail}
                   onChange={(e) => updateField('sellerEmail', e.target.value)}
                   placeholder={sfDict.contact.emailPlaceholder}
-                  className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                  className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                 />
               </div>
 
               {/* Privacy Notice */}
-              <div className="bg-slate-50 border border-slate-200 rounded-xl p-3.5 text-xs text-slate-600 flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+              <div className="bg-[#F5F0E8] border border-[#E2CFB6] rounded-xl p-3.5 text-xs text-[#5A382B] flex items-start gap-2.5">
+                <ShieldCheck className="w-4 h-4 text-[#C79A6B] shrink-0 mt-0.5" />
                 <span>{sfDict.contact.privacyNotice}</span>
               </div>
             </div>
@@ -1578,10 +1590,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         {currentStep.id === 'review' && (
           <div className="space-y-6">
             <div className="space-y-1">
-              <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
                 {sfDict.review.heading}
               </h2>
-              <p className="text-xs sm:text-sm text-slate-600">
+              <p className="text-xs sm:text-sm text-[#8B624C]">
                 {sfDict.review.subheading}
               </p>
             </div>
@@ -1589,46 +1601,46 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             {/* Structured Summary Cards */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* Card 1: Property overview */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+              <div className="p-4 sm:p-5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8B624C]">
                   {sfDict.review.propertyOverview}
                 </span>
-                <h4 className="text-sm font-bold text-slate-900 line-clamp-1">{formData.title}</h4>
-                <div className="text-xs text-slate-600 space-y-1">
+                <h4 className="font-serif text-base font-medium text-[#201512] line-clamp-1">{formData.title}</h4>
+                <div className="text-xs text-[#5A382B] space-y-1.5">
                   <p>
-                    <span className="font-semibold text-slate-700">Type:</span> {formData.propertyType}
+                    <span className="font-semibold text-[#201512]">Type:</span> {formData.propertyType}
                   </p>
                   <p>
-                    <span className="font-semibold text-slate-700">Zone:</span> {formData.zone}
+                    <span className="font-semibold text-[#201512]">Zone:</span> {formData.zone}
                   </p>
-                  <p className="line-clamp-2 italic text-slate-500">{formData.description}</p>
+                  <p className="line-clamp-2 italic text-[#8B624C]">{formData.description}</p>
                 </div>
               </div>
 
               {/* Card 2: Location */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+              <div className="p-4 sm:p-5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8B624C]">
                   {sfDict.review.locationSummary}
                 </span>
-                <h4 className="text-sm font-bold text-slate-900">
+                <h4 className="font-serif text-base font-medium text-[#201512]">
                   {formData.village}, {formData.mandal}
                 </h4>
-                <div className="text-xs text-slate-600 space-y-1">
+                <div className="text-xs text-[#5A382B] space-y-1.5">
                   <p>
-                    <span className="font-semibold text-slate-700">District:</span> {formData.district}
+                    <span className="font-semibold text-[#201512]">District:</span> {formData.district}
                   </p>
                   <p>
-                    <span className="font-semibold text-slate-700">ORR Distance:</span> {formData.distanceFromOrrKm} km
+                    <span className="font-semibold text-[#201512]">ORR Distance:</span> {formData.distanceFromOrrKm} km
                   </p>
                   {formData.landmark && (
                     <p>
-                      <span className="font-semibold text-slate-700">Landmark:</span> {formData.landmark}
+                      <span className="font-semibold text-[#201512]">Landmark:</span> {formData.landmark}
                     </p>
                   )}
                   {formData.boundaryCoordinates && formData.boundaryCoordinates.length >= 3 && (
-                    <div className="pt-2 mt-1 border-t border-slate-200">
-                      <span className="inline-flex items-center gap-1.5 text-[11px] font-bold text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <div className="pt-2 mt-1 border-t border-[#E2CFB6]">
+                      <span className="inline-flex items-center gap-1.5 text-[11px] font-semibold text-[#5A382B] bg-[#F5F0E8] px-2.5 py-1 rounded-lg border border-[#E2CFB6]">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#C79A6B]" />
                         <span>
                           {isTe ? 'సరిహద్దు గుర్తించబడింది:' : 'Boundary Demarcated:'}{' '}
                           {formData.boundaryAreaAcres ? `${formData.boundaryAreaAcres} Ac` : ''}{' '}
@@ -1641,55 +1653,55 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               </div>
 
               {/* Card 3: Specs & Pricing */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+              <div className="p-4 sm:p-5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8B624C]">
                   {sfDict.review.pricingSummary}
                 </span>
-                <div className="text-lg font-extrabold text-slate-900">
+                <div className="text-xl font-bold font-serif text-[#201512]">
                   {formData.totalPrice ? formatINR(Number(formData.totalPrice)) : '₹0'}
                 </div>
-                <div className="text-xs text-slate-600 space-y-1">
+                <div className="text-xs text-[#5A382B] space-y-1.5">
                   {formData.propertyType === 'LAND' ? (
                     <p>
-                      <span className="font-semibold text-slate-700">Acreage:</span> {formData.totalAcres} Acres{' '}
+                      <span className="font-semibold text-[#201512]">Acreage:</span> {formData.totalAcres} Acres{' '}
                       {formData.guntas ? `(${formData.guntas} Guntas)` : ''}
                     </p>
                   ) : formData.propertyType === 'VILLA' ? (
                     <p>
-                      <span className="font-semibold text-slate-700">Villa Specs:</span> {formData.configuration || `${formData.bedrooms} BHK`} ({formData.builtUpSqft || formData.builtUpAreaSqFt} sq.ft / {formData.plotSqYards || formData.plotAreaSqYards} sq.yd) - {formData.floorsConfig || formData.floors}
+                      <span className="font-semibold text-[#201512]">Villa Specs:</span> {formData.configuration || `${formData.bedrooms} BHK`} ({formData.builtUpSqft || formData.builtUpAreaSqFt} sq.ft / {formData.plotSqYards || formData.plotAreaSqYards} sq.yd) - {formData.floorsConfig || formData.floors}
                     </p>
                   ) : (
                     <p>
-                      <span className="font-semibold text-slate-700">Configuration:</span> {formData.bedrooms} BHK ({formData.sqft} sq.ft)
+                      <span className="font-semibold text-[#201512]">Configuration:</span> {formData.bedrooms} BHK ({formData.sqft} sq.ft)
                     </p>
                   )}
                   <p>
-                    <span className="font-semibold text-slate-700">Negotiable:</span>{' '}
+                    <span className="font-semibold text-[#201512]">Negotiable:</span>{' '}
                     {formData.isNegotiable ? 'Yes' : 'Fixed Price'}
                   </p>
                 </div>
               </div>
 
               {/* Card 4: Documents & Contact */}
-              <div className="p-4 rounded-xl border border-slate-200 bg-slate-50/60 space-y-2">
-                <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-800">
+              <div className="p-4 sm:p-5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] space-y-2">
+                <span className="text-[11px] font-semibold uppercase tracking-[0.18em] text-[#8B624C]">
                   {sfDict.review.docsSummary}
                 </span>
                 <div className="flex items-center gap-2">
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-100 text-emerald-900 font-bold text-xs">
-                    <ShieldCheck className="w-4 h-4 text-emerald-700" />
+                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F0E8] text-[#5A382B] font-semibold text-xs border border-[#E2CFB6]">
+                    <ShieldCheck className="w-4 h-4 text-[#C79A6B]" />
                     <span>{uploadedDocsCount} of 13 Uploaded</span>
                   </span>
                 </div>
-                <div className="text-xs text-slate-600 pt-1 space-y-1">
+                <div className="text-xs text-[#5A382B] pt-1 space-y-1.5">
                   <p>
-                    <span className="font-semibold text-slate-700">Owner Name:</span> {formData.sellerName}
+                    <span className="font-semibold text-[#201512]">Owner Name:</span> {formData.sellerName}
                   </p>
                   <p>
-                    <span className="font-semibold text-slate-700">Contact:</span> +91 {formData.sellerPhone}
+                    <span className="font-semibold text-[#201512]">Contact:</span> +91 {formData.sellerPhone}
                   </p>
                   <p>
-                    <span className="font-semibold text-slate-700">Role:</span> {formData.sellerRole}
+                    <span className="font-semibold text-[#201512]">Role:</span> {formData.sellerRole}
                   </p>
                 </div>
               </div>
@@ -1697,14 +1709,14 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
             {/* Certify Checkbox */}
             <div className="pt-2">
-              <label className="flex items-start gap-3 p-4 rounded-xl border border-emerald-200 bg-emerald-50/40 cursor-pointer">
+              <label className="flex items-start gap-3 p-4 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] hover:bg-[#F5F0E8]/60 cursor-pointer transition-colors">
                 <input
                   type="checkbox"
                   checked={formData.agreedToTerms}
                   onChange={(e) => updateField('agreedToTerms', e.target.checked)}
-                  className="w-5 h-5 text-emerald-800 rounded focus:ring-emerald-700 shrink-0 mt-0.5"
+                  className="w-4 h-4 text-[#201512] rounded focus:ring-[#C79A6B] shrink-0 mt-0.5"
                 />
-                <span className="text-xs sm:text-sm text-slate-800 font-medium leading-relaxed">
+                <span className="text-xs sm:text-sm text-[#3A241C] font-normal leading-relaxed">
                   {sfDict.review.certifyTerms}
                 </span>
               </label>
@@ -1724,7 +1736,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   <span className="font-bold block">
                     {isTe ? 'సమర్పణ విఫలమైంది' : 'Submission Failed'}
                   </span>
-                  <span className="text-slate-700">{submitError}</span>
+                  <span className="text-[#3A241C]">{submitError}</span>
                 </div>
               </div>
             )}
@@ -1740,14 +1752,14 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         )}
 
         {/* Navigation Actions Footer */}
-        <div className="pt-4 border-t border-slate-100 flex items-center justify-between gap-3">
+        <div className="pt-6 border-t border-[#E2CFB6] flex items-center justify-between gap-3">
           {currentStepIndex > 0 ? (
             <button
               type="button"
               onClick={handleBack}
-              className="inline-flex items-center gap-2 px-4 py-2.5 rounded-xl border border-slate-300 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-semibold transition-colors tap-target"
+              className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-[#E2CFB6] hover:border-[#8B624C] hover:bg-[#F5F0E8] text-[#5A382B] text-xs sm:text-sm font-medium tracking-wide uppercase transition-all duration-200 tap-target"
             >
-              <ArrowLeft className="w-4 h-4" />
+              <ArrowLeft className="w-4 h-4 text-[#8B624C]" />
               <span>{sfDict.navigation.back}</span>
             </button>
           ) : (
@@ -1758,18 +1770,18 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             <button
               type="button"
               onClick={handleNext}
-              className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-800 hover:bg-emerald-700 text-white text-xs sm:text-sm font-bold shadow-md transition-all tap-target active:scale-[0.98]"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-[#201512] hover:bg-[#3A241C] text-[#F5F0E8] text-xs sm:text-sm font-semibold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target group"
             >
               <span>{sfDict.navigation.next}</span>
-              <ArrowRight className="w-4 h-4" />
+              <ArrowRight className="w-4 h-4 text-[#C79A6B] transition-transform duration-300 group-hover:translate-x-1" />
             </button>
           ) : (
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2 px-7 py-3.5 rounded-xl bg-emerald-800 hover:bg-emerald-700 disabled:bg-emerald-900/60 text-white text-xs sm:text-sm font-bold shadow-lg transition-all tap-target active:scale-[0.98]"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#201512] hover:bg-[#3A241C] disabled:bg-[#3A241C]/60 text-[#F5F0E8] text-xs sm:text-sm font-semibold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target"
             >
-              <ShieldCheck className="w-4 h-4 text-emerald-200" />
+              <ShieldCheck className="w-4 h-4 text-[#C79A6B]" />
               <span>{isSubmitting ? sfDict.review.submitting : sfDict.review.submitButton}</span>
             </button>
           )}

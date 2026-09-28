@@ -267,22 +267,22 @@ export default function DocumentChecklistUploader({
   return (
     <div className={`space-y-6 ${className}`}>
       {/* Header & Progress Summary */}
-      <div className="bg-emerald-950 text-white rounded-2xl p-5 sm:p-6 border border-emerald-800 shadow-md">
+      <div className="bg-[#201512] text-[#F5F0E8] rounded-2xl p-5 sm:p-6 border border-[#3A241C] shadow-sm">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div className="flex items-start gap-3.5">
-            <div className="w-12 h-12 rounded-xl bg-emerald-800 flex items-center justify-center shrink-0">
-              <ShieldCheck className="w-6 h-6 text-emerald-300" />
+            <div className="w-12 h-12 rounded-xl bg-[#2A1D18] border border-[#C79A6B]/30 flex items-center justify-center shrink-0">
+              <ShieldCheck className="w-6 h-6 text-[#C79A6B]" />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <h3 className="text-lg font-bold text-white tracking-wide">
+                <h3 className="font-serif text-lg sm:text-xl font-normal text-[#FAF8F3] tracking-wide">
                   {uploaderDict.heading}
                 </h3>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-800 text-[11px] font-bold text-emerald-200">
+                <span className="px-2.5 py-0.5 rounded-full bg-[#3A241C] text-[11px] font-semibold text-[#C79A6B] border border-[#C79A6B]/30">
                   {progressPercent}% Complete
                 </span>
               </div>
-              <p className="text-xs sm:text-sm text-emerald-200 mt-1 max-w-xl">
+              <p className="text-xs sm:text-sm text-[#E2CFB6]/80 mt-1 max-w-xl font-light leading-relaxed">
                 {uploaderDict.subheading}
               </p>
             </div>
@@ -292,17 +292,17 @@ export default function DocumentChecklistUploader({
           <button
             type="button"
             onClick={handlePrepopulateMockDocs}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-800/80 hover:bg-emerald-700 text-emerald-100 text-xs font-semibold border border-emerald-600/40 transition-colors tap-target"
+            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#3A241C] hover:bg-[#5A382B] text-[#E2CFB6] text-xs font-medium border border-[#C79A6B]/30 transition-colors tap-target"
             title="Pre-populate with sample documents for testing"
           >
-            <Sparkles className="w-3.5 h-3.5 text-amber-300" />
+            <Sparkles className="w-3.5 h-3.5 text-[#C79A6B]" />
             <span>{isTe ? 'నమూనా డాక్యుమెంట్లను నింపండి' : 'Pre-fill Sample Pack'}</span>
           </button>
         </div>
 
         {/* Progress bar */}
-        <div className="mt-4 pt-4 border-t border-emerald-900/60">
-          <div className="flex items-center justify-between text-xs text-emerald-200 mb-1.5 font-medium">
+        <div className="mt-4 pt-4 border-t border-[#3A241C]">
+          <div className="flex items-center justify-between text-xs text-[#E2CFB6]/80 mb-1.5 font-medium">
             <span>
               {uploaderDict.docsUploadedCount
                 .replace('{uploaded}', uploadedCount.toString())
@@ -310,9 +310,9 @@ export default function DocumentChecklistUploader({
             </span>
             <span>{totalDocs - uploadedCount} remaining</span>
           </div>
-          <div className="w-full h-2.5 bg-emerald-900 rounded-full overflow-hidden">
+          <div className="w-full h-2 bg-[#3A241C] rounded-full overflow-hidden">
             <div
-              className="h-full bg-gradient-to-r from-emerald-400 to-emerald-300 transition-all duration-300 rounded-full"
+              className="h-full bg-gradient-to-r from-[#C79A6B] via-[#E2CFB6] to-[#C79A6B] transition-all duration-300 rounded-full"
               style={{ width: `${progressPercent}%` }}
             />
           </div>
@@ -320,8 +320,8 @@ export default function DocumentChecklistUploader({
       </div>
 
       {/* Trust notice box */}
-      <div className="bg-slate-100/90 border border-slate-200 rounded-xl p-3.5 flex items-start gap-3 text-xs text-slate-700">
-        <Lock className="w-4 h-4 text-emerald-700 shrink-0 mt-0.5" />
+      <div className="bg-[#FAF8F3] border border-[#E2CFB6] rounded-xl p-3.5 flex items-start gap-3 text-xs text-[#5A382B]">
+        <Lock className="w-4 h-4 text-[#8B624C] shrink-0 mt-0.5" />
         <p className="leading-relaxed">
           {uploaderDict.trustNotice}
         </p>
@@ -348,12 +348,12 @@ export default function DocumentChecklistUploader({
           return (
             <div
               key={doc.id}
-              className={`p-4 rounded-xl border transition-all duration-200 bg-white ${
+              className={`p-4 rounded-xl border transition-all duration-200 ${
                 isUploaded
-                  ? 'border-emerald-200 bg-emerald-50/20 shadow-xs'
+                  ? 'border-emerald-300/70 bg-[#FAF8F5] shadow-xs'
                   : isFailed
                   ? 'border-rose-200 bg-rose-50/30'
-                  : 'border-slate-200 hover:border-slate-300'
+                  : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:shadow-xs'
               }`}
             >
               {/* Hidden file input */}
@@ -382,7 +382,7 @@ export default function DocumentChecklistUploader({
                         ? 'bg-emerald-100 text-emerald-800'
                         : isFailed
                         ? 'bg-rose-100 text-rose-800'
-                        : 'bg-slate-100 text-slate-700'
+                        : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#5A382B]'
                     }`}
                   >
                     {doc.id}
@@ -390,35 +390,35 @@ export default function DocumentChecklistUploader({
 
                   <div className="min-w-0">
                     <div className="flex flex-wrap items-center gap-2">
-                      <h4 className="text-sm font-bold text-slate-900 truncate">
+                      <h4 className="font-serif text-sm sm:text-base font-medium text-[#201512] truncate">
                         {isTe ? doc.nameTe : doc.nameEn}
                       </h4>
 
                       {/* Badges */}
                       {isOptional ? (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#F5F0E8] text-[#8B624C] border border-[#E2CFB6]">
                           {uploaderDict.optionalBadge}
                         </span>
                       ) : (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-bold bg-amber-50 text-amber-800 border border-amber-200">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-semibold bg-[#FAF8F3] text-[#5A382B] border border-[#E2CFB6]">
                           {uploaderDict.mandatoryBadge}
                         </span>
                       )}
 
                       {isLandOnly && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-emerald-50 text-emerald-800 border border-emerald-200">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#F5F0E8] text-[#5A382B] border border-[#E2CFB6]">
                           {uploaderDict.landSpecificBadge}
                         </span>
                       )}
 
                       {isFlatOnly && (
-                        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-blue-50 text-blue-800 border border-blue-200">
+                        <span className="px-2 py-0.5 rounded-md text-[10px] font-medium bg-[#F5F0E8] text-[#5A382B] border border-[#E2CFB6]">
                           {uploaderDict.flatSpecificBadge}
                         </span>
                       )}
                     </div>
 
-                    <p className="text-xs text-slate-500 mt-0.5 line-clamp-1">
+                    <p className="text-xs text-[#8B624C] mt-0.5 line-clamp-1">
                       {isTe ? doc.descTe : doc.descEn}
                     </p>
 
@@ -433,14 +433,14 @@ export default function DocumentChecklistUploader({
                     {/* Uploaded File summary or progress */}
                     {isUploading && (
                       <div className="mt-2 space-y-1">
-                        <div className="flex items-center justify-between text-[11px] text-blue-700 font-semibold">
+                        <div className="flex items-center justify-between text-[11px] text-[#8B624C] font-semibold">
                           <span>{uploaderDict.statusUploading}</span>
                           <span>{docState.uploadProgress || 45}%</span>
                         </div>
                         {/* Full-width progress bar on all screen sizes */}
-                        <div className="w-full h-1.5 bg-blue-100 rounded-full overflow-hidden">
+                        <div className="w-full h-1.5 bg-[#E2CFB6] rounded-full overflow-hidden">
                           <div
-                            className="h-full bg-blue-600 transition-all duration-200"
+                            className="h-full bg-[#C79A6B] transition-all duration-200"
                             style={{ width: `${docState.uploadProgress || 45}%` }}
                           />
                         </div>
@@ -448,19 +448,19 @@ export default function DocumentChecklistUploader({
                     )}
 
                     {isUploaded && docState.fileName && (
-                      <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-emerald-800">
-                        <span className="inline-flex items-center gap-1 font-semibold min-w-0">
+                      <div className="mt-1.5 flex flex-wrap items-center gap-2 text-xs text-[#201512]">
+                        <span className="inline-flex items-center gap-1 font-semibold min-w-0 text-emerald-800">
                           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                           <span className="truncate max-w-[160px] sm:max-w-xs">{docState.fileName}</span>
                         </span>
-                        <span className="text-slate-400">•</span>
-                        <span className="text-slate-500 font-mono text-[11px]">
+                        <span className="text-[#8B624C]/50">•</span>
+                        <span className="text-[#8B624C] font-mono text-[11px]">
                           {formatFileSize(docState.fileSize)}
                         </span>
                         {docState.uploadedAt && (
                           <>
-                            <span className="text-slate-400">•</span>
-                            <span className="text-slate-500 text-[11px]">
+                            <span className="text-[#8B624C]/50">•</span>
+                            <span className="text-[#8B624C] text-[11px]">
                               {docState.uploadedAt}
                             </span>
                           </>
@@ -476,9 +476,9 @@ export default function DocumentChecklistUploader({
                     <button
                       type="button"
                       onClick={() => handleTriggerFileInput(doc.key)}
-                      className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-emerald-800 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors tap-target"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg bg-[#201512] hover:bg-[#3A241C] text-[#F5F0E8] text-xs font-semibold tracking-wider uppercase shadow-xs transition-colors tap-target"
                     >
-                      <Upload className="w-3.5 h-3.5" />
+                      <Upload className="w-3.5 h-3.5 text-[#C79A6B]" />
                       <span>{uploaderDict.btnChooseFile}</span>
                     </button>
                   )}
@@ -503,7 +503,7 @@ export default function DocumentChecklistUploader({
                       <button
                         type="button"
                         onClick={() => handleRemove(doc.key)}
-                        className="p-2 rounded-lg text-slate-400 hover:text-rose-700 hover:bg-slate-100 transition-colors tap-target flex items-center justify-center"
+                        className="p-2 rounded-lg text-[#8B624C] hover:text-rose-700 hover:bg-rose-50 transition-colors tap-target flex items-center justify-center"
                         title={uploaderDict.btnRemove}
                         aria-label={uploaderDict.btnRemove}
                       >
@@ -522,7 +522,7 @@ export default function DocumentChecklistUploader({
                       <button
                         type="button"
                         onClick={() => handleTriggerFileInput(doc.key)}
-                        className="p-2 rounded-lg text-slate-500 hover:text-slate-900 hover:bg-slate-100 transition-colors tap-target flex items-center justify-center"
+                        className="p-2 rounded-lg text-[#8B624C] hover:text-[#201512] hover:bg-[#F5F0E8] transition-colors tap-target flex items-center justify-center"
                         title={uploaderDict.btnReplace}
                         aria-label={uploaderDict.btnReplace}
                       >
@@ -548,7 +548,7 @@ export default function DocumentChecklistUploader({
       </div>
 
       <div className="text-center pt-2">
-        <p className="text-xs text-slate-500">
+        <p className="text-xs text-[#8B624C]">
           {uploaderDict.supportedFormats}
         </p>
       </div>
