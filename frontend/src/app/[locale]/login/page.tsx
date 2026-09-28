@@ -14,13 +14,8 @@ import {
   AlertCircle,
   Eye,
   EyeOff,
-  Building2,
   FileCheck2,
   Landmark,
-  Sparkles,
-  HelpCircle,
-  Briefcase,
-  ChevronRight,
 } from 'lucide-react';
 import { isValidLocale, Locale, getDictionary } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
@@ -51,8 +46,8 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
   // Login form state
-  const [loginIdentifier, setLoginIdentifier] = useState('9848011223');
-  const [loginPassword, setLoginPassword] = useState('Seller@1234');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
 
   // Register form state (Sellers)
   const [regName, setRegName] = useState('');
@@ -61,14 +56,6 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
   const [regWhatsapp, setRegWhatsapp] = useState('');
   const [sameAsPhone, setSameAsPhone] = useState(true);
   const [regPassword, setRegPassword] = useState('');
-
-  const isStaffIdentifier = loginIdentifier.toLowerCase().includes('@telanganarealty.in');
-
-  const fillDemoSeller = () => {
-    setLoginIdentifier('9848011223');
-    setLoginPassword('Seller@1234');
-    setErrorMessage(null);
-  };
 
   const handleRoleRedirect = (role: UserRole) => {
     if (redirectUrl && redirectUrl.startsWith('/dashboard/seller')) {
@@ -298,21 +285,16 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
                     required
                     value={loginIdentifier}
                     onChange={(e) => setLoginIdentifier(e.target.value)}
-                    placeholder="+91 98480 11223"
+                    placeholder={isTe ? 'మొబైల్ నంబర్ లేదా ఈమెయిల్' : 'Phone number or email'}
                     className="w-full pl-10 pr-3 py-2.5 border border-slate-300 rounded-xl text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
                 </div>
               </div>
 
               <div>
-                <div className="flex items-center justify-between mb-1.5">
-                  <label className="block text-xs font-semibold text-slate-700">
-                    {isTe ? 'పాస్‌వర్డ్' : 'Password'}
-                  </label>
-                  <span className="text-[11px] text-slate-400">
-                    {isTe ? 'లేదా OTP' : 'or Demo Password'}
-                  </span>
-                </div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1.5">
+                  {isTe ? 'పాస్‌వర్డ్' : 'Password'}
+                </label>
                 <div className="relative">
                   <Lock className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
                   <input
@@ -361,7 +343,7 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
                     required
                     value={regName}
                     onChange={(e) => setRegName(e.target.value)}
-                    placeholder="e.g. K. Venkateshwara Rao"
+                    placeholder={isTe ? 'ఉదా. రమేష్ కుమార్' : 'e.g. Ramesh Kumar'}
                     className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
                 </div>
@@ -378,7 +360,7 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
                     required
                     value={regPhone}
                     onChange={(e) => setRegPhone(e.target.value)}
-                    placeholder="98480 11223"
+                    placeholder={isTe ? '10 అంకెల మొబైల్ నంబర్' : '10-digit mobile number'}
                     className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700 font-mono"
                   />
                 </div>
@@ -394,7 +376,7 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
                     type="email"
                     value={regEmail}
                     onChange={(e) => setRegEmail(e.target.value)}
-                    placeholder="kvrao@gmail.com"
+                    placeholder="seller@example.com"
                     className="w-full pl-9 pr-3 py-2 border border-slate-300 rounded-xl text-sm text-slate-900 focus:outline-none focus:ring-2 focus:ring-emerald-700"
                   />
                 </div>
@@ -439,22 +421,6 @@ function PublicLoginFormContent({ params }: LoginPageProps) {
               </button>
             </form>
           )}
-
-          {/* Quick Demo Landowner Fill */}
-          <div className="pt-4 border-t border-slate-100 flex items-center justify-between">
-            <span className="text-[11px] text-slate-400 flex items-center gap-1">
-              <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
-              <span>{isTe ? 'డెమో సెల్లర్ పరీక్ష' : 'Demo Seller Testing'}</span>
-            </span>
-            <button
-              type="button"
-              onClick={fillDemoSeller}
-              className="text-xs font-semibold text-emerald-800 hover:underline inline-flex items-center gap-1"
-            >
-              <Building2 className="w-3.5 h-3.5 text-emerald-700" />
-              <span>Fill Landowner Rao (+91 98480 11223)</span>
-            </button>
-          </div>
         </div>
 
         {/* Legal Trust Footer */}

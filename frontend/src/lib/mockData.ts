@@ -1,3 +1,5 @@
+import { AdminPropertyDetails } from '@/types/adminDetails';
+
 export type PropertyType = 'LAND' | 'FLAT' | 'VILLA';
 export type PropertyStatus = 'DRAFT' | 'UNDER_REVIEW' | 'VERIFIED' | 'LIVE' | 'SOLD' | 'OFF_MARKET';
 export type ServiceTier = 'TIER_1' | 'TIER_2' | 'TIER_3';
@@ -106,6 +108,7 @@ export interface MockProperty {
   tenureMonths?: number;
   promotedBy?: string;
   reraNumber?: string;
+  adminDetails?: AdminPropertyDetails;
 }
 
 export const MOCK_PROPERTIES: MockProperty[] = [
@@ -156,6 +159,49 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     isOrrCorridor: true,
     hmdaApproved: true,
     reraApproved: true,
+    adminDetails: {
+      projectDescription: 'Premium high-rise tower curated directly by TRH Desk. Structural inspection and title chain vetted for 30 consecutive revenue years. Prime residential corridor with immediate connectivity to Neopolis SEZ.',
+      highlights: [
+        '30-year unencumbered title verified by senior High Court advocate',
+        'Adjacent to 100-foot master plan connecting road',
+        'Ready for immediate registration and title deed execution',
+        '100% Vastu compliant north-east entrance',
+      ],
+      amenities: [
+        '24/7 Multi-tier Security & CCTV Surveillance',
+        '100% DG Power Backup for Apartment & Common Areas',
+        'Clubhouse (50,000 sq.ft) with Infinity Pool',
+        'Dedicated Covered Car Parking (2 Bays)',
+        'EV Charging Bay Provision',
+      ],
+      locationAdvantages: [
+        '1.2 km from ORR Exit 1 (Kokapet)',
+        '5 minutes from Neopolis Financial Corridor',
+        '15 minutes to Financial District & Gachibowli',
+      ],
+      nearbyLandmarks: [
+        'Rockwell International School — 2.5 km',
+        'Continental Hospital — 4.8 km',
+        'Inorbit Mall Cyberabad — 9 km',
+      ],
+      additionalSpecifications: [
+        { id: 'spec-1', label: 'Facing', value: 'East Facing Corner' },
+        { id: 'spec-2', label: 'Power Backup', value: '100% Full DG Backup' },
+        { id: 'spec-3', label: 'Water Source', value: 'HMWS&SB (Manjeera) + 2 High-Yield Borewells' },
+        { id: 'spec-4', label: 'Flooring', value: 'Italian Marble in Living/Dining, Wooden in Master' },
+      ],
+      specialFeatures: [
+        'Corner apartment with unobstructed valley view',
+        'Three-sided ventilation with ample natural lighting',
+        'Premium Kohler & Grohe sanitary fittings',
+      ],
+      pricingNotes: 'Quoted base price excludes registration fees and stamp duty. Home loan pre-approved with SBI, HDFC, and ICICI Bank at competitive rates.',
+      siteVisitInstructions: 'Site visits are scheduled strictly with prior 2-hour notice. TRH Senior Property Advisor will accompany prospective buyers and provide the physical deed docket for verification.',
+      additionalNotes: 'Maintenance charges: ₹3.50 per sq.ft per month payable directly to the resident welfare association.',
+      internalNotes: 'Seller is firm on price; margin for negotiation is max 1.5% for all-cash or quick 15-day settlement. Original sale deed verified at Gandipet Sub-Registrar Office.',
+      updatedAt: '2026-09-24T10:00:00Z',
+      updatedBy: 'Lead Director Siva (Admin)',
+    },
   },
   {
     id: 'PROP-HYD-002',

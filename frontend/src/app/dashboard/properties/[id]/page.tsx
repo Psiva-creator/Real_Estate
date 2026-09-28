@@ -18,11 +18,13 @@ import {
   CalendarDays,
   ShieldCheck,
   FileCheck,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import { getAdminPropertyDetailApi, InternalPropertyDetail, resolveUploadUrl } from '@/lib/api';
 import { formatINR } from '@/lib/formatters';
 import DocumentVerificationReviewer from '@/components/dashboard/DocumentVerificationReviewer';
+import AdminPropertyDetailsCard from '@/components/dashboard/AdminPropertyDetailsCard';
 
 // ─── Status Chip ──────────────────────────────────────────────────────────────
 function StatusChip({ status }: { status: string }) {
@@ -182,12 +184,23 @@ export default function PropertyInternalReviewPage() {
             <span className="font-mono text-emerald-700 font-bold">{property.id}</span>
           </p>
         </div>
-        {/* Doc count */}
-        <div className="shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 bg-slate-50">
-          <ShieldCheck
-            className={`w-4 h-4 ${verified >= total && total > 0 ? 'text-emerald-600' : 'text-amber-500'}`}
-          />
-          {verified}/{total} Docs Verified
+        {/* Actions & Doc count */}
+        <div className="shrink-0 flex items-center gap-2 flex-wrap">
+          <Link
+            href={`/en/properties/${property.id}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:text-emerald-700 transition-colors shadow-sm"
+          >
+            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            View Public Listing
+          </Link>
+          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 bg-slate-50">
+            <ShieldCheck
+              className={`w-4 h-4 ${verified >= total && total > 0 ? 'text-emerald-600' : 'text-amber-500'}`}
+            />
+            {verified}/{total} Docs Verified
+          </div>
         </div>
       </div>
 
@@ -383,6 +396,16 @@ export default function PropertyInternalReviewPage() {
           </SectionCard>
         )}
       </div>
+
+      {/* Admin Added Details (Buyer-Facing Curated Information & Internal Notes) */}
+      <AdminPropertyDetailsCard
+        propertyId={property.id}
+        propertyTitle={property.titleEn}
+        initialDetails={property.adminDetails}
+        onDetailsUpdated={(updated) => {
+          setProperty((prev) => (prev ? { ...prev, adminDetails: updated } : null));
+        }}
+      />
 
       {/* Document Verification Reviewer */}
       <div>

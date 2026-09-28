@@ -18,6 +18,7 @@ import TrustBadge from '@/components/common/TrustBadge';
 import { VERIFIED_13_DOCS } from '@/lib/constants';
 import PropertyGallery from '@/components/properties/PropertyGallery';
 import PropertySpecs from '@/components/properties/PropertySpecs';
+import PropertyAdminCuratedSection from '@/components/properties/PropertyAdminCuratedSection';
 import PropertyLocationMap from '@/components/properties/PropertyLocationMap';
 import PropertyDetailActions from '@/components/properties/PropertyDetailActions';
 
@@ -175,7 +176,14 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
           {/* 3. Detailed Specifications Grid */}
           <PropertySpecs property={property} locale={locale} />
 
-          {/* 4. 13-Document Legal Verification Gate */}
+          {/* 4. Admin Curated & Verified Insights (Buyer-Facing Layer — Zero Internal Notes) */}
+          <PropertyAdminCuratedSection
+            propertyId={property.id}
+            initialDetails={property.adminDetails}
+            locale={locale}
+          />
+
+          {/* 5. 13-Document Legal Verification Gate */}
           <div className="bg-white rounded-2xl p-6 sm:p-8 border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] space-y-6">
             <div className="border-b border-[#E8E2D9] pb-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-3.5">

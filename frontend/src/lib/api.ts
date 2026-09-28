@@ -19,6 +19,8 @@
  */
 
 import { MockProperty, MOCK_PROPERTIES, PropertyType, PropertyStatus, ServiceTier } from './mockData';
+import { AdminPropertyDetails } from '@/types/adminDetails';
+import { loadAdminDetails, persistAdminDetailsLocally } from './adminDetailsStorage';
 
 // ─── Enquiry types ─────────────────────────────────────────────────────────────
 
@@ -233,6 +235,7 @@ export interface BackendProperty {
       isVerified: boolean;
     }>;
   };
+  adminDetails?: AdminPropertyDetails;
 }
 
 export type AdminPropertyItem = BackendProperty;
@@ -361,6 +364,7 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
     tenureMonths: bp.tenureMonths,
     promotedBy: bp.promotedBy,
     reraNumber: bp.reraNumber,
+    adminDetails: bp.adminDetails,
   };
 }
 
@@ -476,14 +480,22 @@ export async function getPropertyById(id: string): Promise<MockProperty | null> 
         return MOCK_PROPERTIES.find((p) => p.id === id) ?? null;
       }
 
-      return transformBackendProperty((data as { property: BackendProperty }).property);
+      const prop = transformBackendProperty((data as { property: BackendProperty }).property);
+      const persisted = loadAdminDetails(id, prop.adminDetails);
+      return persisted ? { ...prop, adminDetails: persisted } : prop;
     } catch (err) {
       logFetchError(`/properties/${id}`, err);
-      return MOCK_PROPERTIES.find((p) => p.id === id) ?? null;
+      const mockProp = MOCK_PROPERTIES.find((p) => p.id === id) ?? null;
+      if (!mockProp) return null;
+      const persisted = loadAdminDetails(id, mockProp.adminDetails);
+      return persisted ? { ...mockProp, adminDetails: persisted } : mockProp;
     }
   }
 
-  return MOCK_PROPERTIES.find((p) => p.id === id) ?? null;
+  const mockProp = MOCK_PROPERTIES.find((p) => p.id === id) ?? null;
+  if (!mockProp) return null;
+  const persisted = loadAdminDetails(id, mockProp.adminDetails);
+  return persisted ? { ...mockProp, adminDetails: persisted } : mockProp;
 }
 
 /**
@@ -1135,6 +1147,7 @@ function mockPropertyToBackend(mp: MockProperty): BackendProperty {
         isVerified: true,
       })),
     },
+    adminDetails: mp.adminDetails,
   };
 }
 
@@ -1288,6 +1301,7 @@ export interface InternalPropertyDetail {
       isVerified: boolean;
     }>;
   };
+  adminDetails?: AdminPropertyDetails;
 }
 
 /**
@@ -1312,10 +1326,17 @@ export async function getAdminPropertyDetailApi(
 
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
+      let detail: InternalPropertyDetail;
       if ((data as { property?: unknown }).property) {
-        return (data as { property: InternalPropertyDetail }).property;
+        detail = (data as { property: InternalPropertyDetail }).property;
+      } else {
+        detail = data as InternalPropertyDetail;
       }
-      return data as InternalPropertyDetail;
+      const persisted = loadAdminDetails(propertyId, detail.adminDetails);
+      if (persisted) {
+        detail.adminDetails = persisted;
+      }
+      return detail;
     }
   } catch (err) {
     console.warn(`[api] Backend /admin/properties/${propertyId} unreachable, using mock detail:`, err);
@@ -1323,8 +1344,10 @@ export async function getAdminPropertyDetailApi(
 
   const found = MOCK_PROPERTIES.find((p) => p.id === propertyId) || MOCK_PROPERTIES[0];
   const bp = mockPropertyToBackend(found);
+  const persisted = loadAdminDetails(propertyId, bp.adminDetails);
   return {
     ...bp,
+    adminDetails: persisted ?? bp.adminDetails,
     seller: {
       id: 'own-001',
       name: 'K. Venkateshwara Rao',
@@ -1333,6 +1356,65 @@ export async function getAdminPropertyDetailApi(
       email: 'kvrao.hyderabad@gmail.com',
       aadharNumber: '4589-1234-5678',
     },
+  };
+}
+
+/**
+ * Save Admin Added Details for a property.
+ * Persists to browser localStorage for immediate reactive UI display,
+ * and calls backend PATCH endpoint if available.
+ */
+export async function saveAdminPropertyDetailsApi(
+  token: string,
+  propertyId: string,
+  details: AdminPropertyDetails
+): Promise<{
+  success: boolean;
+  details: AdminPropertyDetails;
+  persistedLocally: boolean;
+  backendPersisted: boolean;
+}> {
+  // Always persist locally first so state is never lost in UI
+  persistAdminDetailsLocally(propertyId, details);
+
+  // Also update in-memory MOCK_PROPERTIES for current session
+  const mockProp = MOCK_PROPERTIES.find((p) => p.id === propertyId);
+  if (mockProp) {
+    mockProp.adminDetails = details;
+  }
+
+  let backendPersisted = false;
+  if (isRealBackend()) {
+    try {
+      const base = `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/admin-details`;
+      const res = await fetch(base, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ adminDetails: details }),
+      });
+      if (res.ok) {
+        backendPersisted = true;
+      } else {
+        console.warn(
+          `[api] Backend PATCH /properties/${propertyId}/admin-details returned ${res.status}. Data is safely preserved in browser local storage.`
+        );
+      }
+    } catch (err) {
+      console.warn(
+        `[api] Backend unreachable for admin-details. Data is safely preserved in browser local storage:`,
+        err
+      );
+    }
+  }
+
+  return {
+    success: true,
+    details,
+    persistedLocally: true,
+    backendPersisted,
   };
 }
 

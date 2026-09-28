@@ -15,3 +15,6 @@ coverage/
 uploads/
 backend/uploads/
 *.tsbuildinfo
+code-review-graph/
+.agents/
+lighthouse-report.json
