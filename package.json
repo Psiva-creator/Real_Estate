@@ -4,8 +4,8 @@
   "description": "Mediator & brokerage platform for land and flat transactions in Telangana & Hyderabad Metro",
   "private": true,
   "workspaces": [
-    "apps/*",
-    "packages/*"
+    "frontend",
+    "backend"
   ],
   "scripts": {
     "dev": "npm run dev --workspaces",

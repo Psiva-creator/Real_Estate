@@ -1,0 +1,13 @@
+{
+  "villa": "Villa",
+  "plotArea": "Plot Area",
+  "builtUpArea": "Built-up Area",
+  "floors": "Floor Configuration",
+  "floorG1": "G+1 Duplex",
+  "floorG2": "G+2 Triplex",
+  "privateGarden": "Private Garden",
+  "coveredParking": "Covered Parking",
+  "clubhouseAmenities": "Clubhouse Amenities",
+  "possessionStatus": "Possession Status",
+  "readyToMove": "Ready to Move"
+}

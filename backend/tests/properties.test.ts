@@ -15,6 +15,11 @@ describe('Properties Module & Seller Privacy Gate', () => {
     assert.strictEqual(listRes.status, 200);
     assert.ok(listRes.body.properties.length > 0);
 
+    // Verify un-prefixed alias /properties works identically
+    const aliasRes = await request(app).get('/properties');
+    assert.strictEqual(aliasRes.status, 200);
+    assert.strictEqual(aliasRes.body.properties.length, listRes.body.properties.length);
+
     for (const prop of listRes.body.properties) {
       assert.strictEqual(prop.sellerId, undefined, 'sellerId must be stripped from public listings');
       assert.strictEqual(prop.seller, undefined, 'seller object must be stripped from public listings');

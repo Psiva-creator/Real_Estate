@@ -41,12 +41,17 @@ export interface FlatDetails {
 
 export interface VillaDetails {
   plotAreaSqYards?: number;
+  plotSqYards?: number;
   builtUpAreaSqFt?: number;
+  builtUpSqft?: number;
   configuration?: string;
   floors?: string;
+  floorsConfig?: 'G+1' | 'G+2' | 'Triplex' | string;
   facing?: 'EAST' | 'WEST' | 'NORTH' | 'SOUTH' | string;
   communityName?: string;
   gatedCommunity?: boolean;
+  privateGarden?: boolean;
+  coveredParking?: number;
   bedrooms?: number;
   bathrooms?: number;
   amenities?: string[];
@@ -108,6 +113,7 @@ export interface MockProperty {
   tenureMonths?: number;
   promotedBy?: string;
   reraNumber?: string;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   adminDetails?: AdminPropertyDetails;
 }
 
@@ -458,12 +464,17 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     },
     villa: {
       plotAreaSqYards: 350,
+      plotSqYards: 350,
       builtUpAreaSqFt: 4200,
+      builtUpSqft: 4200,
       configuration: '4 BHK Luxury Triplex',
       floors: 'G+2 Floors',
+      floorsConfig: 'G+2',
       facing: 'EAST',
       communityName: 'Tellapur Boulevard Enclave',
       gatedCommunity: true,
+      privateGarden: true,
+      coveredParking: 2,
       bedrooms: 4,
       bathrooms: 5,
       amenities: [
@@ -488,6 +499,57 @@ export const MOCK_PROPERTIES: MockProperty[] = [
   },
   {
     id: 'PROP-HYD-008',
+    title: '2.50 Acre Managed Agro-Farmland in Maheshwaram Growth Belt',
+    titleTe: 'మహేశ్వరం గ్రోత్ కారిడార్‌లో 2.50 ఎకరాల సాగు భూమి / వ్యవసాయ క్షేత్రం',
+    description: 'Clear-title 2.50 acre fertile agricultural land in Mansanpally Village, Maheshwaram. 350 mature Malabar Neem trees, 40 organic fruit trees, automated micro-drip irrigation, and 2 high-yield borewells. 11.5 km from ORR Exit 14 Tukkuguda.',
+    descriptionTe: 'మహేశ్వరం మండలం మాన్సన్‌పల్లిలో 2.50 ఎకరాల సాగు భూమి. 350 మలబార్ వేప చెట్లు, డ్రిప్ ఇరిగేషన్ మరియు 2 బోర్‌వెల్స్ సదుపాయం.',
+    type: 'LAND',
+    status: 'VERIFIED',
+    location: {
+      village: 'Mansanpally',
+      mandal: 'Maheshwaram',
+      district: 'Rangareddy',
+      distanceFromOrrKm: 11.5,
+      zone: 'Agricultural & Conservation',
+      tier: 'TIER_2',
+      landmark: 'Near Maheshwaram Electronic SEZ / Hardware Park',
+      landmarkTe: 'మహేశ్వరం ఎలక్ట్రానిక్ సెజ్ సమీపంలో',
+      latitude: 17.1824,
+      longitude: 78.4356,
+    },
+    pricing: {
+      totalPrice: 31250000, // ₹3.125 Cr
+      pricePerAcre: 12500000,
+      isNegotiable: true,
+    },
+    land: {
+      totalAcres: 2.5,
+      sqYards: 12100,
+      surveyNumbers: ['184/A', '184/AA'],
+      soilType: 'RED',
+      developmentLevel: 'FENCED',
+      roadWidthFt: 30,
+      waterAvailable: true,
+      electricityAvailable: true,
+    },
+    boundaryCoordinates: [
+      { lat: 17.1831, lng: 78.4348 },
+      { lat: 17.1832, lng: 78.4365 },
+      { lat: 17.1818, lng: 78.4364 },
+      { lat: 17.1817, lng: 78.4347 },
+    ],
+    mainImage: 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1000&q=80',
+    galleryImages: [
+      'https://images.unsplash.com/photo-1592417817098-8f3d6910985b?auto=format&fit=crop&w=800&q=80',
+    ],
+    verifiedDocsCount: 13,
+    totalDocsRequired: 13,
+    isFeatured: false,
+    isOrrCorridor: false,
+    dharaniApproved: true,
+  },
+  {
+    id: 'PROP-HYD-009',
     title: 'Contemporary 4 BHK Gated Villa in Mokila Corridor (Sold Archive)',
     titleTe: 'మోకిల కారిడార్‌లో సమకాలీన 4 BHK గేటెడ్ విల్లా (విక్రయించబడినది)',
     description: 'Contemporary 4 BHK villa with high ceilings and private courtyard in an exclusive 50-acre gated villa community. Fully completed and handed over.',
@@ -514,9 +576,12 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     },
     villa: {
       plotAreaSqYards: 300,
+      plotSqYards: 300,
       builtUpAreaSqFt: 3600,
+      builtUpSqft: 3600,
       configuration: '4 BHK Gated Villa',
       floors: 'G+1 Floors',
+      floorsConfig: 'G+1',
       facing: 'NORTH',
       communityName: 'Subishi / Mokila Greens',
       gatedCommunity: true,
@@ -931,5 +996,9 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     totalDocsRequired: 13,
     isFeatured: true,
     isOrrCorridor: true,
+=======
+    isOrrCorridor: false,
+    dharaniApproved: true,
+>>>>>>> origin/main
   },
 ];

@@ -95,15 +95,18 @@ export interface FlatDetails {
 
 export interface VillaDetails {
   plotAreaSqYards?: number;
+  plotSqYards?: number;
   builtUpAreaSqFt?: number;
+  builtUpSqft?: number;
   configuration?: string;
-  floors?: string;
+  floors?: string | number;
   facing?: 'EAST' | 'WEST' | 'NORTH' | 'SOUTH';
   communityName?: string;
   gatedCommunity?: boolean;
   bedrooms?: number;
   bathrooms?: number;
   amenities?: string[];
+  possessionStatus?: string;
 }
 
 export interface PricingDetails {
@@ -145,6 +148,7 @@ export interface Property {
   mainImage: string;
   galleryImages: string[];
   sitePlanImage?: string;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   isFeatured: boolean;
   viewsCount: number;
   documents?: Record<string, DocumentStatus>;

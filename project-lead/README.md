@@ -50,10 +50,11 @@
 project-lead/
 ├── sourcing/
 │   ├── property-intake-template.md  # Standard template for collecting seller data
-│   └── sample-properties/           # Sourced 5-10 real listings data & docs
+│   └── sample-properties/           # 7 Sourced real/realistic listings (Plots, Villas, Flats)
 ├── sprint-tracking/
 │   ├── standup-log.md               # Daily 15-min blocker & progress notes
-│   └── scope-lock.md                # MVP boundary definitions
+│   ├── scope-lock.md                # Scope definitions & Amendment #1 (Villas & Polygons)
+│   └── sprint-work-orders.md        # Cross-functional delegation board for all 5 specialists
 └── contacts/
-    └── seller-crm.md                # Confidential seller/buyer contact log
+    └── seller-crm.md                # Confidential seller/buyer contact log (4 Verified Sellers)
 ```

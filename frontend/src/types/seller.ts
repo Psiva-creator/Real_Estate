@@ -57,11 +57,19 @@ export interface SellerFormData {
   // Villa specific details
   plotAreaSqYards: string;
   builtUpAreaSqFt: string;
+  plotSqYards: string;
+  builtUpSqft: string;
   configuration: string;
   floors: string;
+  floorsConfig: 'G+1' | 'G+2' | 'Triplex';
   facing: 'EAST' | 'WEST' | 'NORTH' | 'SOUTH' | '';
   communityName: string;
   gatedCommunity: boolean;
+  privateGarden: boolean;
+  coveredParking: string;
+
+  // Boundary coordinates
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
 
   // Step 5: Pricing
   totalPrice: string;
@@ -114,11 +122,17 @@ export const INITIAL_SELLER_FORM_DATA: SellerFormData = {
   amenities: '',
   plotAreaSqYards: '',
   builtUpAreaSqFt: '',
+  plotSqYards: '',
+  builtUpSqft: '',
   configuration: '4 BHK Luxury Triplex',
   floors: 'G+2',
+  floorsConfig: 'G+2',
   facing: 'EAST',
   communityName: '',
   gatedCommunity: true,
+  privateGarden: false,
+  coveredParking: '2',
+  boundaryCoordinates: null,
   totalPrice: '',
   pricePerAcre: '',
   pricePerSqft: '',

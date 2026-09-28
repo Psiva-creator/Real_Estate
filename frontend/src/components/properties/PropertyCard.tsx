@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import {
@@ -12,6 +12,7 @@ import {
   CheckCircle2,
   Compass,
   Heart,
+  Sparkles,
 } from 'lucide-react';
 import { Locale } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
@@ -46,6 +47,9 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
       }
       return 'Plot';
     }
+    if (property.type === 'VILLA' && property.villa) {
+      return `${property.villa.bedrooms} BHK (${property.villa.builtUpSqft} sq.ft / ${property.villa.plotSqYards} sq.yd)`;
+    }
     if (property.type === 'FLAT' && property.flat) {
       return `${property.flat.bedrooms} BHK (${property.flat.sqft} sq.ft)`;
     }
@@ -76,7 +80,7 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
   };
 
   return (
-    <div className="group bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] hover:shadow-[0_16px_40px_-8px_rgba(25,21,18,0.09)] hover:border-[#8C653E]/40 transition-all duration-300 flex flex-col overflow-hidden">
+    <div className="group bg-white rounded-2xl border border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.04)] hover:shadow-[0_16px_40px_-8px_rgba(25,21,18,0.09)] hover:border-[#8C653E]/40 transition-all duration-300 flex flex-col overflow-hidden relative">
       {/* Media & Badges */}
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F5F1EA]">
         <Image
@@ -106,7 +110,7 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
                 property.type === 'LAND'
                   ? 'bg-[#8C653E]/90 text-white border border-[#8C653E]/50'
                   : property.type === 'VILLA'
-                  ? 'bg-[#2E3D2F]/90 text-[#FAF8F5] border border-white/20'
+                  ? 'bg-amber-600/90 text-white border border-amber-400/50'
                   : 'bg-[#191512]/90 text-[#FAF8F5] border border-white/20'
               }`}
             >
@@ -183,6 +187,8 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
             <div className="flex items-center gap-1.5 font-medium">
               {property.type === 'LAND' ? (
                 <Layers className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
+              ) : property.type === 'VILLA' ? (
+                <Sparkles className="w-3.5 h-3.5 text-amber-600 shrink-0" />
               ) : (
                 <Home className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
               )}

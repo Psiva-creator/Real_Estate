@@ -130,16 +130,31 @@ function mapPropertyRow(row: any): Property {
       possessionStatus: row.possession_status || undefined,
     } : undefined,
     villa: row.type === 'VILLA' ? {
-      plotAreaSqYards: row.villa_plot_area_sq_yards !== null && row.villa_plot_area_sq_yards !== undefined ? parseFloat(row.villa_plot_area_sq_yards) : undefined,
-      builtUpAreaSqFt: row.villa_built_up_area_sq_ft !== null && row.villa_built_up_area_sq_ft !== undefined ? parseInt(row.villa_built_up_area_sq_ft, 10) : undefined,
+      plotAreaSqYards: row.villa_plot_area_sq_yards !== null && row.villa_plot_area_sq_yards !== undefined
+        ? parseFloat(row.villa_plot_area_sq_yards)
+        : (row.total_acres !== null && row.total_acres !== undefined ? Math.round(parseFloat(row.total_acres) * 4840) : undefined),
+      plotSqYards: row.villa_plot_area_sq_yards !== null && row.villa_plot_area_sq_yards !== undefined
+        ? parseFloat(row.villa_plot_area_sq_yards)
+        : (row.total_acres !== null && row.total_acres !== undefined ? Math.round(parseFloat(row.total_acres) * 4840) : undefined),
+      builtUpAreaSqFt: row.villa_built_up_area_sq_ft !== null && row.villa_built_up_area_sq_ft !== undefined
+        ? parseInt(row.villa_built_up_area_sq_ft, 10)
+        : (row.sqft !== null && row.sqft !== undefined ? parseInt(row.sqft, 10) : undefined),
+      builtUpSqft: row.villa_built_up_area_sq_ft !== null && row.villa_built_up_area_sq_ft !== undefined
+        ? parseInt(row.villa_built_up_area_sq_ft, 10)
+        : (row.sqft !== null && row.sqft !== undefined ? parseInt(row.sqft, 10) : undefined),
       configuration: row.villa_configuration || undefined,
-      floors: row.villa_floors || undefined,
+      floors: row.villa_floors || (row.total_floors !== null && row.total_floors !== undefined ? parseInt(row.total_floors, 10) : undefined),
       facing: row.villa_facing || undefined,
       communityName: row.villa_community_name || undefined,
       gatedCommunity: row.villa_gated_community !== null && row.villa_gated_community !== undefined ? !!row.villa_gated_community : undefined,
-      bedrooms: row.villa_bedrooms !== null && row.villa_bedrooms !== undefined ? parseInt(row.villa_bedrooms, 10) : undefined,
-      bathrooms: row.villa_bathrooms !== null && row.villa_bathrooms !== undefined ? parseInt(row.villa_bathrooms, 10) : undefined,
-      amenities: row.villa_amenities || [],
+      bedrooms: row.villa_bedrooms !== null && row.villa_bedrooms !== undefined
+        ? parseInt(row.villa_bedrooms, 10)
+        : (row.bedrooms !== null && row.bedrooms !== undefined ? parseInt(row.bedrooms, 10) : undefined),
+      bathrooms: row.villa_bathrooms !== null && row.villa_bathrooms !== undefined
+        ? parseInt(row.villa_bathrooms, 10)
+        : (row.bathrooms !== null && row.bathrooms !== undefined ? parseInt(row.bathrooms, 10) : undefined),
+      amenities: (row.villa_amenities && row.villa_amenities.length > 0) ? row.villa_amenities : (row.amenities || []),
+      possessionStatus: row.possession_status || undefined,
     } : undefined,
     pricing: {
       pricePerAcre: row.price_per_acre !== null && row.price_per_acre !== undefined ? parseFloat(row.price_per_acre) : undefined,
@@ -152,6 +167,7 @@ function mapPropertyRow(row: any): Property {
     mainImage: row.main_image,
     galleryImages: row.gallery_images || [],
     sitePlanImage: row.site_plan_image || undefined,
+    boundaryCoordinates: row.boundary_coordinates ?? null,
     isFeatured: !!row.is_featured,
     viewsCount: parseInt(row.views_count || '0', 10),
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),

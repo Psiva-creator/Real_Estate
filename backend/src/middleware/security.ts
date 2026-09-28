@@ -29,8 +29,12 @@ export const MANDATORY_DOCS: Record<'LAND' | 'FLAT' | 'VILLA', DocumentType[]> =
     'SALE_DEED',
     'EC',
     'LINK_DOCUMENTS',
+    'PAHANI',
     'HMDA_DTCP_APPROVAL',
+    'MUTATION',
     'TAX_RECEIPT',
+    'MASTER_PLAN',
+    'GPA',
     'SALE_AGREEMENT',
   ],
 };

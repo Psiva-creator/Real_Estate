@@ -166,8 +166,13 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             newErrors.surveyNumbers = isTe ? 'సర్వే నంబర్లు తప్పనిసరి' : 'Survey number(s) required';
           }
         } else if (formData.propertyType === 'VILLA') {
-          if (!formData.builtUpAreaSqFt.trim() && !formData.plotAreaSqYards.trim()) {
-            newErrors.builtUpAreaSqFt = isTe ? 'విస్తీర్ణం నమోదు చేయండి' : 'Built-up area or plot area required';
+          const plot = (formData.plotSqYards || formData.plotAreaSqYards || '').trim();
+          const builtUp = (formData.builtUpSqft || formData.builtUpAreaSqFt || '').trim();
+          if (!plot || isNaN(Number(plot))) {
+            newErrors.plotSqYards = isTe ? 'ప్లాట్ విస్తీర్ణం తప్పనిసరి' : 'Plot area (sq.yds) required';
+          }
+          if (!builtUp || isNaN(Number(builtUp))) {
+            newErrors.builtUpSqft = isTe ? 'నిర్మాణ విస్తీర్ణం తప్పనిసరి' : 'Built-up sq.ft required';
           }
         } else {
           if (!formData.sqft.trim() || isNaN(Number(formData.sqft))) {
@@ -301,16 +306,24 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               .filter(Boolean)
           : [];
 
+        const plotVal = parseFloat(formData.plotSqYards || formData.plotAreaSqYards) || 300;
+        const builtUpVal = parseFloat(formData.builtUpSqft || formData.builtUpAreaSqFt) || 3000;
+
         villaPayload = {
-          plotAreaSqYards: formData.plotAreaSqYards ? parseFloat(formData.plotAreaSqYards) : 250,
-          builtUpAreaSqFt: formData.builtUpAreaSqFt ? parseFloat(formData.builtUpAreaSqFt) : 3200,
+          plotAreaSqYards: plotVal,
+          plotSqYards: plotVal,
+          builtUpAreaSqFt: builtUpVal,
+          builtUpSqft: builtUpVal,
           configuration: formData.configuration || '4 BHK Triplex',
-          floors: formData.floors || 'G+2',
+          floors: formData.floors || formData.floorsConfig || 'G+2',
+          floorsConfig: formData.floorsConfig || 'G+2',
           facing: formData.facing || 'East',
           communityName: formData.communityName || undefined,
           gatedCommunity: formData.gatedCommunity,
-          bedrooms: formData.bedrooms ? parseInt(formData.bedrooms, 10) : 4,
-          bathrooms: formData.bathrooms ? parseInt(formData.bathrooms, 10) : 4,
+          privateGarden: formData.privateGarden,
+          coveredParking: parseInt(formData.coveredParking, 10) || 2,
+          bedrooms: parseInt(formData.bedrooms, 10) || 4,
+          bathrooms: parseInt(formData.bathrooms, 10) || 4,
           amenities: amenitiesArr,
         };
       }
@@ -354,6 +367,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         land: landPayload,
         flat: flatPayload,
         villa: villaPayload,
+        boundaryCoordinates: formData.boundaryCoordinates,
         pricing: pricingPayload,
         mainImage,
       };
@@ -639,8 +653,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 }`}
               >
                 <div className="flex items-center justify-between">
-                  <div className="w-12 h-12 rounded-xl bg-teal-100 text-teal-800 flex items-center justify-center">
-                    <Building className="w-6 h-6" />
+                  <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-800 flex items-center justify-center">
+                    <Sparkles className="w-6 h-6" />
                   </div>
                   {formData.propertyType === 'VILLA' && (
                     <div className="w-6 h-6 rounded-full bg-emerald-700 text-white flex items-center justify-center">
@@ -650,12 +664,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 </div>
                 <div>
                   <h3 className="text-base font-bold text-slate-900">
-                    {isTe ? 'లగ్జరీ విల్లా' : 'Luxury Villa'}
+                    {isTe ? 'గేటెడ్ లగ్జరీ విల్లా' : 'Luxury Gated Villa'}
                   </h3>
                   <p className="text-xs text-slate-600 mt-1">
                     {isTe
-                      ? 'గేటెడ్ కమ్యూనిటీ లేదా ఇండిపెండెంట్ లగ్జరీ విల్లా (డూప్లెక్స్/ట్రిప్లెక్స్)'
-                      : 'Independent or gated community luxury villa (Duplex/Triplex)'}
+                      ? 'వ్యక్తిగత స్థలం, తోట మరియు క్లబ్‌హౌస్ సదుపాయాలతో కూడిన ట్రిప్లెక్స్ లేదా డ్యూప్లెక్స్ విల్లా'
+                      : 'Independent duplex / triplex villa with private plot, lawn, and community amenities'}
                   </p>
                 </div>
               </button>
@@ -1146,49 +1160,47 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             {/* Villa Specs */}
             {formData.propertyType === 'VILLA' && (
               <div className="space-y-4">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isTe ? 'ప్లాట్ ఏరియా (చదరపు గజాలు)' : 'Plot Area (Sq. Yards)'} *
+                      {isTe ? 'ప్లాట్ విస్తీర్ణం (చదరపు గజాలు)' : 'Plot Area (Sq. Yards)'} *
                     </label>
                     <input
                       type="number"
-                      value={formData.plotAreaSqYards}
-                      onChange={(e) => updateField('plotAreaSqYards', e.target.value)}
-                      placeholder="e.g. 250"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isTe ? 'నిర్మాణ విస్తీర్ణం (sq.ft)' : 'Built-up Area (sq.ft)'} *
-                    </label>
-                    <input
-                      type="number"
-                      value={formData.builtUpAreaSqFt}
-                      onChange={(e) => updateField('builtUpAreaSqFt', e.target.value)}
-                      placeholder="e.g. 3500"
+                      value={formData.plotSqYards || formData.plotAreaSqYards}
+                      onChange={(e) => {
+                        updateField('plotSqYards', e.target.value);
+                        updateField('plotAreaSqYards', e.target.value);
+                      }}
+                      placeholder="e.g. 350"
                       className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
-                        errors.builtUpAreaSqFt ? 'border-rose-400 bg-rose-50/20' : 'border-slate-300'
+                        errors.plotSqYards ? 'border-rose-400 bg-rose-50/30' : 'border-slate-300'
                       }`}
                     />
-                    {errors.builtUpAreaSqFt && (
-                      <p className="text-xs text-rose-600 mt-1">{errors.builtUpAreaSqFt}</p>
+                    {errors.plotSqYards && (
+                      <p className="text-xs text-rose-600 mt-1">{errors.plotSqYards}</p>
                     )}
                   </div>
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isTe ? 'కాన్ఫిగరేషన్' : 'Configuration'}
+                      {isTe ? 'నిర్మిత విస్తీర్ణం (చదరపు అడుగులు)' : 'Built-up Area (Sq. Ft)'} *
                     </label>
                     <input
-                      type="text"
-                      value={formData.configuration}
-                      onChange={(e) => updateField('configuration', e.target.value)}
-                      placeholder="e.g. 4 BHK Triplex"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                      type="number"
+                      value={formData.builtUpSqft || formData.builtUpAreaSqFt}
+                      onChange={(e) => {
+                        updateField('builtUpSqft', e.target.value);
+                        updateField('builtUpAreaSqFt', e.target.value);
+                      }}
+                      placeholder="e.g. 4200"
+                      className={`w-full h-12 px-3.5 rounded-xl border text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-700 ${
+                        errors.builtUpSqft ? 'border-rose-400 bg-rose-50/30' : 'border-slate-300'
+                      }`}
                     />
+                    {errors.builtUpSqft && (
+                      <p className="text-xs text-rose-600 mt-1">{errors.builtUpSqft}</p>
+                    )}
                   </div>
                 </div>
 
@@ -1227,15 +1239,20 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
                   <div>
                     <label className="block text-xs font-semibold text-slate-700 mb-1">
-                      {isTe ? 'అంతస్తులు' : 'Floors'}
+                      {isTe ? 'అంతస్తుల నిర్మాణం' : 'Floor Configuration'}
                     </label>
-                    <input
-                      type="text"
-                      value={formData.floors}
-                      onChange={(e) => updateField('floors', e.target.value)}
-                      placeholder="e.g. G+2"
-                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
-                    />
+                    <select
+                      value={formData.floorsConfig}
+                      onChange={(e) => {
+                        updateField('floorsConfig', e.target.value as any);
+                        updateField('floors', e.target.value);
+                      }}
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700 bg-white"
+                    >
+                      <option value="G+1">G+1 Duplex</option>
+                      <option value="G+2">G+2 Triplex</option>
+                      <option value="Triplex">Luxury Triplex</option>
+                    </select>
                   </div>
 
                   <div>
@@ -1269,19 +1286,44 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     />
                   </div>
 
-                  <div className="flex items-center pt-6">
-                    <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer w-full">
-                      <input
-                        type="checkbox"
-                        checked={formData.gatedCommunity}
-                        onChange={(e) => updateField('gatedCommunity', e.target.checked)}
-                        className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
-                      />
-                      <span className="text-xs font-medium text-slate-700">
-                        {isTe ? 'గేటెడ్ కమ్యూనిటీ విల్లా (24/7 సెక్యూరిటీ & క్లబ్‌హౌస్)' : 'Gated Community Villa (24/7 Security & Club House)'}
-                      </span>
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-700 mb-1">
+                      {isTe ? 'కవర్డ్ కార్ పార్కింగ్ సంఖ్య' : 'Covered Car Parking Bays'}
                     </label>
+                    <input
+                      type="number"
+                      value={formData.coveredParking}
+                      onChange={(e) => updateField('coveredParking', e.target.value)}
+                      placeholder="e.g. 2"
+                      className="w-full h-12 px-3.5 rounded-xl border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-700"
+                    />
                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-1">
+                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.gatedCommunity}
+                      onChange={(e) => updateField('gatedCommunity', e.target.checked)}
+                      className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                    />
+                    <span className="text-xs font-medium text-slate-700">
+                      {isTe ? 'గేటెడ్ కమ్యూనిటీ విల్లా (24/7 సెక్యూరిటీ)' : 'Gated Community Villa (24/7 Security)'}
+                    </span>
+                  </label>
+
+                  <label className="flex items-center gap-2.5 p-3 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={formData.privateGarden}
+                      onChange={(e) => updateField('privateGarden', e.target.checked)}
+                      className="w-4 h-4 text-emerald-700 rounded focus:ring-emerald-700"
+                    />
+                    <span className="text-xs font-medium text-slate-700">
+                      {isTe ? 'సొంత తోట / ప్రైవేట్ గార్డెన్ కలదు' : 'Private Landscaped Garden Available'}
+                    </span>
+                  </label>
                 </div>
 
                 <div>
@@ -1614,7 +1656,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                     </p>
                   ) : formData.propertyType === 'VILLA' ? (
                     <p>
-                      <span className="font-semibold text-slate-700">Configuration:</span> {formData.configuration || `${formData.bedrooms} BHK`} ({formData.builtUpAreaSqFt} sq.ft / {formData.plotAreaSqYards} sq.yd)
+                      <span className="font-semibold text-slate-700">Villa Specs:</span> {formData.configuration || `${formData.bedrooms} BHK`} ({formData.builtUpSqft || formData.builtUpAreaSqFt} sq.ft / {formData.plotSqYards || formData.plotAreaSqYards} sq.yd) - {formData.floorsConfig || formData.floors}
                     </p>
                   ) : (
                     <p>

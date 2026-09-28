@@ -91,16 +91,22 @@ export interface CreatePropertyDTO {
   };
   villa?: {
     plotAreaSqYards?: number;
+    plotSqYards?: number;
     builtUpAreaSqFt?: number;
+    builtUpSqft?: number;
     configuration?: string;
     floors?: string;
+    floorsConfig?: string;
     facing?: string;
     communityName?: string;
     gatedCommunity?: boolean;
+    privateGarden?: boolean;
+    coveredParking?: number;
     bedrooms?: number;
     bathrooms?: number;
     amenities?: string[];
   };
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   pricing: {
     totalPrice: number;
     pricePerAcre?: number;
@@ -159,15 +165,21 @@ interface BackendFlatDetails {
 
 interface BackendVillaDetails {
   plotAreaSqYards?: number;
+  plotSqYards?: number;
   builtUpAreaSqFt?: number;
+  builtUpSqft?: number;
   configuration?: string;
-  floors?: string;
+  floors?: string | number;
+  floorsConfig?: string;
   facing?: string;
   communityName?: string;
   gatedCommunity?: boolean;
+  privateGarden?: boolean;
+  coveredParking?: number;
   bedrooms?: number;
   bathrooms?: number;
   amenities?: string[];
+  possessionStatus?: string;
 }
 
 interface BackendPricing {
@@ -190,6 +202,7 @@ export interface BackendProperty {
   land?: BackendLandDetails;
   flat?: BackendFlatDetails;
   villa?: BackendVillaDetails;
+  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   pricing: BackendPricing;
   mainImage: string;
   galleryImages: string[];
@@ -328,18 +341,24 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
       : undefined,
     villa: bp.villa
       ? {
-          plotAreaSqYards: bp.villa.plotAreaSqYards,
-          builtUpAreaSqFt: bp.villa.builtUpAreaSqFt,
+          plotAreaSqYards: bp.villa.plotAreaSqYards ?? bp.villa.plotSqYards,
+          plotSqYards: bp.villa.plotSqYards ?? bp.villa.plotAreaSqYards ?? 0,
+          builtUpAreaSqFt: bp.villa.builtUpAreaSqFt ?? bp.villa.builtUpSqft,
+          builtUpSqft: bp.villa.builtUpSqft ?? bp.villa.builtUpAreaSqFt ?? 0,
           configuration: bp.villa.configuration,
-          floors: bp.villa.floors,
+          floors: typeof bp.villa.floors === 'string' ? bp.villa.floors : (bp.villa.floors ? `G+${bp.villa.floors - 1}` : undefined),
+          floorsConfig: (bp.villa.floorsConfig || (bp.villa.floors ? `G+${typeof bp.villa.floors === 'number' ? bp.villa.floors - 1 : 2}` : 'G+2')) as 'G+1' | 'G+2' | 'Triplex',
           facing: bp.villa.facing,
           communityName: bp.villa.communityName,
           gatedCommunity: bp.villa.gatedCommunity,
-          bedrooms: bp.villa.bedrooms,
-          bathrooms: bp.villa.bathrooms,
+          privateGarden: !!bp.villa.privateGarden,
+          coveredParking: bp.villa.coveredParking ?? 2,
+          bedrooms: bp.villa.bedrooms ?? 0,
+          bathrooms: bp.villa.bathrooms ?? 0,
           amenities: bp.villa.amenities ?? [],
         }
       : undefined,
+    boundaryCoordinates: bp.boundaryCoordinates ?? null,
     mainImage: bp.mainImage,
     galleryImages: bp.galleryImages,
     sitePlanImage: bp.sitePlanImage,
