@@ -1,0 +1,23 @@
+name: Render Backend Keep-Alive
+
+on:
+  schedule:
+    # Runs every 10 minutes to prevent Render free-tier cold starts
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Ping Telangana Realty Backend Health Endpoint
+        run: |
+          echo "Pinging backend to prevent cold start..."
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" --max-time 45 https://telangana-realty-backend.onrender.com/api/health || echo "000")
+          echo "Backend returned HTTP $STATUS"
+          if [ "$STATUS" -eq 200 ]; then
+            echo "Backend is warm and responsive (HTTP 200)."
+          else
+            echo "Backend is spinning up or responded with HTTP $STATUS."
+          fi
