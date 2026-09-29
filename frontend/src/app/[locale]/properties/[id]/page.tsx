@@ -68,8 +68,26 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-16 space-y-10 pb-28 lg:pb-16">
-      {/* Top Navigation & Trust Pill */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E2D9] pb-5">
+      {/* Official Print Dossier Header (Visible only on paper/PDF export) */}
+      <div className="hidden print:block border-b-2 border-neutral-900 pb-4 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-xl font-bold font-serif uppercase tracking-wider text-neutral-950">
+              Telangana Realty Hub
+            </h1>
+            <p className="text-[10px] text-neutral-600 uppercase tracking-widest">
+              Institutional Property & Land Mediation Dossier | TSRERA/AG/HYD/2024/00142
+            </p>
+          </div>
+          <div className="text-right text-[10px] text-neutral-700">
+            <p><strong>Property Ref:</strong> #{property.id.slice(0, 8).toUpperCase()}</p>
+            <p><strong>Dharani Status:</strong> 13-Point Revenue Audited</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Top Navigation & Trust Pill (Hidden in Print) */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E8E2D9] pb-5 print:hidden">
         <Link
           href={`/${locale}/properties`}
           className="inline-flex items-center gap-2 text-xs font-semibold tracking-wider uppercase text-[#574F48] hover:text-[#191512] transition-colors"
