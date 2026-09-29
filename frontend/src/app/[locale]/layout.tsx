@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { isValidLocale, Locale, LOCALES } from '@/lib/i18n';
 import Navbar from '@/components/common/Navbar';
 import Footer from '@/components/common/Footer';
+import CookieConsent from '@/components/common/CookieConsent';
 
 export function generateStaticParams() {
   return LOCALES.map((locale) => ({ locale }));
@@ -27,6 +28,7 @@ export default function LocaleLayout({ children, params }: LocaleLayoutProps) {
       <Navbar locale={locale} />
       <main className="flex-1 w-full">{children}</main>
       <Footer locale={locale} />
+      <CookieConsent locale={locale} />
     </div>
   );
 }
