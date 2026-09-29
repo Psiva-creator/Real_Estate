@@ -11,6 +11,7 @@ import {
   Share2,
   Check,
   Heart,
+  Printer,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
@@ -53,7 +54,7 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
   return (
     <>
       {/* Desktop Sticky Card */}
-      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] shadow-sm space-y-6 sticky top-24">
+      <div className="bg-white rounded-2xl p-6 sm:p-7 border border-[#E8E2D9] shadow-sm space-y-6 sticky top-24 print:hidden">
         {/* Price & Sub-rate */}
         <div>
           <div className="flex items-center justify-between">
@@ -189,7 +190,7 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
             {dict.propertyDetail.agentDisclaimer}
           </p>
 
-          {/* Action Row: Save & Share Buttons */}
+          {/* Action Row: Save, Share & Print Buttons */}
           <div className="grid grid-cols-2 gap-2">
             <button
               type="button"
@@ -222,12 +223,22 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
                 </>
               )}
             </button>
+
+            <button
+              type="button"
+              onClick={() => window.print()}
+              className="col-span-2 py-2.5 px-3 rounded-xl border border-[#E8E2D9] hover:bg-[#FAF8F5] text-[#61584F] text-xs font-medium flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+              title={isTe ? 'ప్రాపర్టీ సంక్షిప్త నివేదికను ముద్రించండి' : 'Print / Download Executive Brief'}
+            >
+              <Printer className="w-3.5 h-3.5 text-[#8C653E]" />
+              <span>{isTe ? 'ఎగ్జిక్యూటివ్ బ్రీఫ్ ప్రింట్ / డౌన్‌లోడ్ చేయండి' : 'Print / Save Executive Brief'}</span>
+            </button>
           </div>
         </div>
       </div>
 
       {/* Mobile Sticky Bottom Action Bar (visible on < lg) */}
-      <div className="fixed lg:hidden bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#E8E2D9] p-3 px-4 shadow-2xl flex items-center justify-between gap-3">
+      <div className="fixed lg:hidden bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#E8E2D9] p-3 px-4 shadow-2xl flex items-center justify-between gap-3 print:hidden">
         <div>
           <span className="text-[10px] uppercase font-mono text-[#8C827A] block">
             {isSold
