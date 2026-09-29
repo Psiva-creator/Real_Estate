@@ -1,7 +1,11 @@
 import React from 'react';
 import { notFound } from 'next/navigation';
-import { isValidLocale, Locale } from '@/lib/i18n';
+import { isValidLocale, Locale, LOCALES } from '@/lib/i18n';
 import SavedPropertiesClient from '@/components/properties/SavedPropertiesClient';
+
+export function generateStaticParams() {
+  return LOCALES.map((locale) => ({ locale }));
+}
 
 interface SavedPropertiesPageProps {
   params: { locale: string };
