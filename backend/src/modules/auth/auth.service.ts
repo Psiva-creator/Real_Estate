@@ -93,7 +93,11 @@ export class AuthService {
     return { user, token };
   }
 
-  async login(identifier: string, password?: string): Promise<{ user: User; token: string }> {
+  async login(
+    identifier: string,
+    password?: string,
+    meta?: { ipAddress?: string; userAgent?: string }
+  ): Promise<{ user: User; token: string }> {
     let user: User | null = null;
     const trimmed = identifier.trim();
 
@@ -117,8 +121,41 @@ export class AuthService {
       }
       const isValid = await comparePassword(password, user.passwordHash);
       if (!isValid) {
+        // Record failed attempt in audit log
+        try {
+          await db.recordLogin({
+            userId: user.id,
+            identifier: trimmed,
+            role: user.role,
+            ipAddress: meta?.ipAddress,
+            userAgent: meta?.userAgent,
+            status: 'FAILED',
+          });
+        } catch {}
         throw new Error('Invalid credentials');
       }
+    }
+
+    // 1. Update user last_login_at timestamp in database
+    try {
+      await db.updateLastLogin(user.id);
+      user.lastLoginAt = new Date().toISOString();
+    } catch (err) {
+      console.warn('Could not update last_login_at:', (err as Error).message);
+    }
+
+    // 2. Insert login event in user_logins audit table in database
+    try {
+      await db.recordLogin({
+        userId: user.id,
+        identifier: trimmed,
+        role: user.role,
+        ipAddress: meta?.ipAddress,
+        userAgent: meta?.userAgent,
+        status: 'SUCCESS',
+      });
+    } catch (err) {
+      console.warn('Could not record login in user_logins table:', (err as Error).message);
     }
 
     const token = generateToken(user);

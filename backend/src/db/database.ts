@@ -12,6 +12,8 @@ import {
   DocumentStatus,
   PropertyStatus,
   EnquiryStatus,
+  UserLoginRecord,
+  MediaUploadRecord,
 } from '../types/index.js';
 
 // Phone number normalization helper
@@ -68,8 +70,36 @@ function mapUserRow(row: any): User {
     role: row.role,
     passwordHash: row.password_hash || undefined,
     isActive: row.is_active,
+    lastLoginAt: row.last_login_at instanceof Date ? row.last_login_at.toISOString() : (row.last_login_at ? String(row.last_login_at) : undefined),
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
     updatedAt: row.updated_at instanceof Date ? row.updated_at.toISOString() : String(row.updated_at),
+  };
+}
+
+function mapUserLoginRow(row: any): UserLoginRecord {
+  return {
+    id: row.id,
+    userId: row.user_id,
+    identifier: row.identifier,
+    role: row.role || undefined,
+    ipAddress: row.ip_address || undefined,
+    userAgent: row.user_agent || undefined,
+    status: row.status,
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
+  };
+}
+
+function mapMediaUploadRow(row: any): MediaUploadRecord {
+  return {
+    id: row.id,
+    userId: row.user_id || undefined,
+    propertyId: row.property_id || undefined,
+    fileUrl: row.file_url,
+    originalName: row.original_name,
+    mimeType: row.mime_type,
+    sizeBytes: Number(row.size_bytes || 0),
+    uploadType: row.upload_type || 'IMAGE',
+    createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
   };
 }
 
@@ -214,6 +244,8 @@ class InMemoryStore {
   properties: Map<string, Property> = new Map();
   propertyDocuments: Map<string, PropertyDocument> = new Map();
   enquiries: Map<string, Enquiry> = new Map();
+  userLogins: Map<string, UserLoginRecord> = new Map();
+  mediaUploads: Map<string, MediaUploadRecord> = new Map();
 }
 
 class Database {
@@ -477,6 +509,158 @@ class Database {
     const pool = this.ensurePool();
     const res = await pool.query('SELECT * FROM users ORDER BY created_at DESC');
     return res.rows.map(mapUserRow);
+  }
+
+  async updateLastLogin(id: string): Promise<void> {
+    if (this.isTestMemoryMode) {
+      const user = this.memory.users.get(id);
+      if (user) {
+        user.lastLoginAt = new Date().toISOString();
+        user.updatedAt = new Date().toISOString();
+      }
+      return;
+    }
+
+    const pool = this.ensurePool();
+    await pool.query(
+      'UPDATE users SET last_login_at = NOW(), updated_at = NOW() WHERE id = $1',
+      [id]
+    );
+  }
+
+  async recordLogin(data: {
+    userId: string;
+    identifier: string;
+    role?: string;
+    ipAddress?: string;
+    userAgent?: string;
+    status?: string;
+  }): Promise<UserLoginRecord> {
+    if (this.isTestMemoryMode) {
+      const record: UserLoginRecord = {
+        id: uuidv4(),
+        userId: data.userId,
+        identifier: data.identifier,
+        role: data.role,
+        ipAddress: data.ipAddress,
+        userAgent: data.userAgent,
+        status: data.status || 'SUCCESS',
+        createdAt: new Date().toISOString(),
+      };
+      this.memory.userLogins.set(record.id, record);
+      return record;
+    }
+
+    const pool = this.ensurePool();
+    const query = `
+      INSERT INTO user_logins (user_id, identifier, role, ip_address, user_agent, status)
+      VALUES ($1, $2, $3, $4, $5, $6)
+      RETURNING *;
+    `;
+    const values = [
+      data.userId,
+      data.identifier,
+      data.role || null,
+      data.ipAddress || null,
+      data.userAgent || null,
+      data.status || 'SUCCESS',
+    ];
+
+    const res = await pool.query(query, values);
+    return mapUserLoginRow(res.rows[0]);
+  }
+
+  async listUserLogins(userId?: string, limit = 50): Promise<UserLoginRecord[]> {
+    if (this.isTestMemoryMode) {
+      let list = Array.from(this.memory.userLogins.values());
+      if (userId) {
+        list = list.filter((l) => l.userId === userId);
+      }
+      return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, limit);
+    }
+
+    const pool = this.ensurePool();
+    let query = 'SELECT * FROM user_logins';
+    const values: any[] = [];
+    if (userId) {
+      query += ' WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2';
+      values.push(userId, limit);
+    } else {
+      query += ' ORDER BY created_at DESC LIMIT $1';
+      values.push(limit);
+    }
+
+    const res = await pool.query(query, values);
+    return res.rows.map(mapUserLoginRow);
+  }
+
+  async recordMediaUpload(data: {
+    userId?: string;
+    propertyId?: string;
+    fileUrl: string;
+    originalName: string;
+    mimeType: string;
+    sizeBytes: number;
+    uploadType?: string;
+  }): Promise<MediaUploadRecord> {
+    if (this.isTestMemoryMode) {
+      const record: MediaUploadRecord = {
+        id: uuidv4(),
+        userId: data.userId,
+        propertyId: data.propertyId,
+        fileUrl: data.fileUrl,
+        originalName: data.originalName,
+        mimeType: data.mimeType,
+        sizeBytes: data.sizeBytes,
+        uploadType: data.uploadType || 'IMAGE',
+        createdAt: new Date().toISOString(),
+      };
+      this.memory.mediaUploads.set(record.id, record);
+      return record;
+    }
+
+    const pool = this.ensurePool();
+    const query = `
+      INSERT INTO media_uploads (user_id, property_id, file_url, original_name, mime_type, size_bytes, upload_type)
+      VALUES ($1, $2, $3, $4, $5, $6, $7)
+      RETURNING *;
+    `;
+    const values = [
+      data.userId || null,
+      data.propertyId || null,
+      data.fileUrl,
+      data.originalName,
+      data.mimeType,
+      data.sizeBytes,
+      data.uploadType || 'IMAGE',
+    ];
+
+    const res = await pool.query(query, values);
+    return mapMediaUploadRow(res.rows[0]);
+  }
+
+  async listMediaUploads(propertyId?: string, limit = 50): Promise<MediaUploadRecord[]> {
+    if (this.isTestMemoryMode) {
+      let list = Array.from(this.memory.mediaUploads.values());
+      if (propertyId) {
+        list = list.filter((m) => m.propertyId === propertyId);
+      }
+      return list.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).slice(0, limit);
+    }
+
+    const pool = this.ensurePool();
+    let query = 'SELECT * FROM media_uploads';
+    const values: any[] = [];
+    if (propertyId) {
+      query += ' WHERE property_id = $1 ORDER BY created_at DESC LIMIT $2';
+      values.push(propertyId, limit);
+    } else {
+      query += ' ORDER BY created_at DESC LIMIT $1';
+      values.push(limit);
+    }
+
+    const res = await pool.query(query, values);
+    return res.rows.map(mapMediaUploadRow);
   }
 
   // ==========================================

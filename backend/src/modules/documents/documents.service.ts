@@ -48,6 +48,19 @@ export class DocumentsService {
       status: 'UPLOADED',
     });
 
+    try {
+      await db.recordMediaUpload({
+        propertyId,
+        fileUrl: savedFile.fileUrl,
+        originalName,
+        mimeType,
+        sizeBytes: savedFile.sizeBytes,
+        uploadType: 'DOCUMENT',
+      });
+    } catch (err) {
+      console.warn('Could not record in media_uploads:', (err as Error).message);
+    }
+
     // If property was in DRAFT, move to UNDER_REVIEW once documents start coming in
     if (property.status === 'DRAFT') {
       await db.updateProperty(propertyId, { status: 'UNDER_REVIEW' });

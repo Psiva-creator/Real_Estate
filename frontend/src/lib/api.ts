@@ -780,6 +780,36 @@ export async function uploadPropertyDocument(
   };
 }
 
+/**
+ * Upload an image file directly to the backend media storage & database
+ * Endpoint: POST /api/upload/image
+ */
+export async function uploadImageApi(
+  file: File,
+  token?: string,
+  propertyId?: string
+): Promise<{ success: boolean; data: any }> {
+  const url = isRealBackend() ? `${API_BASE_URL}/upload/image` : 'http://localhost:5000/api/upload/image';
+  const formData = new FormData();
+  formData.append('image', file);
+  if (propertyId) formData.append('propertyId', propertyId);
+
+  const headers: Record<string, string> = {};
+  if (token) headers['Authorization'] = `Bearer ${token}`;
+
+  const res = await fetch(url, {
+    method: 'POST',
+    headers,
+    body: formData,
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error(data.error || 'Image upload failed');
+  }
+  return data;
+}
+
 // ─── Authentication & RBAC API Layer ──────────────────────────────────────────
 
 export type UserRole = 'ADMIN' | 'AGENT' | 'SELLER';

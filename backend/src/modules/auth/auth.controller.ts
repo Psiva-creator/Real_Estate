@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { AuthRequest } from '../../middleware/auth.js';
 import { authService } from './auth.service.js';
+import { db } from '../../db/database.js';
 
 export class AuthController {
   async register(req: Request, res: Response) {
@@ -40,7 +41,10 @@ export class AuthController {
         return res.status(400).json({ error: 'Phone or email identifier is required' });
       }
 
-      const result = await authService.login(loginId, password);
+      const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || req.ip;
+      const userAgent = req.headers['user-agent'] as string | undefined;
+
+      const result = await authService.login(loginId, password, { ipAddress, userAgent });
 
       return res.json({
         message: 'Login successful',
@@ -50,6 +54,7 @@ export class AuthController {
           phone: result.user.phone,
           email: result.user.email,
           role: result.user.role,
+          lastLoginAt: result.user.lastLoginAt,
         },
         token: result.token,
       });
@@ -71,8 +76,26 @@ export class AuthController {
         email: req.user.email,
         role: req.user.role,
         whatsapp: req.user.whatsapp,
+        lastLoginAt: req.user.lastLoginAt,
       },
     });
+  }
+
+  async myLogins(req: AuthRequest, res: Response) {
+    try {
+      if (!req.user) {
+        return res.status(401).json({ error: 'Not authenticated' });
+      }
+
+      const targetUserId = req.user.role === 'ADMIN' && req.query.userId
+        ? String(req.query.userId)
+        : req.user.id;
+
+      const logins = await db.listUserLogins(targetUserId);
+      return res.json({ logins });
+    } catch (err) {
+      return res.status(500).json({ error: (err as Error).message });
+    }
   }
 }
 

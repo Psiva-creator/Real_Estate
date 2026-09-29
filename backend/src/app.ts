@@ -9,6 +9,7 @@ import { enquiriesController } from './modules/enquiries/enquiries.controller.js
 import { ownersController } from './modules/owners/owners.controller.js';
 import { mapsController } from './modules/maps/maps.controller.js';
 import { adminController } from './modules/admin/admin.controller.js';
+import { mediaController, mediaUploadMiddleware, imageUploadMiddleware } from './modules/media/media.controller.js';
 import { requireAuth, requireRole, optionalAuth } from './middleware/auth.js';
 
 import swaggerUi from 'swagger-ui-express';
@@ -74,8 +75,17 @@ const authRouter = express.Router();
 authRouter.post('/register', authController.register.bind(authController));
 authRouter.post('/login', authController.login.bind(authController));
 authRouter.get('/me', requireAuth, authController.me.bind(authController));
+authRouter.get('/logins', requireAuth, authController.myLogins.bind(authController));
 app.use('/api/auth', authRouter);
 app.use('/auth', authRouter);
+
+// --- MEDIA & IMAGE UPLOADS ---
+const uploadRouter = express.Router();
+uploadRouter.post('/image', optionalAuth, imageUploadMiddleware, mediaController.upload.bind(mediaController));
+uploadRouter.post('/', optionalAuth, mediaUploadMiddleware, mediaController.upload.bind(mediaController));
+uploadRouter.get('/media', optionalAuth, mediaController.listMedia.bind(mediaController));
+app.use('/api/upload', uploadRouter);
+app.use('/upload', uploadRouter);
 
 // --- PROPERTIES ROUTES (PUBLIC & SELLER) ---
 const propertiesRouter = express.Router();

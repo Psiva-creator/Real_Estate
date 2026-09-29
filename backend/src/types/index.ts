@@ -42,8 +42,32 @@ export interface User {
   passwordHash?: string;
   role: UserRole;
   isActive: boolean;
+  lastLoginAt?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface UserLoginRecord {
+  id: string;
+  userId: string;
+  identifier: string;
+  role?: string;
+  ipAddress?: string;
+  userAgent?: string;
+  status: string;
+  createdAt: string;
+}
+
+export interface MediaUploadRecord {
+  id: string;
+  userId?: string;
+  propertyId?: string;
+  fileUrl: string;
+  originalName: string;
+  mimeType: string;
+  sizeBytes: number;
+  uploadType: string;
+  createdAt: string;
 }
 
 export interface Owner {

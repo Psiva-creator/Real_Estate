@@ -210,3 +210,37 @@ ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_bedrooms INT;
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_bathrooms INT;
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_amenities TEXT[];
 
+-- Migration Alteration for Users Table
+ALTER TABLE users ADD COLUMN IF NOT EXISTS last_login_at TIMESTAMP WITH TIME ZONE;
+
+-- 7. USER LOGINS / AUDIT TABLE
+CREATE TABLE IF NOT EXISTS user_logins (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    identifier VARCHAR(255) NOT NULL,
+    role VARCHAR(50),
+    ip_address VARCHAR(100),
+    user_agent TEXT,
+    status VARCHAR(50) DEFAULT 'SUCCESS',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_user_logins_user_id ON user_logins(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_logins_created_at ON user_logins(created_at);
+
+-- 8. MEDIA UPLOADS TABLE (Images & Documents)
+CREATE TABLE IF NOT EXISTS media_uploads (
+    id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+    user_id UUID REFERENCES users(id) ON DELETE SET NULL,
+    property_id UUID REFERENCES properties(id) ON DELETE SET NULL,
+    file_url TEXT NOT NULL,
+    original_name VARCHAR(255) NOT NULL,
+    mime_type VARCHAR(100) NOT NULL,
+    size_bytes BIGINT NOT NULL,
+    upload_type VARCHAR(50) DEFAULT 'IMAGE',
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE INDEX IF NOT EXISTS idx_media_uploads_user_id ON media_uploads(user_id);
+CREATE INDEX IF NOT EXISTS idx_media_uploads_property_id ON media_uploads(property_id);
+

@@ -226,6 +226,34 @@ export class StorageService {
       return null;
     }
   }
+
+  async saveImageBuffer(
+    buffer: Buffer,
+    originalName: string,
+    mimeType: string,
+    subFolder = 'images'
+  ): Promise<UploadedFileMeta> {
+    const ext = path.extname(originalName) || '.jpg';
+    const filename = `img_${Date.now()}_${crypto.randomBytes(4).toString('hex')}${ext}`;
+    const targetDir = path.join(this.baseUploadDir, subFolder);
+
+    if (!fs.existsSync(targetDir)) {
+      fs.mkdirSync(targetDir, { recursive: true });
+    }
+
+    const filePath = path.join(targetDir, filename);
+    await fs.promises.writeFile(filePath, buffer);
+
+    const fileUrl = `/uploads/${subFolder}/${filename}`;
+
+    return {
+      fileUrl,
+      originalName,
+      mimeType,
+      sizeBytes: buffer.length,
+      storageDriver: 'local',
+    };
+  }
 }
 
 export const storageService = new StorageService();
