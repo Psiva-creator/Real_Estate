@@ -1759,6 +1759,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           {currentStepIndex > 0 ? (
             <button
               type="button"
+              id="form-back-button"
               onClick={handleBack}
               className="inline-flex items-center gap-2 px-5 py-3 rounded-xl border border-[#E2CFB6] hover:border-[#8B624C] hover:bg-[#F5F0E8] text-[#5A382B] text-xs sm:text-sm font-medium tracking-wide uppercase transition-all duration-200 tap-target"
             >
@@ -1772,6 +1773,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           {currentStepIndex < steps.length - 1 ? (
             <button
               type="button"
+              id="form-continue-button"
               onClick={handleNext}
               className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-[#201512] hover:bg-[#3A241C] text-[#F5F0E8] text-xs sm:text-sm font-semibold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target group"
             >

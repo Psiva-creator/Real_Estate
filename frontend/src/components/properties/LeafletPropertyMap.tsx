@@ -83,6 +83,7 @@ export default function LeafletPropertyMap({
   const boundaryLayerRef = useRef<any>(null);
   const vertexMarkersGroupRef = useRef<any>(null);
   const midpointMarkersGroupRef = useRef<any>(null);
+  const centerMarkerGroupRef = useRef<any>(null);
   const polygonCoordsRef = useRef<Array<[number, number]>>(initialPolygon || []);
 
   // Default to High-Definition Satellite view (optimal for land survey & parcels)
@@ -233,6 +234,7 @@ export default function LeafletPropertyMap({
       const boundaryLayer = L.layerGroup().addTo(map);
       const vertexMarkersGroup = L.layerGroup().addTo(map);
       const midpointMarkersGroup = L.layerGroup().addTo(map);
+      const centerMarkerGroup = L.layerGroup().addTo(map);
 
       mapInstanceRef.current = map;
       markersGroupRef.current = markersGroup;
@@ -240,6 +242,7 @@ export default function LeafletPropertyMap({
       boundaryLayerRef.current = boundaryLayer;
       vertexMarkersGroupRef.current = vertexMarkersGroup;
       midpointMarkersGroupRef.current = midpointMarkersGroup;
+      centerMarkerGroupRef.current = centerMarkerGroup;
 
       if (!boundaryMode) {
         // Render 158km Outer Ring Road (ORR)
@@ -350,13 +353,53 @@ export default function LeafletPropertyMap({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singlePropertyMode, boundaryMode, properties]);
 
-  // Handle center coordinate changes dynamically in boundary mode
+  // Handle center coordinate changes dynamically in boundary mode and render reference marker
   useEffect(() => {
     if (!boundaryMode || !isMapReady || !mapInstanceRef.current || !centerCoordinates) return;
+    if (centerMarkerGroupRef.current) {
+      centerMarkerGroupRef.current.clearLayers();
+      import('leaflet').then((LModule) => {
+        const L = LModule.default;
+        if (!centerMarkerGroupRef.current) return;
+        const centerIcon = L.divIcon({
+          className: 'custom-center-marker',
+          html: `
+            <div style="
+              background: #201512;
+              color: #FAF8F3;
+              border: 1.5px solid #C79A6B;
+              border-radius: 9999px;
+              padding: 4px 10px;
+              font-size: 11px;
+              font-weight: 700;
+              box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+              display: inline-flex;
+              align-items: center;
+              gap: 5px;
+              white-space: nowrap;
+              cursor: pointer;
+            ">
+              <span style="color: #C79A6B; font-size: 13px;">📍</span>
+              <span>${locationName || (isTe ? 'ప్రాంతం కేంద్రం' : 'Locality Center')}</span>
+            </div>
+          `,
+          iconSize: [140, 28],
+          iconAnchor: [70, 14],
+        });
+        const cMarker = L.marker(centerCoordinates, {
+          icon: centerIcon,
+          title: locationName || 'Locality Center',
+        });
+        cMarker.bindTooltip(
+          `<div style="font-size:11px;font-weight:600;color:#201512;padding:2px;">${locationName || 'Plot Location'}<br/><span style="color:#8B624C;font-size:10px;">Click map to place boundary pins</span></div>`
+        );
+        centerMarkerGroupRef.current.addLayer(cMarker);
+      });
+    }
     if (polygonCoords.length === 0 && !isNaN(centerCoordinates[0]) && !isNaN(centerCoordinates[1])) {
       mapInstanceRef.current.setView(centerCoordinates, 16, { animate: true });
     }
-  }, [boundaryMode, centerCoordinates, isMapReady, polygonCoords.length]);
+  }, [boundaryMode, centerCoordinates, isMapReady, polygonCoords.length, locationName, isTe]);
 
   // Handle Layer Mode Switching
   useEffect(() => {
@@ -755,14 +798,14 @@ export default function LeafletPropertyMap({
   };
 
   return (
-    <div className={`relative flex flex-col w-full rounded-2xl overflow-hidden border border-[#E8E2D9] bg-white shadow-sm ${className}`}>
+    <div className={`relative flex flex-col w-full rounded-2xl overflow-hidden border border-[#E2CFB6] bg-[#FAF8F3] shadow-[0_12px_32px_-12px_rgba(32,21,18,0.12)] ${className}`}>
       {/* Top Controls Bar */}
-      <div className="bg-[#191512] text-white p-3 sm:p-4 border-b border-white/10 flex flex-col gap-3">
+      <div className="bg-[#201512] text-[#F5F0E8] p-3 sm:p-4 border-b border-[#3A241C] flex flex-col gap-3">
         <div className="flex items-center justify-between gap-2 flex-wrap">
           <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-            <h3 className="font-bold text-xs sm:text-sm tracking-wide flex items-center gap-1.5 text-white">
-              <Compass className="w-4 h-4 text-emerald-400" />
+            <span className="w-2 h-2 rounded-full bg-[#C79A6B] animate-pulse" />
+            <h3 className="font-serif font-medium text-xs sm:text-sm tracking-wide flex items-center gap-1.5 text-[#F5F0E8]">
+              <Compass className="w-4 h-4 text-[#C79A6B]" />
               <span>
                 {boundaryMode
                   ? isTe ? 'ప్లాట్ / ల్యాండ్ సరిహద్దు డ్రాయింగ్ టూల్' : 'Interactive Plot Boundary Tool'
@@ -772,7 +815,7 @@ export default function LeafletPropertyMap({
               </span>
             </h3>
             {boundaryMode && locationName && (
-              <span className="hidden sm:inline-block text-[11px] text-emerald-300/80 bg-emerald-950/60 px-2.5 py-0.5 rounded-full border border-emerald-800/40">
+              <span className="hidden sm:inline-block text-[11px] text-[#C79A6B] bg-[#2E1E18] px-2.5 py-0.5 rounded-full border border-[#C79A6B]/30 font-medium">
                 📍 {locationName}
               </span>
             )}
@@ -781,14 +824,15 @@ export default function LeafletPropertyMap({
           {/* Layer & Mode Controls */}
           <div className="flex items-center gap-2 text-xs">
             {/* Satellite / Street / Aerial View Toggle */}
-            <div className="flex items-center bg-white/10 rounded-lg p-0.5 border border-white/10">
+            <div className="flex items-center bg-[#2E1E18] rounded-xl p-0.5 border border-[#3A241C]">
               <button
                 type="button"
+                id="map-satellite-toggle"
                 onClick={() => setMapMode('satellite')}
-                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
                   mapMode === 'satellite'
-                    ? 'bg-emerald-600 text-white shadow-xs font-bold'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'bg-[#C79A6B] text-[#201512] shadow-sm font-bold'
+                    : 'text-[#E2CFB6]/80 hover:text-white hover:bg-white/5'
                 }`}
                 title="Satellite View with Road Names"
               >
@@ -797,11 +841,12 @@ export default function LeafletPropertyMap({
               </button>
               <button
                 type="button"
+                id="map-street-toggle"
                 onClick={() => setMapMode('street')}
-                className={`px-2 py-1 rounded text-[11px] font-semibold transition-colors flex items-center gap-1 ${
+                className={`px-2.5 py-1 rounded-lg text-[11px] font-semibold transition-all flex items-center gap-1.5 ${
                   mapMode === 'street'
-                    ? 'bg-white text-slate-900 shadow-xs font-bold'
-                    : 'text-slate-300 hover:text-white'
+                    ? 'bg-[#FAF8F3] text-[#201512] shadow-sm font-bold'
+                    : 'text-[#E2CFB6]/80 hover:text-white hover:bg-white/5'
                 }`}
                 title="Street Vector Map"
               >
@@ -815,9 +860,9 @@ export default function LeafletPropertyMap({
               <button
                 type="button"
                 onClick={() => setShowOrrLayer(!showOrrLayer)}
-                className={`px-2.5 py-1 rounded-lg border text-[11px] font-semibold transition-colors flex items-center gap-1.5 ${
+                className={`px-2.5 py-1 rounded-xl border text-[11px] font-semibold transition-colors flex items-center gap-1.5 ${
                   showOrrLayer
-                    ? 'bg-amber-500/20 border-amber-400 text-amber-300'
+                    ? 'bg-[#C79A6B]/20 border-[#C79A6B] text-[#C79A6B]'
                     : 'bg-white/5 border-white/10 text-slate-400 hover:text-white'
                 }`}
                 title="Toggle 158km Outer Ring Road overlay"
@@ -829,16 +874,16 @@ export default function LeafletPropertyMap({
 
             {/* Property Type Toggles (Discovery mode) */}
             {!singlePropertyMode && !boundaryMode && (
-              <div className="hidden sm:flex items-center bg-white/10 rounded-lg p-0.5">
+              <div className="hidden sm:flex items-center bg-[#2E1E18] rounded-xl p-0.5 border border-[#3A241C]">
                 {(['ALL', 'LAND', 'FLAT'] as const).map((type) => (
                   <button
                     key={type}
                     type="button"
                     onClick={() => setPropertyTypeFilter(type)}
-                    className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase transition-colors ${
+                    className={`px-2 py-0.5 rounded-lg text-[10px] font-bold uppercase transition-colors ${
                       propertyTypeFilter === type
-                        ? 'bg-white text-slate-900 shadow-sm'
-                        : 'text-slate-300 hover:text-white'
+                        ? 'bg-[#FAF8F3] text-[#201512] shadow-sm'
+                        : 'text-[#E2CFB6]/70 hover:text-white'
                     }`}
                   >
                     {type}
@@ -851,22 +896,23 @@ export default function LeafletPropertyMap({
 
         {/* Boundary Drawing Action Toolbar (Active in Boundary Mode) */}
         {boundaryMode && (
-          <div className="pt-2 border-t border-white/10 flex flex-wrap items-center justify-between gap-2">
+          <div className="pt-2 border-t border-[#3A241C] flex flex-wrap items-center justify-between gap-2">
             <div className="flex items-center gap-1.5 flex-wrap">
               <button
                 type="button"
+                id="map-plotting-mode-btn"
                 onClick={() => setIsDrawingMode(!isDrawingMode)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all shadow-xs ${
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all shadow-sm ${
                   isDrawingMode
-                    ? 'bg-emerald-500 text-slate-950 font-bold'
-                    : 'bg-white/15 text-white hover:bg-white/25'
+                    ? 'bg-[#C79A6B] text-[#201512] font-bold ring-1 ring-[#FAF8F3]/40'
+                    : 'bg-[#2E1E18] text-[#E2CFB6] border border-[#3A241C] hover:bg-[#3A241C] hover:text-white'
                 }`}
                 title={isDrawingMode ? 'Drawing mode is active: click map to place corners' : 'Enable drawing mode'}
               >
                 <Pencil className="w-3.5 h-3.5" />
                 <span>
                   {isDrawingMode
-                    ? isTe ? 'డ్రాయింగ్ మోడ్ (సక్రియం)' : 'Plotting Mode (Click Map)'
+                    ? isTe ? 'డ్రాయింగ్ మోడ్ (సక్రియం)' : 'Plotting Mode (Active)'
                     : isTe ? 'బిందువులు జోడించు' : 'Add Points'}
                 </span>
               </button>
@@ -874,10 +920,11 @@ export default function LeafletPropertyMap({
               {isDrawingMode && polygonCoords.length >= 3 && (
                 <button
                   type="button"
+                  id="map-close-boundary-btn"
                   onClick={handleFinishBoundary}
-                  className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-amber-500 hover:bg-amber-400 text-slate-950 flex items-center gap-1.5 transition-all shadow-xs"
+                  className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-[#FAF8F3] hover:bg-white text-[#201512] flex items-center gap-1.5 transition-all shadow-sm border border-[#E2CFB6]"
                 >
-                  <Check className="w-3.5 h-3.5" />
+                  <Check className="w-3.5 h-3.5 text-[#C79A6B]" />
                   <span>{isTe ? 'సరిహద్దు ముగించు' : 'Close Boundary'}</span>
                 </button>
               )}
@@ -885,11 +932,12 @@ export default function LeafletPropertyMap({
               {polygonCoords.length > 0 && (
                 <button
                   type="button"
+                  id="map-undo-btn"
                   onClick={handleUndoPoint}
-                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-white/10 hover:bg-white/20 text-slate-200 flex items-center gap-1 transition-all"
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#2E1E18] hover:bg-[#3A241C] text-[#E2CFB6] border border-[#3A241C] flex items-center gap-1 transition-all"
                   title="Remove last corner point"
                 >
-                  <RotateCcw className="w-3.5 h-3.5" />
+                  <RotateCcw className="w-3.5 h-3.5 text-[#C79A6B]" />
                   <span>{isTe ? 'వెనుకకు' : 'Undo'}</span>
                 </button>
               )}
@@ -897,8 +945,9 @@ export default function LeafletPropertyMap({
               {polygonCoords.length > 0 && (
                 <button
                   type="button"
+                  id="map-clear-btn"
                   onClick={handleClearPolygon}
-                  className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-rose-500/20 hover:bg-rose-500/30 text-rose-300 border border-rose-500/30 flex items-center gap-1 transition-all"
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-rose-950/40 hover:bg-rose-900/60 text-rose-200 border border-rose-800/40 flex items-center gap-1 transition-all"
                   title="Clear all points and start over"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
@@ -908,12 +957,12 @@ export default function LeafletPropertyMap({
             </div>
 
             {/* Vertices Count */}
-            <div className="text-[11px] text-slate-300 flex items-center gap-2">
-              <span className="bg-white/10 px-2 py-0.5 rounded-full font-mono">
+            <div className="text-[11px] text-[#E2CFB6]/80 flex items-center gap-2">
+              <span className="bg-[#2E1E18] px-2.5 py-0.5 rounded-full font-mono border border-[#3A241C] text-[#F5F0E8]">
                 {polygonCoords.length} {isTe ? 'మూలలు' : 'Vertices'}
               </span>
               {isDrawingMode && (
-                <span className="text-amber-400 text-[11px] animate-pulse hidden xs:inline">
+                <span className="text-[#C79A6B] text-[11px] animate-pulse hidden xs:inline font-medium">
                   {isTe ? 'మ్యాప్‌పై క్లిక్ చేసి పాయింట్లను సెట్ చేయండి' : 'Click satellite map to plot corners'}
                 </span>
               )}
@@ -931,8 +980,8 @@ export default function LeafletPropertyMap({
                 onClick={() => handleCorridorJump(corridor)}
                 className={`px-3 py-1 rounded-full whitespace-nowrap font-medium transition-all duration-150 shrink-0 ${
                   activeCorridor === corridor.id
-                    ? 'bg-emerald-700 text-white font-semibold shadow-xs'
-                    : 'bg-white/10 hover:bg-white/20 text-slate-300'
+                    ? 'bg-[#C79A6B] text-[#201512] font-semibold shadow-xs'
+                    : 'bg-white/10 hover:bg-white/20 text-[#E2CFB6]'
                 }`}
               >
                 {isTe ? corridor.nameTe : corridor.nameEn.split('(')[0].trim()}
@@ -948,14 +997,14 @@ export default function LeafletPropertyMap({
 
         {/* Boundary Drawing Area HUD (Real-time live calculated metrics) */}
         {boundaryMode && (
-          <div className="absolute top-3 left-3 right-3 sm:right-auto z-[400] max-w-sm">
-            <div className="bg-[#191512]/95 backdrop-blur-md text-white p-3 sm:p-3.5 rounded-xl border border-white/15 shadow-xl space-y-2">
-              <div className="flex items-center justify-between gap-2 border-b border-white/10 pb-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-emerald-400 flex items-center gap-1">
-                  <ShieldCheck className="w-3.5 h-3.5" />
+          <div id="map-parcel-area-hud" className="absolute top-3 left-3 right-3 sm:right-auto z-[400] max-w-sm">
+            <div className="bg-[#201512]/95 backdrop-blur-md text-[#F5F0E8] p-3.5 sm:p-4 rounded-2xl border border-[#E2CFB6]/30 shadow-[0_16px_40px_rgba(0,0,0,0.5)] space-y-2.5">
+              <div className="flex items-center justify-between gap-2 border-b border-[#3A241C] pb-2">
+                <span className="text-[10px] uppercase font-bold tracking-wider text-[#C79A6B] flex items-center gap-1.5">
+                  <ShieldCheck className="w-3.5 h-3.5 text-[#C79A6B]" />
                   <span>{isTe ? 'లెక్కింపు విస్తీర్ణం' : 'Calculated Parcel Area'}</span>
                 </span>
-                <span className="text-[10px] text-slate-400 font-mono">
+                <span className="text-[10px] text-[#E2CFB6]/70 font-mono">
                   {polygonCoords.length < 3
                     ? isTe ? 'కనీసం 3 బిందువులు అవసరం' : 'Need ≥ 3 corners'
                     : `${areaResult.perimeterMeters}m ${isTe ? 'చుట్టుకొలత' : 'Perimeter'}`}
@@ -963,18 +1012,18 @@ export default function LeafletPropertyMap({
               </div>
 
               {polygonCoords.length >= 3 ? (
-                <div className="space-y-1.5">
+                <div className="space-y-2">
                   <div className="flex items-baseline justify-between gap-2">
-                    <span className="text-xl sm:text-2xl font-bold text-white font-mono">
+                    <span className="text-xl sm:text-2xl font-serif font-bold text-[#FAF8F3] font-mono tracking-tight">
                       {areaResult.formattedAcres}
                     </span>
-                    <span className="text-xs sm:text-sm font-semibold text-emerald-400 font-mono">
+                    <span className="text-xs sm:text-sm font-semibold text-[#C79A6B] font-mono">
                       {areaResult.formattedSqYards}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-300 flex items-center justify-between">
+                  <div className="text-[11px] text-[#E2CFB6]/80 flex items-center justify-between">
                     <span>{Math.round(areaResult.sqMeters).toLocaleString('en-IN')} m²</span>
-                    <span className="text-slate-400">
+                    <span className="text-[#C79A6B] font-medium">
                       {areaResult.wholeAcres} Ac {areaResult.wholeGuntas} Guntas
                     </span>
                   </div>
@@ -982,17 +1031,18 @@ export default function LeafletPropertyMap({
                   {onApplyAreaToForm && (
                     <button
                       type="button"
+                      id="map-apply-area-btn"
                       onClick={handleApplyArea}
-                      className="w-full mt-1.5 py-1.5 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors shadow-sm cursor-pointer"
+                      className="w-full mt-1.5 py-2 px-3 rounded-xl bg-[#C79A6B] hover:bg-[#B6895A] text-[#201512] text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-md cursor-pointer active:scale-[0.98]"
                     >
                       {appliedAreaFeedback ? (
                         <>
-                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-200" />
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#201512]" />
                           <span>{isTe ? 'ఫారమ్‌లోకి జోడించబడింది!' : 'Synced to Form Details!'}</span>
                         </>
                       ) : (
                         <>
-                          <Sparkles className="w-3.5 h-3.5 text-emerald-200" />
+                          <Sparkles className="w-3.5 h-3.5 text-[#201512]" />
                           <span>{isTe ? 'ఈ విస్తీర్ణాన్ని ఫారమ్‌లో వాడండి' : 'Apply Area to Listing Details'}</span>
                         </>
                       )}
@@ -1000,7 +1050,7 @@ export default function LeafletPropertyMap({
                   )}
                 </div>
               ) : (
-                <p className="text-xs text-slate-300 leading-relaxed">
+                <p className="text-xs text-[#E2CFB6]/80 leading-relaxed">
                   {isTe
                     ? 'శాటిలైట్ మ్యాప్‌పై భూమి సరిహద్దు మూలలను క్లిక్ చేసి ప్లాట్ సరిహద్దును గీయండి. పాయింట్లను డ్రాగ్ చేసి ఖచ్చితంగా మార్చవచ్చు.'
                     : 'Click corners on the satellite map to outline the parcel boundary. Drag pins anytime to fine-tune vertices.'}
