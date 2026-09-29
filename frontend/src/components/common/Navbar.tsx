@@ -315,7 +315,7 @@ export default function Navbar({ locale }: NavbarProps) {
 
             {/* Saved / Favorites Indicator */}
             <Link
-              href={`/${locale}/properties?saved=true`}
+              href={`/${locale}/saved-properties`}
               className="relative p-2.5 rounded-full hover:bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] transition-colors flex items-center justify-center border border-[#E8E2D9] bg-white shadow-xs group"
               title={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
               aria-label={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
@@ -386,7 +386,7 @@ export default function Navbar({ locale }: NavbarProps) {
           <div className="flex items-center gap-2 lg:hidden">
             <LanguageToggle currentLocale={locale} className="scale-90" />
             <Link
-              href={`/${locale}/properties?saved=true`}
+              href={`/${locale}/saved-properties`}
               className="relative p-2 rounded-full bg-white border border-[#E8E2D9] text-[#191512] flex items-center justify-center tap-target"
               title={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
               aria-label={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
@@ -512,7 +512,7 @@ export default function Navbar({ locale }: NavbarProps) {
 
             {/* Saved Properties */}
             <Link
-              href={`/${locale}/properties?saved=true`}
+              href={`/${locale}/saved-properties`}
               onClick={() => setIsMobileMenuOpen(false)}
               className="flex items-center justify-between px-4 py-3 rounded-2xl bg-white border border-[#E8E2D9] text-[#191512] font-semibold text-xs uppercase tracking-wider hover:bg-[#F5F1EA] transition-colors"
             >
