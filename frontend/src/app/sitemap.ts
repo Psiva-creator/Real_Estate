@@ -1,9 +1,10 @@
 import { MetadataRoute } from 'next';
 import { MOCK_PROPERTIES } from '@/lib/mockData';
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl = 'https://frontend-six-psi-ecroth2n1r.vercel.app';
   const currentDate = new Date().toISOString();
+  const apiBase = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telangana-realty-backend.onrender.com/api').replace(/\/+$/, '');
 
   const staticRoutes = [
     '',
@@ -11,6 +12,8 @@ export default function sitemap(): MetadataRoute.Sitemap {
     '/te',
     '/en/properties',
     '/te/properties',
+    '/en/saved-properties',
+    '/te/saved-properties',
     '/en/list-property',
     '/te/list-property',
     '/en/about',
@@ -26,15 +29,37 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: route === '' || route === '/en' || route === '/te' ? 1.0 : 0.8,
   }));
 
-  const propertyRoutes = MOCK_PROPERTIES.flatMap((prop) => [
+  // Collect property IDs from backend with fallback to mock data
+  const propertyIds = new Set<string>(MOCK_PROPERTIES.map((p) => p.id));
+
+  try {
+    const res = await fetch(`${apiBase}/properties`, {
+      next: { revalidate: 3600 },
+      signal: AbortSignal.timeout(5000),
+    });
+    if (res.ok) {
+      const data = await res.json();
+      const list = Array.isArray(data) ? data : data.properties || [];
+      for (const item of list) {
+        if (item?.id) {
+          propertyIds.add(String(item.id));
+        }
+      }
+    }
+  } catch (err) {
+    // Graceful fallback to mock properties if backend is starting or offline
+    console.warn('[Sitemap] Backend fetch timed out or offline, using default property registry');
+  }
+
+  const propertyRoutes = Array.from(propertyIds).flatMap((id) => [
     {
-      url: `${baseUrl}/en/properties/${prop.id}`,
+      url: `${baseUrl}/en/properties/${id}`,
       lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.9,
     },
     {
-      url: `${baseUrl}/te/properties/${prop.id}`,
+      url: `${baseUrl}/te/properties/${id}`,
       lastModified: currentDate,
       changeFrequency: 'weekly' as const,
       priority: 0.9,
