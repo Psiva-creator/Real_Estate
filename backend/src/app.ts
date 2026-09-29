@@ -80,7 +80,7 @@ app.get('/health', handleHealthCheck);
 // --- AUTH ROUTES ---
 const authRouter = express.Router();
 authRouter.post('/register', authController.register.bind(authController));
-authRouter.post('/login', authController.login.bind(authController));
+authRouter.post('/login', authRateLimiter, authController.login.bind(authController));
 authRouter.get('/me', requireAuth, authController.me.bind(authController));
 authRouter.get('/logins', requireAuth, authController.myLogins.bind(authController));
 app.use('/api/auth', authRouter);
@@ -99,7 +99,7 @@ const propertiesRouter = express.Router();
 propertiesRouter.get('/', propertiesController.listPublic.bind(propertiesController));
 propertiesRouter.get('/search', propertiesController.search.bind(propertiesController));
 propertiesRouter.get('/:id', propertiesController.getDetail.bind(propertiesController));
-propertiesRouter.post('/', optionalAuth, propertiesController.createListing.bind(propertiesController));
+propertiesRouter.post('/', listingRateLimiter, optionalAuth, propertiesController.createListing.bind(propertiesController));
 propertiesRouter.patch(
   '/:id/status',
   requireAuth,
@@ -157,7 +157,7 @@ app.use('/api', documentsRouter);
 
 // --- ENQUIRIES & LEAD PIPELINE ROUTES ---
 const enquiriesRouter = express.Router();
-enquiriesRouter.post('/', enquiriesController.submitEnquiry.bind(enquiriesController));
+enquiriesRouter.post('/', enquiryRateLimiter, enquiriesController.submitEnquiry.bind(enquiriesController));
 enquiriesRouter.get(
   '/',
   requireAuth,
