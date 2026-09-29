@@ -21,6 +21,7 @@ import PropertySpecs from '@/components/properties/PropertySpecs';
 import PropertyAdminCuratedSection from '@/components/properties/PropertyAdminCuratedSection';
 import PropertyLocationMap from '@/components/properties/PropertyLocationMap';
 import PropertyDetailActions from '@/components/properties/PropertyDetailActions';
+import EmiCalculator from '@/components/properties/EmiCalculator';
 
 export const dynamicParams = true;
 
