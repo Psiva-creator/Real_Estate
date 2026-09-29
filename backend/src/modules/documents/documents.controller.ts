@@ -105,7 +105,7 @@ export class DocumentsController {
         }
       }
 
-      const presigned = storageService.generatePresignedUploadUrl(
+      const presigned = await storageService.generatePresignedUploadUrl(
         propertyId,
         docType,
         fileExtension
