@@ -797,6 +797,12 @@ class Database {
       return this.memory.properties.get(id) || null;
     }
 
+    if (!id || typeof id !== 'string') return null;
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    if (!isUUID) {
+      return null;
+    }
+
     const pool = this.ensurePool();
     const res = await pool.query('SELECT * FROM properties WHERE id = $1', [id]);
     if (res.rows.length === 0) return null;
