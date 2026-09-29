@@ -50,9 +50,20 @@ function formatDate(iso: string) {
 }
 
 // ─── Status Badge ─────────────────────────────────────────────────────────────
+// VERIFIED uses inline luxury styles (overrides shared badge-verified which is green).
+// All other statuses use the shared badge-* classes (already luxury-themed in globals.css).
 function StatusBadge({ status }: { status: string }) {
+  if (status === 'VERIFIED') {
+    return (
+      <span
+        className="px-2.5 py-0.5 rounded-full font-bold text-xs"
+        style={{ background: '#EDE6DA', color: '#3A241C', border: '1px solid #C79A6B' }}
+      >
+        VERIFIED
+      </span>
+    );
+  }
   const map: Record<string, string> = {
-    VERIFIED: 'badge-verified',
     LIVE: 'badge-live',
     UNDER_REVIEW: 'badge-review',
     DRAFT: 'badge-draft',
@@ -157,14 +168,14 @@ export default function DashboardPropertiesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="px-3 py-1 rounded-full bg-emerald-100 text-emerald-800 text-xs font-bold">
+          <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: '#EDE6DA', color: '#3A241C', border: '1px solid #C79A6B' }}>
             {filtered.length} / {allProperties.length} Listings
           </span>
           <button
             type="button"
             onClick={loadProperties}
             disabled={isLoading}
-            className="p-2 rounded-lg border border-slate-200 text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition-colors disabled:opacity-50"
+            className="p-2 rounded-lg border border-[#E2CFB6] text-[#8B624C] hover:text-[#3A241C] hover:bg-[#F5F0E8] transition-colors disabled:opacity-50"
             title="Refresh listings"
             aria-label="Refresh listings"
           >
@@ -175,8 +186,8 @@ export default function DashboardPropertiesPage() {
 
       {/* Loading */}
       {isLoading && (
-        <div className="flex items-center justify-center gap-2 py-12 text-slate-500 text-sm">
-          <Loader2 className="w-5 h-5 animate-spin text-emerald-600" />
+        <div className="flex items-center justify-center gap-2 py-12 text-sm" style={{ color: '#8B624C' }}>
+          <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#C79A6B' }} />
           Loading properties from backend…
         </div>
       )}
@@ -209,7 +220,7 @@ export default function DashboardPropertiesPage() {
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
                   placeholder="Search by title, ID, or location…"
-                  className="w-full h-10 pl-9 pr-9 rounded-lg bg-slate-50 border border-slate-200 text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600"
+                  className="w-full h-10 pl-9 pr-9 rounded-lg bg-[#FBF8F3] border border-[#E2CFB6] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-2 focus:ring-[#C79A6B]"
                 />
                 {search && (
                   <button
@@ -231,7 +242,7 @@ export default function DashboardPropertiesPage() {
                   aria-label="Status filter"
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value as StatusFilter)}
-                  className="w-full h-10 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600 cursor-pointer appearance-none"
+                  className="w-full h-10 pl-3 pr-8 rounded-lg bg-[#FBF8F3] border border-[#E2CFB6] text-xs sm:text-sm text-[#5A382B] font-medium focus:outline-none focus:ring-2 focus:ring-[#C79A6B] cursor-pointer appearance-none"
                 >
                   <option value="ALL">All Statuses</option>
                   <option value="DRAFT">Draft</option>
@@ -252,7 +263,7 @@ export default function DashboardPropertiesPage() {
                   aria-label="Verification filter"
                   value={verifFilter}
                   onChange={(e) => setVerifFilter(e.target.value as VerifFilter)}
-                  className="w-full h-10 pl-3 pr-8 rounded-lg bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-700 font-medium focus:outline-none focus:ring-2 focus:ring-emerald-600 cursor-pointer appearance-none"
+                  className="w-full h-10 pl-3 pr-8 rounded-lg bg-[#FBF8F3] border border-[#E2CFB6] text-xs sm:text-sm text-[#5A382B] font-medium focus:outline-none focus:ring-2 focus:ring-[#C79A6B] cursor-pointer appearance-none"
                 >
                   <option value="ALL">All Verifications</option>
                   <option value="FULLY_VERIFIED">13-Doc Cleared</option>
@@ -274,7 +285,7 @@ export default function DashboardPropertiesPage() {
                   </span>
                 )}
                 {statusFilter !== 'ALL' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 text-emerald-800 text-xs font-medium">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ background: '#F5F0E8', color: '#5A382B', border: '1px solid #E2CFB6' }}>
                     Status: {statusFilter}
                   </span>
                 )}
@@ -337,7 +348,7 @@ export default function DashboardPropertiesPage() {
                           <tr key={prop.id} className="hover:bg-slate-50/60 transition-colors">
                             {/* ID & Title */}
                             <td className="px-4 py-3.5 max-w-[220px]">
-                              <span className="font-mono text-[11px] text-emerald-800 font-bold block">
+                              <span className="font-mono text-[11px] font-bold block" style={{ color: '#8B624C' }}>
                                 {prop.id}
                               </span>
                               <span className="font-semibold text-slate-900 line-clamp-1 text-xs sm:text-sm">
@@ -348,11 +359,11 @@ export default function DashboardPropertiesPage() {
                             {/* Type */}
                             <td className="px-4 py-3.5">
                               <span
-                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase ${
-                                  prop.type === 'LAND'
-                                    ? 'bg-amber-50 text-amber-800 border border-amber-200'
-                                    : 'bg-emerald-50 text-emerald-800 border border-emerald-200'
-                                }`}
+                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase"
+                                style={prop.type === 'LAND'
+                                  ? { background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }
+                                  : { background: '#F5F0E8', color: '#3A241C', border: '1px solid #C79A6B' }
+                                }
                               >
                                 {prop.type === 'LAND' ? (
                                   <MapPin className="w-3 h-3" />
@@ -386,8 +397,8 @@ export default function DashboardPropertiesPage() {
                             {/* 13-Doc Gate */}
                             <td className="px-4 py-3.5">
                               {verified >= total && total > 0 ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 border border-emerald-200 font-bold text-[11px]">
-                                  <ShieldCheck className="w-3 h-3 text-emerald-600" />
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[11px]" style={{ background: '#EDE6DA', color: '#3A241C', border: '1px solid #C79A6B' }}>
+                                  <ShieldCheck className="w-3 h-3" style={{ color: '#8B624C' }} />
                                   {verified}/{total}
                                 </span>
                               ) : (
@@ -415,10 +426,11 @@ export default function DashboardPropertiesPage() {
                             <td className="px-4 py-3.5 text-right">
                               <Link
                                 href={`/dashboard/properties/${prop.id}`}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg border border-emerald-300 bg-emerald-50 text-[11px] font-semibold text-emerald-800 hover:bg-emerald-100 transition-colors"
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 hover:opacity-90"
+                                style={{ background: '#201512', color: '#FBF8F3', border: '1px solid #3A241C' }}
                                 title="Open internal review — seller details and documents"
                               >
-                                <FileCheck className="w-3.5 h-3.5" />
+                                <FileCheck className="w-3.5 h-3.5" style={{ color: '#C79A6B' }} />
                                 <span>Review</span>
                               </Link>
                             </td>
