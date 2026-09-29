@@ -17,12 +17,14 @@ export const config = {
   jwtSecret: process.env.JWT_SECRET || 'telangana-realty-jwt-secret-key-2026-production',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
 
-  // Storage
+  // Storage (AWS S3 & Cloudflare R2 compatible)
   storageDriver: (process.env.STORAGE_DRIVER || 'local') as 'local' | 's3',
   awsRegion: process.env.AWS_REGION || 'ap-south-1',
   awsAccessKeyId: process.env.AWS_ACCESS_KEY_ID || '',
   awsSecretAccessKey: process.env.AWS_SECRET_ACCESS_KEY || '',
   awsS3Bucket: process.env.AWS_S3_BUCKET || 'telangana-realty-documents',
+  s3Endpoint: process.env.S3_ENDPOINT || '', // Optional: Cloudflare R2 (https://<account-id>.r2.cloudflarestorage.com)
+  s3PublicBaseUrl: process.env.S3_PUBLIC_BASE_URL || '', // Optional: CDN / custom domain for bucket
   uploadDir: process.env.UPLOAD_DIR || path.join(process.cwd(), 'uploads'),
 
   // Messaging & WhatsApp Gateway
