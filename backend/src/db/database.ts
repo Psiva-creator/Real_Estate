@@ -1420,6 +1420,10 @@ class Database {
       return list;
     }
 
+    if (!propertyId || typeof propertyId !== 'string') return [];
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    if (!isUUID) return [];
+
     const pool = this.ensurePool();
     const res = await pool.query(
       'SELECT * FROM property_documents WHERE property_id = $1 ORDER BY created_at ASC',
@@ -1435,6 +1439,10 @@ class Database {
       }
       return null;
     }
+
+    if (!propertyId || typeof propertyId !== 'string') return null;
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    if (!isUUID) return null;
 
     const pool = this.ensurePool();
     const res = await pool.query(
