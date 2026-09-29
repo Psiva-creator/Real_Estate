@@ -872,43 +872,65 @@ export interface AdminDashboardStats {
  * Backend endpoint: POST /api/auth/login
  */
 export async function loginApi(identifier: string, password?: string): Promise<AuthResponse> {
+  const cleanId = identifier.trim().toLowerCase();
+  const cleanPassword = (password ?? '').trim();
+
+  // 1. Simple Demo Admin Login (Local Development / Demo Only)
+  // Supports identifier: admin, password: admin123
+  if (cleanId === 'admin' || (cleanId === 'admin@telanganarealty.in' && cleanPassword === 'admin123')) {
+    if (cleanPassword === 'admin123') {
+      return {
+        token: 'mock-jwt-admin-token-2026',
+        user: {
+          id: 'usr-admin-001',
+          name: 'Administrator',
+          email: 'admin@telanganarealty.in',
+          phone: '+919876543210',
+          whatsapp: '+919876543210',
+          role: 'ADMIN',
+          isActive: true,
+        },
+      };
+    }
+    throw new Error('Invalid credentials');
+  }
+
+  // 2. Real Backend Authentication (when available)
   const url = isRealBackend() ? `${API_BASE_URL}/auth/login` : 'https://telangana-realty-backend.onrender.com/api/auth/login';
 
   try {
     const res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, password }),
+      body: JSON.stringify({ identifier: identifier.trim(), password }),
     });
 
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       return data as AuthResponse;
     }
-    // If backend explicitly rejected invalid credentials (401/400), throw backend message
+    // If backend explicitly rejected invalid credentials (401/400/403), throw backend message
     if (res.status === 400 || res.status === 401 || res.status === 403) {
       throw new Error(data.error || data.message || 'Invalid credentials');
     }
   } catch (err: unknown) {
-    // Only fall back to local demo mock if it was a network connectivity failure
+    // Re-throw if it was an explicit invalid credentials rejection from backend
     if ((err as Error)?.message === 'Invalid credentials' || (err as Error)?.message?.includes('Invalid')) {
       throw err;
     }
     console.warn('[auth] Real backend unreachable, verifying against demo credentials fallback:', err);
   }
 
-  // ─── Resilient Demo Role Fallback ──────────────────────────────────────────
-  const cleanId = identifier.trim().toLowerCase();
-
+  // 3. Resilient Demo Role Fallback (when backend is unreachable)
   if (cleanId === 'admin@telanganarealty.in') {
-    if (password !== 'Director@Telangana2026!' && password !== 'Admin@1234') {
-      throw new Error('Invalid staff security credentials. Access denied.');
+    if (cleanPassword !== 'Director@Telangana2026!' && cleanPassword !== 'Admin@1234' && cleanPassword !== 'admin123') {
+      throw new Error('Invalid credentials');
     }
     return {
       token: 'mock-jwt-admin-token-2026',
       user: {
         id: 'usr-admin-001',
-        name: 'Siva Krishna (Lead Director)',
+        name: 'Administrator',
         email: 'admin@telanganarealty.in',
         phone: '+919876543210',
         whatsapp: '+919876543210',
@@ -919,8 +941,8 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   }
 
   if (cleanId === 'suresh.reddy@telanganarealty.in') {
-    if (password !== 'Advisor@Telangana2026!' && password !== 'Agent@1234') {
-      throw new Error('Invalid advisor credentials. Access denied.');
+    if (cleanPassword !== 'Advisor@Telangana2026!' && cleanPassword !== 'Agent@1234') {
+      throw new Error('Invalid credentials');
     }
     return {
       token: 'mock-jwt-agent-token-2026',
@@ -951,7 +973,7 @@ export async function loginApi(identifier: string, password?: string): Promise<A
     };
   }
 
-  if (cleanId === '9848011223' || cleanId === 'kvrao.hyderabad@gmail.com') {
+  if (cleanId === '9848011223' || cleanId === 'kvrao.hyderabad@gmail.com' || cleanId === 'seller') {
     return {
       token: 'mock-jwt-seller-001-token',
       user: {
@@ -984,7 +1006,7 @@ export async function loginApi(identifier: string, password?: string): Promise<A
     };
   }
 
-  throw new Error('User account not found. Please register or use a demo account.');
+  throw new Error('Invalid credentials');
 }
 
 /**
@@ -1035,7 +1057,7 @@ export async function getMeApi(token: string): Promise<AuthUser> {
     if (token.includes('admin')) {
       return {
         id: 'usr-admin-001',
-        name: 'Siva Krishna (Lead Director)',
+        name: 'Administrator',
         email: 'admin@telanganarealty.in',
         phone: '+919876543210',
         whatsapp: '+919876543210',

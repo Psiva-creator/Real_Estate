@@ -94,7 +94,7 @@ function LoginFormContent({ params }: LoginPageProps) {
 
     if (!loginIdentifier.trim()) {
       setErrorMessage(
-        isTe ? 'దయచేసి మీ మొబైల్ నంబర్ లేదా ఈమెయిల్ నమోదు చేయండి.' : 'Please enter your registered mobile number or email.'
+        isTe ? 'దయచేసి మీ యూజర్‌నేమ్, మొబైల్ నంబర్ లేదా ఈమెయిల్ నమోదు చేయండి.' : 'Please enter your username, mobile number or email.'
       );
       return;
     }
@@ -300,7 +300,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                 }`}
               >
                 <KeyRound className="w-3.5 h-3.5" />
-                <span>{isTe ? 'సెల్లర్ లాగిన్' : 'Sign In to Portal'}</span>
+                <span>{isTe ? 'పోర్టల్ లాగిన్' : 'Sign In to Portal'}</span>
               </button>
 
               <button
@@ -355,18 +355,18 @@ function LoginFormContent({ params }: LoginPageProps) {
                 <form onSubmit={handleLoginSubmit} className="space-y-4">
                   <div className="space-y-1.5">
                     <label className="block text-xs font-semibold text-[#191512]">
-                      {isTe ? 'మొబైల్ నంబర్ లేదా ఈమెయిల్' : 'Registered Mobile Number or Email'}
+                      {isTe ? 'యూజర్‌నేమ్, మొబైల్ లేదా ఈమెయిల్' : 'Username, Mobile Number or Email'}
                       <span className="text-[#8C653E] ml-0.5">*</span>
                     </label>
                     <div className="relative">
                       <div className="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-[#8C827A]">
-                        <Phone className="w-4 h-4" />
+                        <User className="w-4 h-4" />
                       </div>
                       <input
                         type="text"
                         value={loginIdentifier}
                         onChange={(e) => setLoginIdentifier(e.target.value)}
-                        placeholder={isTe ? 'ఉదా. 98480 12345 లేదా ఈమెయిల్' : 'e.g. 9848011223 or email'}
+                        placeholder={isTe ? 'యూజర్‌నేమ్, మొబైల్ లేదా ఈమెయిల్ నమోదు చేయండి' : 'Enter username, mobile or email'}
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white transition-all font-mono"
                         required
                         disabled={isSubmitting}
@@ -447,7 +447,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                       </div>
                     ) : (
                       <>
-                        <span>{isTe ? 'సెల్లర్ పోర్టల్‌లోకి ప్రవేశించండి' : 'Sign In to Seller Portal'}</span>
+                        <span>{isTe ? 'పోర్టల్‌లోకి ప్రవేశించండి' : 'Sign In to Portal'}</span>
                         <ArrowRight className="w-3.5 h-3.5 text-[#C5A880]" />
                       </>
                     )}
@@ -469,7 +469,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         type="text"
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
-                        placeholder="e.g. K. Venkateshwara Rao"
+                        placeholder={isTe ? 'ఉదా. రమేష్ కుమార్' : 'e.g. Ramesh Kumar'}
                         className="w-full pl-10 pr-4 py-3 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white"
                         required
                         disabled={isSubmitting}
