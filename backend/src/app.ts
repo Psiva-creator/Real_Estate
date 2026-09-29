@@ -16,12 +16,19 @@ import swaggerUi from 'swagger-ui-express';
 import { openApiSpec } from './docs/openapi.js';
 
 import { getCorsOptions } from './config/cors.js';
+import {
+  authRateLimiter,
+  enquiryRateLimiter,
+  listingRateLimiter,
+  globalRateLimiter,
+} from './middleware/rate-limiter.js';
 
 export const app = express();
 app.disable('x-powered-by');
 
-// Global Middlewares
+// Global Middlewares & DDoS Shield
 app.use(cors(getCorsOptions()));
+app.use('/api', globalRateLimiter);
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
