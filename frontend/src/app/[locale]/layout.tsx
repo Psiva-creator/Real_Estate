@@ -25,10 +25,14 @@ export default function LocaleLayout({ children, params }: LocaleLayoutProps) {
 
   return (
     <div className={`min-h-screen flex flex-col ${locale === 'te' ? 'font-telugu' : 'font-sans'}`}>
-      <Navbar locale={locale} />
-      <main className="flex-1 w-full">{children}</main>
-      <Footer locale={locale} />
-      <CookieConsent locale={locale} />
+      <div className="print:hidden">
+        <Navbar locale={locale} />
+      </div>
+      <main className="flex-1 w-full print:p-0">{children}</main>
+      <div className="print:hidden">
+        <Footer locale={locale} />
+        <CookieConsent locale={locale} />
+      </div>
     </div>
   );
 }
