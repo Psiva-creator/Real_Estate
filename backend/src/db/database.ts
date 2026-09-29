@@ -382,7 +382,36 @@ class Database {
 
     try {
       const res = await pool.query(query, values);
-      return mapUserRow(res.rows[0]);
+      const created = mapUserRow(res.rows[0]);
+
+      // Sync to Supabase Auth (auth.users) so user is immediately visible in Supabase Authentication Dashboard
+      try {
+        const syncEmail = created.email || `${created.phone.replace(/[^0-9]/g, '')}@telanganarealty.in`;
+        await pool.query(`
+          INSERT INTO auth.users (
+            id, instance_id, aud, role, email, encrypted_password,
+            email_confirmed_at, phone, phone_confirmed_at,
+            raw_app_meta_data, raw_user_meta_data, created_at, updated_at,
+            is_sso_user, is_anonymous
+          )
+          VALUES (
+            $1::uuid, '00000000-0000-0000-0000-000000000000'::uuid, 'authenticated', 'authenticated',
+            $2::text, $3::text, NOW(), $4::text, NOW(),
+            jsonb_build_object('provider', 'email', 'providers', array['email']),
+            jsonb_build_object('name', $5::text, 'role', $6::text, 'phone', $4::text),
+            NOW(), NOW(), false, false
+          )
+          ON CONFLICT (id) DO UPDATE SET
+            email = EXCLUDED.email,
+            phone = EXCLUDED.phone,
+            raw_user_meta_data = EXCLUDED.raw_user_meta_data,
+            updated_at = NOW();
+        `, [created.id, syncEmail, data.passwordHash || null, created.phone, created.name, created.role]);
+      } catch (authErr) {
+        console.warn('Could not sync new user to auth.users:', (authErr as Error).message);
+      }
+
+      return created;
     } catch (err) {
       console.error('PostgreSQL createUser error:', (err as Error).message);
       throw err;
@@ -526,6 +555,16 @@ class Database {
       'UPDATE users SET last_login_at = NOW(), updated_at = NOW() WHERE id = $1',
       [id]
     );
+
+    // Sync last sign in to Supabase auth.users table
+    try {
+      await pool.query(
+        'UPDATE auth.users SET last_sign_in_at = NOW(), updated_at = NOW() WHERE id = $1',
+        [id]
+      );
+    } catch (authErr) {
+      // Non-fatal
+    }
   }
 
   async recordLogin(data: {
