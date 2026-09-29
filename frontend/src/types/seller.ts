@@ -68,9 +68,6 @@ export interface SellerFormData {
   privateGarden: boolean;
   coveredParking: string;
 
-  // Boundary coordinates
-  boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
-
   // Step 5: Pricing
   totalPrice: string;
   pricePerAcre: string;
