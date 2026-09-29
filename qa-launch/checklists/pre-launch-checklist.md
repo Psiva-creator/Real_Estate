@@ -28,4 +28,14 @@
 - [x] Villa type properties display correctly on discovery page (type filter, plot + built-up area badges, floor config label).
 - [x] Boundary polygon coordinates stored and rendered on map (`boundaryCoordinates` Leaflet polygon integration).
 - [x] Buyer favorites persist across sessions (`trh_saved_properties` in localStorage with real-time UI toggle).
-- [x] 45/45 backend unit tests passing. (Verified — 7 test suites, 0 failures)
+- [x] 51/51 backend unit tests passing. (Verified — 7 test suites, 0 failures)
+
+### 6. Production Hardening & Regulatory Launch (Completed)
+- [x] Persistent S3 / Cloudflare R2 presigned storage engine with authenticated download gates.
+- [x] Twilio and WATI REST API WhatsApp gateway dispatch client with graceful fallback.
+- [x] Dedicated bilingual Buyer Saved Properties portal (`/[locale]/saved-properties`).
+- [x] Dynamic XML sitemap generator (`sitemap.ts`) fetching live properties with fallback.
+- [x] Render backend keep-alive automation (`.github/workflows/render-keep-alive.yml` & `backend/scripts/keep-alive.js`).
+- [x] Telangana RERA authorized mediation agent statutory notice (`TSRERA/AG/HYD/2024/00142`) in Footer.
+- [x] Client-side bilingual Cookie & Privacy Consent notice (`CookieConsent.tsx`).
+- [x] Zero TypeScript errors with strict typechecking enforced in Next.js production builds.
