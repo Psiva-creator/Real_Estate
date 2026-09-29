@@ -18,6 +18,7 @@ import {
   ArrowRight,
   RefreshCw,
   Loader2,
+  Download,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import {
@@ -222,6 +223,50 @@ export default function DashboardEnquiriesPage() {
     });
   }, [leads, search, statusFilter, typeFilter]);
 
+  // Export filtered leads to CSV
+  const exportToCsv = () => {
+    if (filtered.length === 0) return;
+    const headers = [
+      'Lead ID',
+      'Buyer Name',
+      'Phone',
+      'Property ID',
+      'Property Title',
+      'Enquiry Type',
+      'Status',
+      'Assigned Agent',
+      'Date',
+      'Priority',
+      'Notes',
+    ];
+    const rows = filtered.map((l) => [
+      `"${l.id}"`,
+      `"${l.buyerName.replace(/"/g, '""')}"`,
+      `"${l.phone.replace(/"/g, '""')}"`,
+      `"${l.propertyId}"`,
+      `"${l.propertyTitle.replace(/"/g, '""')}"`,
+      `"${l.enquiryType}"`,
+      `"${l.status}"`,
+      `"${l.agentName.replace(/"/g, '""')}"`,
+      `"${l.date}"`,
+      `"${l.priority}"`,
+      `"${(l.notes || '').replace(/"/g, '""')}"`,
+    ]);
+
+    const csvContent = [headers.join(','), ...rows.map((r) => r.join(','))].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.setAttribute(
+      'download',
+      `telangana-realty-leads-${new Date().toISOString().split('T')[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   // Update lead assignment (local state)
   const updateAgent = (id: string, newAgent: string) => {
     setLeads(
@@ -299,6 +344,16 @@ export default function DashboardEnquiriesPage() {
           >
             <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? 'animate-spin text-blue-600' : ''}`} />
             <span>Refresh</span>
+          </button>
+          <button
+            type="button"
+            onClick={exportToCsv}
+            disabled={filtered.length === 0}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors shadow-sm disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed"
+            title="Export filtered enquiries to CSV"
+          >
+            <Download className="w-3.5 h-3.5 text-slate-500" />
+            <span>Export CSV</span>
           </button>
           <span className="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-bold">
             {filtered.length} Active Enquiries
