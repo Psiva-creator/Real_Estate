@@ -256,7 +256,10 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
             </div>
           </div>
 
-          {/* 5. Location & Map Section */}
+          {/* 5. Home Loan & Land EMI Financing Schedule */}
+          <EmiCalculator propertyPrice={property.pricing.totalPrice} locale={locale} />
+
+          {/* 6. Location & Map Section */}
           <PropertyLocationMap property={property} locale={locale} />
         </div>
 
