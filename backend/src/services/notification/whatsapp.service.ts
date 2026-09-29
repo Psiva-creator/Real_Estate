@@ -67,8 +67,77 @@ export class NotificationService {
     if (config.notificationProvider === 'mock') {
       console.log(`[WhatsApp Mock Dispatch] to: ${payload.to} | text: "${text}"`);
     } else if (config.notificationProvider === 'twilio') {
-      // In production with Twilio configured
-      console.log(`[Twilio WhatsApp Dispatch] to: ${payload.to}`);
+      if (!config.twilioAccountSid || !config.twilioAuthToken) {
+        console.warn(`[Twilio WhatsApp Dispatch] Missing TWILIO_ACCOUNT_SID or TWILIO_AUTH_TOKEN; falling back to simulated dispatch for ${payload.to}`);
+        record.status = 'SIMULATED';
+      } else {
+        try {
+          const toFormatted = payload.to.startsWith('whatsapp:') ? payload.to : `whatsapp:${payload.to}`;
+          const fromFormatted = config.twilioWhatsAppNumber.startsWith('whatsapp:')
+            ? config.twilioWhatsAppNumber
+            : `whatsapp:${config.twilioWhatsAppNumber}`;
+
+          const twilioUrl = `https://api.twilio.com/2010-04-01/Accounts/${config.twilioAccountSid}/Messages.json`;
+          const authHeader = 'Basic ' + Buffer.from(`${config.twilioAccountSid}:${config.twilioAuthToken}`).toString('base64');
+          const bodyParams = new URLSearchParams({
+            To: toFormatted,
+            From: fromFormatted,
+            Body: text,
+          });
+
+          const resp = await fetch(twilioUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': authHeader,
+              'Content-Type': 'application/x-www-form-urlencoded',
+            },
+            body: bodyParams.toString(),
+          });
+
+          if (!resp.ok) {
+            const errBody = await resp.text();
+            console.error(`[Twilio WhatsApp Dispatch Error] HTTP ${resp.status}: ${errBody}`);
+            record.status = 'FAILED';
+          } else {
+            const data = await resp.json();
+            console.log(`[Twilio WhatsApp Dispatched] SID: ${(data as any).sid} to: ${payload.to}`);
+            record.status = 'SENT';
+          }
+        } catch (err: any) {
+          console.error(`[Twilio WhatsApp Dispatch Exception] ${err?.message || err}`);
+          record.status = 'FAILED';
+        }
+      }
+    } else if (config.notificationProvider === 'wati') {
+      if (!config.watiApiEndpoint || !config.watiAccessToken) {
+        console.warn(`[WATI WhatsApp Dispatch] Missing WATI_API_ENDPOINT or WATI_ACCESS_TOKEN; falling back to simulated dispatch for ${payload.to}`);
+        record.status = 'SIMULATED';
+      } else {
+        try {
+          const cleanPhone = payload.to.replace(/^whatsapp:/, '').replace(/[^0-9]/g, '');
+          const watiUrl = `${config.watiApiEndpoint.replace(/\/$/, '')}/api/v1/sendSessionMessage/${cleanPhone}?messageText=${encodeURIComponent(text)}`;
+
+          const resp = await fetch(watiUrl, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${config.watiAccessToken}`,
+              'Content-Type': 'application/json',
+            },
+          });
+
+          if (!resp.ok) {
+            const errBody = await resp.text();
+            console.error(`[WATI WhatsApp Dispatch Error] HTTP ${resp.status}: ${errBody}`);
+            record.status = 'FAILED';
+          } else {
+            console.log(`[WATI WhatsApp Dispatched] to: ${payload.to}`);
+            record.status = 'SENT';
+          }
+        } catch (err: any) {
+          console.error(`[WATI WhatsApp Dispatch Exception] ${err?.message || err}`);
+          record.status = 'FAILED';
+        }
+      }
     }
 
     this.sentHistory.push(record);
