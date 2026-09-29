@@ -129,7 +129,6 @@ export const INITIAL_SELLER_FORM_DATA: SellerFormData = {
   gatedCommunity: true,
   privateGarden: false,
   coveredParking: '2',
-  boundaryCoordinates: null,
   totalPrice: '',
   pricePerAcre: '',
   pricePerSqft: '',

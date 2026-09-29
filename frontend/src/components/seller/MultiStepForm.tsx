@@ -367,7 +367,10 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
         land: landPayload,
         flat: flatPayload,
         villa: villaPayload,
-        boundaryCoordinates: formData.boundaryCoordinates,
+        boundaryCoordinates:
+          formData.boundaryCoordinates && formData.boundaryCoordinates.length >= 3
+            ? formData.boundaryCoordinates.map((p) => ({ lat: p[0], lng: p[1] }))
+            : null,
         pricing: pricingPayload,
         mainImage,
       };
