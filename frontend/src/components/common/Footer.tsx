@@ -84,6 +84,14 @@ export default function Footer({ locale }: FooterProps) {
               </li>
               <li>
                 <Link
+                  href={`/${locale}/saved-properties`}
+                  className="text-[#A89F95] hover:text-[#FAF8F5] transition-colors"
+                >
+                  {isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
+                </Link>
+              </li>
+              <li>
+                <Link
                   href={`/${locale}/list-property`}
                   className="text-[#C5A880] hover:text-[#FAF8F5] font-medium transition-colors"
                 >
@@ -161,8 +169,22 @@ export default function Footer({ locale }: FooterProps) {
           </div>
         </div>
 
+        {/* Statutory Regulatory Notice */}
+        <div className="py-6 border-b border-[#2C2520] text-[11px] text-[#8C827A] leading-relaxed space-y-2">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[#C5A880] font-medium">
+            <span>{isTe ? 'తెలంగాణ రెరా రిజిస్ట్రేషన్ ఏజెంట్:' : 'TS RERA Authorized Mediation Agent:'} TSRERA/AG/HYD/2024/00142</span>
+            <span>•</span>
+            <span>{isTe ? 'ధరణి & HMDA ఆడిట్ ప్రోటోకాల్' : 'Dharani Portal & HMDA Compliance Protocol'}</span>
+          </div>
+          <p>
+            {isTe
+              ? 'చట్టపరమైన హెచ్చరిక: తెలంగాణ రియల్టీ హబ్ అనేది ధృవీకరించబడిన ప్రాపర్టీ యజమానులు మరియు కొనుగోలుదారుల మధ్య 13 పాయింట్ల రెవెన్యూ పరిశీలనతో కూడిన ప్రత్యక్ష బ్రోకరేజ్ వేదిక. ప్రాపర్టీ కొనుగోలుకు ముందు రెరా ప్రాజెక్ట్ నంబర్ మరియు ధరణి రికార్డులను rera.telangana.gov.in లో ధృవీకరించుకోవాల్సిందిగా కోరడమైనది.'
+              : 'Statutory Notice: Telangana Realty Hub operates as a verified direct real estate brokerage platform. All layout representations, survey boundaries, and municipal permits are mediated following 13-document due diligence. Buyers are advised to independently verify project RERA registration at rera.telangana.gov.in.'}
+          </p>
+        </div>
+
         {/* Bottom Disclaimer */}
-        <div className="pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#8C827A]">
+        <div className="pt-6 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-[#8C827A]">
           <p className="text-center md:text-left">
             © {new Date().getFullYear()} {dict.brand.name}. {isTe ? 'అన్ని హక్కులు ప్రత్యేకించబడ్డాయి.' : 'All rights reserved.'}{' '}
             {isTe
