@@ -250,7 +250,7 @@ class Database {
   }
 
   // Returns true only when unit tests explicitly enable test memory mode
-  private get isTestMemoryMode(): boolean {
+  get isTestMemoryMode(): boolean {
     return this.testMemoryMode;
   }
 

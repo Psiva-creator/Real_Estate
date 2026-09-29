@@ -92,7 +92,9 @@ export class AdminController {
    */
   async syncSeeds(_req: AuthRequest, res: Response) {
     try {
-      await runMigrations();
+      if (!db.isTestMemoryMode) {
+        await runMigrations();
+      }
       await runSeeds();
       const properties = await db.listAllProperties();
       const owners = await db.listOwners();
