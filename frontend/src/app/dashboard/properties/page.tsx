@@ -20,6 +20,7 @@ import {
   RefreshCw,
   Loader2,
   AlertCircle,
+  Edit3,
 } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -420,14 +421,14 @@ export default function DashboardPropertiesPage() {
                             </td>
 
                             {/* Actions */}
-                            <td className="px-4 py-3.5 text-right">
+                            <td className="px-4 py-3.5 text-right whitespace-nowrap">
                               <Link
                                 href={`/dashboard/properties/${prop.id}`}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 hover:opacity-90 bg-[#201512] text-[#FBF8F3] border border-[#3A241C]"
-                                title="Open internal review — seller details and documents"
+                                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all duration-150 hover:bg-emerald-700 bg-emerald-800 text-white shadow-xs"
+                                title="Edit details, review 13 legal documents, and publish to public website"
                               >
-                                <FileCheck className="w-3.5 h-3.5 text-[#C79A6B]" />
-                                <span>Review</span>
+                                <Edit3 className="w-3.5 h-3.5" />
+                                <span>Edit &amp; Publish</span>
                               </Link>
                             </td>
                           </tr>
