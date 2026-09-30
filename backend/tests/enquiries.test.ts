@@ -53,6 +53,36 @@ describe('Enquiries & Lead Pipeline Module', () => {
     assert.ok(buyerAlert.renderedText.includes(liveProperty.titleEn));
   });
 
+  test('Slot Booking: Submit site visit with specific date & time slot fires slot confirmation WhatsApp', async () => {
+    const properties = await db.listAllProperties();
+    const liveProperty = properties.find((p) => p.status === 'LIVE')!;
+
+    const res = await request(app)
+      .post('/api/enquiries')
+      .send({
+        propertyId: liveProperty.id,
+        buyerName: 'Vikram Chandra',
+        phone: '+919123456780',
+        whatsapp: '+919123456780',
+        enquiryType: 'SITE_VISIT',
+        visitDate: '2026-10-05',
+        visitTimeSlot: '11:00 AM - 12:30 PM',
+        notes: 'Interested in site inspection',
+        preferredLanguage: 'en',
+      });
+
+    assert.strictEqual(res.status, 201);
+    assert.strictEqual(res.body.enquiry.status, 'SITE_VISIT_SCHEDULED');
+    assert.ok(res.body.enquiry.notes.includes('11:00 AM - 12:30 PM'));
+
+    const history = notificationService.getNotificationHistory();
+    const slotAlert = history.find((n) => n.to === '+919123456780' && n.template === 'site_visit_slot_booked');
+    assert.ok(slotAlert, 'site_visit_slot_booked WhatsApp notification must be triggered');
+    assert.ok(slotAlert.renderedText.includes('Vikram Chandra'));
+    assert.ok(slotAlert.renderedText.includes('11:00 AM - 12:30 PM'));
+    assert.ok(slotAlert.renderedText.includes(liveProperty.titleEn));
+  });
+
   test('Submit enquiry in Telugu triggers Telugu WhatsApp template', async () => {
     const properties = await db.listAllProperties();
     const liveProperty = properties.find((p) => p.status === 'LIVE')!;

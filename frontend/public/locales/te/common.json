@@ -336,7 +336,15 @@
     "errorPhoneInvalid": "దయచేసి సరైన 10 అంకెల మొబైల్ నంబర్ నమోదు చేయండి",
     "errorDateRequired": "దయచేసి సందర్శించదలచిన తేదీని ఎంచుకోండి",
     "errorTimeRequired": "దయచేసి అనుకూల సమయాన్ని ఎంచుకోండి",
-    "errorQuestionRequired": "దయచేసి మీ సందేహం లేదా సందేశాన్ని నమోదు చేయండి"
+    "errorQuestionRequired": "దయచేసి మీ సందేహం లేదా సందేశాన్ని నమోదు చేయండి",
+    "selectVisitSlot": "విజిట్ స్లాట్ సమయాన్ని ఎంచుకోండి",
+    "whatsappAlertConsent": "వాట్సాప్ ద్వారా తక్షణ స్లాట్ బుకింగ్ నిర్ధారణ & విజిట్ పాస్ పంపండి",
+    "whatsappPassDispatched": "ఆటోమేటెడ్ వాట్సాప్ విజిట్ పాస్ పంపబడింది:",
+    "openWhatsApp": "వాట్సాప్‌లో నిర్ధారణ చూడండి",
+    "quickDates": "త్వరిత తేదీ ఎంపిక",
+    "tomorrow": "రేపు",
+    "thisSaturday": "ఈ శనివారం",
+    "thisSunday": "ఈ ఆదివారం"
   },
   "propertyDetail": {
     "overview": "ప్రాపర్టీ స్థూల వివరాలు",

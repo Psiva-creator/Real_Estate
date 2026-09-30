@@ -31,9 +31,11 @@ export interface CreateEnquiryDTO {
   propertyTitle: string;
   buyerName: string;
   phone: string;
+  whatsapp?: string;
   enquiryType: EnquiryType;
   preferredDate?: string;
   preferredTime?: string;
+  timeSlot?: string;
   callingWindow?: string;
   message?: string;
 }
@@ -548,11 +550,11 @@ export async function getPropertyById(id: string): Promise<MockProperty | null> 
 export async function submitEnquiry(data: CreateEnquiryDTO): Promise<EnquirySubmissionResult> {
   if (isRealBackend()) {
     try {
-      // Map frontend DTO → backend payload
+      const slotTiming = data.timeSlot || data.preferredTime;
       const notes = [
         data.message ?? '',
         data.preferredDate ? `Preferred date: ${data.preferredDate}` : '',
-        data.preferredTime ? `Preferred time: ${data.preferredTime}` : '',
+        slotTiming ? `Booked slot timing: ${slotTiming}` : '',
         data.callingWindow ? `Calling window: ${data.callingWindow}` : '',
       ]
         .filter(Boolean)
@@ -562,8 +564,10 @@ export async function submitEnquiry(data: CreateEnquiryDTO): Promise<EnquirySubm
         propertyId: data.propertyId,
         buyerName: data.buyerName,
         phone: data.phone,
-        whatsapp: data.phone, // default whatsapp to same phone
+        whatsapp: data.whatsapp || data.phone, // default whatsapp to phone
         enquiryType: data.enquiryType,
+        visitDate: data.preferredDate,
+        visitTimeSlot: slotTiming,
         notes: notes || undefined,
         preferredLanguage: 'en',
       };

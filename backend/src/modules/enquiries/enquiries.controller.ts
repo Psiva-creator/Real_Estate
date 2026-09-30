@@ -8,7 +8,17 @@ export class EnquiriesController {
    */
   async submitEnquiry(req: Request, res: Response) {
     try {
-      const { propertyId, buyerName, phone, whatsapp, enquiryType, notes, preferredLanguage } = req.body;
+      const {
+        propertyId,
+        buyerName,
+        phone,
+        whatsapp,
+        enquiryType,
+        notes,
+        preferredLanguage,
+        visitDate,
+        visitTimeSlot,
+      } = req.body;
 
       if (!propertyId || !buyerName || !phone) {
         return res.status(400).json({ error: 'propertyId, buyerName, and phone are required' });
@@ -24,6 +34,8 @@ export class EnquiriesController {
         phone,
         whatsapp,
         enquiryType: enquiryType || 'CALL',
+        visitDate,
+        visitTimeSlot,
         notes,
         preferredLanguage: preferredLanguage || 'en',
       });

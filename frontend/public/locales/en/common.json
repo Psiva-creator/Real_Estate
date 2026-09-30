@@ -336,7 +336,15 @@
     "errorPhoneInvalid": "Please enter a valid 10-digit mobile number",
     "errorDateRequired": "Please select a preferred visit date",
     "errorTimeRequired": "Please select a preferred time slot",
-    "errorQuestionRequired": "Please enter your question or inquiry"
+    "errorQuestionRequired": "Please enter your question or inquiry",
+    "selectVisitSlot": "Select Site Visit Timing Slot",
+    "whatsappAlertConsent": "Send instant slot confirmation & visit pass via WhatsApp",
+    "whatsappPassDispatched": "Automated WhatsApp visit pass dispatched to",
+    "openWhatsApp": "Open WhatsApp Confirmation",
+    "quickDates": "Quick Select Date",
+    "tomorrow": "Tomorrow",
+    "thisSaturday": "This Saturday",
+    "thisSunday": "This Sunday"
   },
   "propertyDetail": {
     "overview": "Property Overview",

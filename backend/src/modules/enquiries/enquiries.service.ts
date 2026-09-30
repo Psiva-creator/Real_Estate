@@ -8,6 +8,8 @@ export interface CreateEnquiryInput {
   phone: string;
   whatsapp?: string;
   enquiryType: EnquiryType;
+  visitDate?: string;
+  visitTimeSlot?: string;
   notes?: string;
   preferredLanguage?: 'en' | 'te';
 }
@@ -33,8 +35,8 @@ export class EnquiriesService {
       score += 15;
     }
 
-    // Detailed notes
-    if (input.notes && input.notes.length > 20) {
+    // Detailed notes or specific time slot booked
+    if (input.visitTimeSlot || (input.notes && input.notes.length > 20)) {
       score += 15;
     }
 
@@ -57,16 +59,28 @@ export class EnquiriesService {
 
     const leadScore = this.calculateLeadScore(input);
 
+    const slotTiming =
+      input.visitDate && input.visitTimeSlot
+        ? `${input.visitDate} • ${input.visitTimeSlot}`
+        : input.visitDate || input.visitTimeSlot || undefined;
+
+    const combinedNotes = [
+      input.notes,
+      slotTiming ? `[Booked Slot Timing: ${slotTiming}]` : '',
+    ]
+      .filter(Boolean)
+      .join(' | ');
+
     const enquiry = await db.createEnquiry({
       propertyId: input.propertyId,
       buyerName: input.buyerName,
       phone: input.phone,
       whatsapp: input.whatsapp || input.phone,
       enquiryType: input.enquiryType,
-      status: assignedAgent ? 'ASSIGNED' : 'NEW',
+      status: input.enquiryType === 'SITE_VISIT' && slotTiming ? 'SITE_VISIT_SCHEDULED' : (assignedAgent ? 'ASSIGNED' : 'NEW'),
       assignedTo: assignedAgent?.id,
       leadScore,
-      notes: input.notes,
+      notes: combinedNotes || undefined,
       preferredLanguage: input.preferredLanguage || 'en',
     });
 
@@ -74,36 +88,74 @@ export class EnquiriesService {
     const agentPhone = assignedAgent?.phone || '9876543210';
     const lang = input.preferredLanguage || 'en';
 
-    // 1. Send WhatsApp acknowledgement to buyer
-    await notificationService.sendWhatsApp({
-      to: enquiry.whatsapp || enquiry.phone,
-      template: 'buyer_enquiry_acknowledgement',
-      language: lang,
-      variables: {
-        buyer_name: enquiry.buyerName,
-        property_title: property.titleEn,
-        property_ref: property.id.slice(0, 8).toUpperCase(),
-        agent_name: agentName,
-        agent_phone: agentPhone,
-      },
-    });
+    // 1. Send WhatsApp notification to buyer
+    if (input.enquiryType === 'SITE_VISIT' && slotTiming) {
+      const mapLink =
+        property.location?.latitude && property.location?.longitude
+          ? `https://maps.google.com/?q=${property.location.latitude},${property.location.longitude}`
+          : `https://maps.google.com/?q=${encodeURIComponent(`${property.location.village}, ${property.location.mandal}, ${property.location.district}`)}`;
 
-    // 2. Send WhatsApp alert to assigned agent
-    if (assignedAgent) {
       await notificationService.sendWhatsApp({
-        to: assignedAgent.whatsapp || assignedAgent.phone,
-        template: 'agent_lead_assigned',
+        to: enquiry.whatsapp || enquiry.phone,
+        template: 'site_visit_slot_booked',
+        language: lang,
+        variables: {
+          buyer_name: enquiry.buyerName,
+          property_title: property.titleEn,
+          property_ref: property.id.slice(0, 8).toUpperCase(),
+          slot_timing: slotTiming,
+          map_link: mapLink,
+          agent_name: agentName,
+          agent_phone: agentPhone,
+        },
+      });
+
+      // 2. Send WhatsApp alert to assigned agent / lead team
+      const agentRecipient = assignedAgent?.whatsapp || assignedAgent?.phone || '9876543210';
+      await notificationService.sendWhatsApp({
+        to: agentRecipient,
+        template: 'agent_slot_booked_alert',
         language: 'en',
         variables: {
           buyer_name: enquiry.buyerName,
           buyer_phone: enquiry.phone,
-          enquiry_type: enquiry.enquiryType,
+          slot_timing: slotTiming,
           property_title: property.titleEn,
-          location: `${property.location.village}, ${property.location.mandal}`,
           lead_score: enquiry.leadScore.toString(),
           dashboard_url: `/dashboard/enquiries/${enquiry.id}`,
         },
       });
+    } else {
+      await notificationService.sendWhatsApp({
+        to: enquiry.whatsapp || enquiry.phone,
+        template: 'buyer_enquiry_acknowledgement',
+        language: lang,
+        variables: {
+          buyer_name: enquiry.buyerName,
+          property_title: property.titleEn,
+          property_ref: property.id.slice(0, 8).toUpperCase(),
+          agent_name: agentName,
+          agent_phone: agentPhone,
+        },
+      });
+
+      // Send WhatsApp alert to assigned agent
+      if (assignedAgent) {
+        await notificationService.sendWhatsApp({
+          to: assignedAgent.whatsapp || assignedAgent.phone,
+          template: 'agent_lead_assigned',
+          language: 'en',
+          variables: {
+            buyer_name: enquiry.buyerName,
+            buyer_phone: enquiry.phone,
+            enquiry_type: enquiry.enquiryType,
+            property_title: property.titleEn,
+            location: `${property.location.village}, ${property.location.mandal}`,
+            lead_score: enquiry.leadScore.toString(),
+            dashboard_url: `/dashboard/enquiries/${enquiry.id}`,
+          },
+        });
+      }
     }
 
     return enquiry;
