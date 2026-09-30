@@ -5,6 +5,7 @@ import {
   AuthUser,
   UserRole,
   loginApi,
+  loginWithGoogleApi,
   registerApi,
   getMeApi,
   RegisterInput,
@@ -24,6 +25,7 @@ interface AuthContextType {
   isAgent: boolean;
   isStaff: boolean;
   login: (identifier: string, password?: string) => Promise<{ user: AuthUser; role: UserRole }>;
+  loginWithGoogle: (payload: { email?: string; name?: string; picture?: string; credential?: string }) => Promise<{ user: AuthUser; role: UserRole }>;
   register: (input: RegisterInput) => Promise<{ user: AuthUser; role: UserRole }>;
   logout: () => void;
   refreshSession: () => Promise<AuthUser | null>;
@@ -151,6 +153,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const loginWithGoogle = async (payload: {
+    email?: string;
+    name?: string;
+    picture?: string;
+    credential?: string;
+  }) => {
+    setIsLoading(true);
+    try {
+      const res = await loginWithGoogleApi(payload);
+      setSession(res.token, res.user);
+      return { user: res.user, role: res.user.role };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const register = async (input: RegisterInput) => {
     setIsLoading(true);
     try {
@@ -182,6 +200,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         isAgent,
         isStaff,
         login,
+        loginWithGoogle,
         register,
         logout,
         refreshSession,
