@@ -85,30 +85,28 @@ async function testGoogleLogin() {
       throw new Error(`❌ Expected email kvrao.hyderabad@gmail.com, got ${parsedUser.email}`);
     }
 
-    // 4. Test custom Gmail address submission
-    console.log('🌐 Returning to login page to test custom Gmail address...');
-    // Clear storage
-    await page.evaluate(() => {
-      localStorage.clear();
-      document.cookie = 'trh_token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-      document.cookie = 'trh_role=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;';
-    });
-    await page.goto('http://localhost:3009/en/login', { waitUntil: 'networkidle2', timeout: 30000 });
+    // 4. Test custom Gmail address submission in isolated incognito browser context
+    console.log('🌐 Opening isolated incognito browser context for custom Gmail test...');
+    const context2 = await browser.createBrowserContext();
+    const page2 = await context2.newPage();
+    await page2.setViewport({ width: 1280, height: 900 });
+    await page2.goto('http://localhost:3009/en/login', { waitUntil: 'networkidle2', timeout: 30000 });
 
-    const buttons2 = await page.$$('button');
+    const buttons2 = await page2.$$('button');
     let googleBtn2 = null;
     for (const b of buttons2) {
-      const text = await page.evaluate(el => el.innerText, b);
+      const text = await page2.evaluate(el => el.innerText, b);
       if (text && (text.includes('Google') || text.includes('Gmail'))) {
         googleBtn2 = b;
         break;
       }
     }
+    if (!googleBtn2) throw new Error('❌ Google button not found on fresh login page');
     await googleBtn2.click();
     await new Promise(r => setTimeout(r, 1000));
 
     console.log('✍️ Typing custom Gmail address...');
-    await page.evaluate(() => {
+    await page2.evaluate(() => {
       const emailEl = document.querySelector('input[placeholder="yourname@gmail.com"]');
       if (emailEl) {
         const proto = Object.getPrototypeOf(emailEl);
@@ -134,7 +132,7 @@ async function testGoogleLogin() {
     await new Promise(r => setTimeout(r, 500));
 
     // Check button state and click
-    const btnInfo = await page.evaluate(() => {
+    const btnInfo = await page2.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
       const b = btns.find(btn => btn.innerText.includes('Continue with this Gmail') || btn.innerText.includes('Gmail తో కొనసాగించండి'));
       if (!b) return { found: false };
@@ -146,7 +144,7 @@ async function testGoogleLogin() {
     console.log('✅ Clicked "Continue with this Gmail". Waiting for authentication...');
     await new Promise(r => setTimeout(r, 2000));
 
-    const customAuthData = await page.evaluate(() => {
+    const customAuthData = await page2.evaluate(() => {
       return {
         token: localStorage.getItem('trh_auth_token'),
         user: localStorage.getItem('trh_auth_user'),
