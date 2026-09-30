@@ -152,6 +152,38 @@ export default function LeafletPropertyMap({
     return calculatePolygonArea(polygonCoords);
   }, [polygonCoords]);
 
+  // Calculate polygon centroid to determine nearest locality & ORR distance
+  const plotCentroid = useMemo((): [number, number] | null => {
+    if (polygonCoords.length === 0) return null;
+    let sumLat = 0;
+    let sumLng = 0;
+    polygonCoords.forEach(([lat, lng]) => {
+      sumLat += lat;
+      sumLng += lng;
+    });
+    return [sumLat / polygonCoords.length, sumLng / polygonCoords.length];
+  }, [polygonCoords]);
+
+  // Detected nearest Telangana locality & ORR distance from plotted area
+  const detectedLocality = useMemo(() => {
+    if (!plotCentroid) return null;
+    return findNearestTelanganaLocality(plotCentroid[0], plotCentroid[1]);
+  }, [plotCentroid]);
+
+  const [appliedLocationFeedback, setAppliedLocationFeedback] = useState(false);
+
+  // Auto-notify parent when location is detected from boundary
+  useEffect(() => {
+    if (!detectedLocality || !onLocationDetected) return;
+    onLocationDetected({
+      district: detectedLocality.locality.district,
+      mandal: detectedLocality.locality.mandal,
+      village: detectedLocality.locality.village,
+      distanceFromOrrKm: detectedLocality.distanceToOrrKm,
+      localityName: isTe ? detectedLocality.locality.nameTe : detectedLocality.locality.nameEn,
+    });
+  }, [detectedLocality, onLocationDetected, isTe]);
+
   // Notify parent on boundary change
   const triggerPolygonChange = useCallback(
     (coords: Array<[number, number]>) => {
