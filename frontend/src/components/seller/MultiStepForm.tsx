@@ -30,7 +30,7 @@ import DocumentChecklistUploader from './DocumentChecklistUploader';
 import { formatINR } from '@/lib/formatters';
 import { createProperty, CreatePropertyDTO, uploadPropertyDocument, uploadImageApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
-import LeafletPropertyMap from '@/components/properties/LeafletPropertyMap';
+import LeafletPropertyMap, { DetectedLocalityPayload } from '@/components/properties/LeafletPropertyMap';
 import {
   lookupTelanganaLocation,
   calculateDistanceToOrrKm,
