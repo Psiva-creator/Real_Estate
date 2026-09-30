@@ -1150,6 +1150,65 @@ export default function LeafletPropertyMap({
           </div>
         </div>
 
+        {/* Boundary Quick Location Assistance (GPS, Google Maps Link, Village Search) */}
+        {boundaryMode && (
+          <div className="pt-2 border-t border-[#3A241C] flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <form
+              onSubmit={handleLocationSearchOrPaste}
+              className="flex-1 flex items-center bg-[#2E1E18] rounded-xl border border-[#3A241C] px-2.5 py-1 text-xs"
+            >
+              <Search className="w-3.5 h-3.5 text-[#C79A6B] shrink-0 mr-1.5" />
+              <input
+                type="text"
+                id="map-location-search-input"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder={
+                  isTe
+                    ? 'గ్రామం, ల్యాండ్‌మార్క్ వెతకండి లేదా గూగుల్ మ్యాప్స్ పిన్ / కోఆర్డినేట్లు పేస్ట్ చేయండి...'
+                    : 'Search village, landmark, or paste Google Maps pin / coordinates...'
+                }
+                className="w-full bg-transparent text-[#F5F0E8] placeholder:text-[#E2CFB6]/40 focus:outline-none text-[11px] sm:text-xs"
+              />
+              <button
+                type="submit"
+                id="map-location-search-btn"
+                className="px-2.5 py-1 ml-1 rounded-lg bg-[#C79A6B] hover:bg-[#B6895A] text-[#201512] font-bold text-[10px] sm:text-[11px] shrink-0 transition-colors cursor-pointer"
+              >
+                {isTe ? 'వెతుకు' : 'Find'}
+              </button>
+            </form>
+
+            {/* One-Tap Live GPS Button */}
+            <button
+              type="button"
+              id="map-live-gps-btn"
+              onClick={handleLocateUser}
+              disabled={isLocating}
+              className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all shadow-sm shrink-0 cursor-pointer ${
+                isLocating
+                  ? 'bg-[#C79A6B]/30 text-[#C79A6B] animate-pulse border border-[#C79A6B]/50'
+                  : 'bg-[#2E1E18] hover:bg-[#3A241C] text-[#FAF8F3] border border-[#C79A6B]/40 hover:border-[#C79A6B]'
+              }`}
+              title={isTe ? 'మీ ప్రస్తుత GPS లొకేషన్‌కు వెళ్ళండి' : 'Center on your live GPS location'}
+            >
+              <LocateFixed className={`w-3.5 h-3.5 text-[#C79A6B] ${isLocating ? 'animate-spin' : ''}`} />
+              <span className="text-[11px]">
+                {isLocating
+                  ? isTe ? 'గుర్తిస్తున్నాము...' : 'Locating GPS...'
+                  : isTe ? 'నా లొకేషన్ (GPS)' : "I'm at the Land (GPS)"}
+              </span>
+            </button>
+          </div>
+        )}
+
+        {/* Search Feedback Message */}
+        {boundaryMode && searchFeedback && (
+          <div className="text-[11px] text-[#C79A6B] bg-[#2E1E18] px-3 py-1 rounded-lg border border-[#C79A6B]/30 flex items-center gap-1.5">
+            <span>{searchFeedback}</span>
+          </div>
+        )}
+
         {/* Boundary Drawing Action Toolbar (Active in Boundary Mode) */}
         {boundaryMode && (
           <div className="pt-2 border-t border-[#3A241C] flex flex-wrap items-center justify-between gap-2">
