@@ -15,6 +15,7 @@
     "db:seed": "tsx src/db/seeds/seed.ts",
     "migrate": "tsx src/db/migrate.ts",
     "db:migrate": "tsx src/db/migrate.ts",
+    "db:check": "tsx scripts/check_supabase.ts",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"
   },
