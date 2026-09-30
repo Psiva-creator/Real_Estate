@@ -550,12 +550,13 @@ export default function DashboardEnquiriesPage() {
                 <th className="px-4 py-3">Assigned Agent</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Priority</th>
+                <th className="px-4 py-3 text-right">Message Client</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {isLoading ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-12 text-center text-slate-400 text-sm">
+                  <td colSpan={8} className="px-4 py-12 text-center text-slate-400 text-sm">
                     <div className="flex items-center justify-center gap-2">
                       <Loader2 className="w-5 h-5 text-blue-600 animate-spin" />
                       <span>Loading real enquiry pipeline from server...</span>
@@ -564,7 +565,7 @@ export default function DashboardEnquiriesPage() {
                 </tr>
               ) : filtered.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-slate-400 text-sm">
+                  <td colSpan={8} className="px-4 py-10 text-center text-slate-400 text-sm">
                     No enquiries match your filters.
                   </td>
                 </tr>
