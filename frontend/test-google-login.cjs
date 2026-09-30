@@ -120,11 +120,11 @@ async function testGoogleLogin() {
     }
 
     // Click "Continue with this Gmail"
-    const submitGmailBtn = await page.evaluateHandle(() => {
+    await page.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
-      return btns.find(b => b.innerText.includes('Continue with this Gmail') || b.innerText.includes('Gmail తో కొనసాగించండి'));
+      const b = btns.find(btn => btn.innerText.includes('Continue with this Gmail') || btn.innerText.includes('Gmail తో కొనసాగించండి'));
+      if (b) b.click();
     });
-    await submitGmailBtn.click();
     console.log('✅ Clicked "Continue with this Gmail". Waiting for authentication...');
     await new Promise(r => setTimeout(r, 2000));
 
