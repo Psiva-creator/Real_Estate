@@ -81,6 +81,7 @@ app.get('/health', handleHealthCheck);
 const authRouter = express.Router();
 authRouter.post('/register', authController.register.bind(authController));
 authRouter.post('/login', authRateLimiter, authController.login.bind(authController));
+authRouter.post('/google', authRateLimiter, authController.googleLogin.bind(authController));
 authRouter.get('/me', requireAuth, authController.me.bind(authController));
 authRouter.get('/logins', requireAuth, authController.myLogins.bind(authController));
 app.use('/api/auth', authRouter);

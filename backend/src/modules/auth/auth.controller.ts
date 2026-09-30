@@ -63,6 +63,35 @@ export class AuthController {
     }
   }
 
+  async googleLogin(req: Request, res: Response) {
+    try {
+      const { email, name, picture, credential } = req.body;
+      const ipAddress = (req.headers['x-forwarded-for'] as string) || req.socket.remoteAddress || req.ip;
+      const userAgent = req.headers['user-agent'] as string | undefined;
+
+      const result = await authService.googleLogin(
+        { email, name, picture, credential },
+        { ipAddress, userAgent }
+      );
+
+      return res.json({
+        message: result.isNewUser ? 'Google registration successful' : 'Google login successful',
+        user: {
+          id: result.user.id,
+          name: result.user.name,
+          phone: result.user.phone,
+          email: result.user.email,
+          role: result.user.role,
+          lastLoginAt: result.user.lastLoginAt,
+        },
+        token: result.token,
+        isNewUser: result.isNewUser,
+      });
+    } catch (err) {
+      return res.status(400).json({ error: (err as Error).message });
+    }
+  }
+
   async me(req: AuthRequest, res: Response) {
     if (!req.user) {
       return res.status(401).json({ error: 'Not authenticated' });
