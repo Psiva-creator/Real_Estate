@@ -861,6 +861,39 @@ export default function LeafletPropertyMap({
     }
   };
 
+  const handleAddPointAtCenter = () => {
+    if (!mapInstanceRef.current) return;
+    const center = mapInstanceRef.current.getCenter();
+    const newPoint: [number, number] = [
+      Number(center.lat.toFixed(6)),
+      Number(center.lng.toFixed(6)),
+    ];
+    setPolygonCoords((prev) => {
+      const next = [...prev, newPoint];
+      triggerPolygonChange(next);
+      return next;
+    });
+  };
+
+  const handleQuickPlotPreset = () => {
+    if (!mapInstanceRef.current) return;
+    const center = mapInstanceRef.current.getCenter();
+    const lat = center.lat;
+    const lng = center.lng;
+    // ~20m offset produces ~400 sq yards rectangular plot
+    const latDelta = 0.00018;
+    const lngDelta = 0.00018;
+    const presetCoords: Array<[number, number]> = [
+      [Number((lat + latDelta).toFixed(6)), Number((lng - lngDelta).toFixed(6))],
+      [Number((lat + latDelta).toFixed(6)), Number((lng + lngDelta).toFixed(6))],
+      [Number((lat - latDelta).toFixed(6)), Number((lng + lngDelta).toFixed(6))],
+      [Number((lat - latDelta).toFixed(6)), Number((lng - lngDelta).toFixed(6))],
+    ];
+    setPolygonCoords(presetCoords);
+    setIsDrawingMode(false);
+    triggerPolygonChange(presetCoords);
+  };
+
   const handleApplyArea = () => {
     if (onApplyAreaToForm && areaResult.acres > 0) {
       onApplyAreaToForm(areaResult.acres, areaResult.sqYards);
