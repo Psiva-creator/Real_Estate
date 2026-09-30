@@ -134,7 +134,7 @@ async function testGoogleLogin() {
     // Check button state and click
     const btnInfo = await page2.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
-      const b = btns.find(btn => btn.innerText.includes('this Gmail') || btn.innerText.includes('కొనసాగించండి'));
+      const b = btns.find(btn => btn.innerText.toLowerCase().includes('this gmail') || btn.innerText.includes('కొనసాగించండి'));
       if (!b) return { found: false, allBtns: btns.map(b => b.innerText) };
       const disabled = b.disabled;
       if (!disabled) b.click();
