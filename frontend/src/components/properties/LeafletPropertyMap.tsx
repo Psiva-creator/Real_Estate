@@ -189,9 +189,14 @@ export default function LeafletPropertyMap({
     }
   };
 
+  // Center coordinates primitives
+  const centerLat = centerCoordinates?.[0];
+  const centerLng = centerCoordinates?.[1];
+
   // Initialize Leaflet Map on client side
   useEffect(() => {
     let isCancelled = false;
+    let resizeObserver: ResizeObserver | null = null;
 
     async function initLeaflet() {
       if (typeof window === 'undefined' || !mapContainerRef.current) return;
@@ -218,8 +223,8 @@ export default function LeafletPropertyMap({
             sumLng / polygonCoordsRef.current.length,
           ];
           initialZoom = 17;
-        } else if (centerCoordinates && !isNaN(centerCoordinates[0]) && !isNaN(centerCoordinates[1])) {
-          initialCenter = centerCoordinates;
+        } else if (centerLat != null && centerLng != null && !isNaN(centerLat) && !isNaN(centerLng)) {
+          initialCenter = [centerLat, centerLng];
           initialZoom = 16;
         } else {
           initialCenter = [17.4042, 78.3308]; // Kokapet / West Hyderabad growth corridor
@@ -243,6 +248,8 @@ export default function LeafletPropertyMap({
         zoomAnimation: true,
         fadeAnimation: true,
         markerZoomAnimation: true,
+        tap: false,
+        trackResize: true,
       });
 
       // Add Zoom control top-right
@@ -362,6 +369,28 @@ export default function LeafletPropertyMap({
         }
       }
 
+      // Invalidate size to ensure proper tile projection after mount
+      setTimeout(() => {
+        if (!isCancelled && mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 150);
+
+      setTimeout(() => {
+        if (!isCancelled && mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize();
+        }
+      }, 500);
+
+      if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
+        resizeObserver = new ResizeObserver(() => {
+          if (mapInstanceRef.current) {
+            mapInstanceRef.current.invalidateSize();
+          }
+        });
+        resizeObserver.observe(mapContainerRef.current);
+      }
+
       setIsMapReady(true);
     }
 
@@ -369,24 +398,30 @@ export default function LeafletPropertyMap({
 
     return () => {
       isCancelled = true;
+      if (resizeObserver) {
+        resizeObserver.disconnect();
+      }
       if (mapInstanceRef.current) {
         mapInstanceRef.current.remove();
         mapInstanceRef.current = null;
       }
+      setIsMapReady(false);
     };
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [singlePropertyMode, boundaryMode, properties]);
+  }, [singlePropertyMode, boundaryMode]);
 
   // Handle center coordinate changes dynamically in boundary mode and render reference marker
   useEffect(() => {
-    if (!boundaryMode || !isMapReady || !mapInstanceRef.current || !centerCoordinates) return;
+    if (!boundaryMode || !isMapReady || !mapInstanceRef.current || centerLat == null || centerLng == null || isNaN(centerLat) || isNaN(centerLng)) return;
+    const targetCoords: [number, number] = [centerLat, centerLng];
+
     if (centerMarkerGroupRef.current) {
       centerMarkerGroupRef.current.clearLayers();
       import('leaflet').then((LModule) => {
         const L = LModule.default;
         if (!centerMarkerGroupRef.current) return;
         const centerIcon = L.divIcon({
-          className: 'custom-center-marker',
+          className: 'custom-center-marker pointer-events-none',
           html: `
             <div style="
               background: #201512;
@@ -401,7 +436,7 @@ export default function LeafletPropertyMap({
               align-items: center;
               gap: 5px;
               white-space: nowrap;
-              cursor: pointer;
+              pointer-events: none;
             ">
               <span style="color: #C79A6B; font-size: 13px;">📍</span>
               <span>${locationName || (isTe ? 'ప్రాంతం కేంద్రం' : 'Locality Center')}</span>
@@ -410,20 +445,18 @@ export default function LeafletPropertyMap({
           iconSize: [140, 28],
           iconAnchor: [70, 14],
         });
-        const cMarker = L.marker(centerCoordinates, {
+        const cMarker = L.marker(targetCoords, {
           icon: centerIcon,
+          interactive: false,
           title: locationName || 'Locality Center',
         });
-        cMarker.bindTooltip(
-          `<div style="font-size:11px;font-weight:600;color:#201512;padding:2px;">${locationName || 'Plot Location'}<br/><span style="color:#8B624C;font-size:10px;">Click map to place boundary pins</span></div>`
-        );
         centerMarkerGroupRef.current.addLayer(cMarker);
       });
     }
-    if (polygonCoords.length === 0 && !isNaN(centerCoordinates[0]) && !isNaN(centerCoordinates[1])) {
-      mapInstanceRef.current.setView(centerCoordinates, 16, { animate: true });
+    if (polygonCoordsRef.current.length === 0) {
+      mapInstanceRef.current.setView(targetCoords, 16, { animate: true });
     }
-  }, [boundaryMode, centerCoordinates, isMapReady, polygonCoords.length, locationName, isTe]);
+  }, [boundaryMode, centerLat, centerLng, isMapReady, locationName, isTe]);
 
   // Handle Layer Mode Switching
   useEffect(() => {
