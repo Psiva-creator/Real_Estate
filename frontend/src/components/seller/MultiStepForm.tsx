@@ -970,6 +970,42 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               </p>
             </div>
 
+            {/* Quick Pick Growth Corridors */}
+            <div className="p-3 sm:p-4 rounded-xl bg-[#FAF8F3] border border-[#E2CFB6]/80 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-[#3A241C] flex items-center gap-1.5">
+                  <Sparkles className="w-3.5 h-3.5 text-[#C79A6B]" />
+                  <span>{isTe ? 'ప్రముఖ తెలంగాణ గ్రోత్ కారిడార్లు (త్వరిత ఎంపిక):' : 'Popular Telangana Growth Hubs (Quick Select):'}</span>
+                </span>
+                <span className="text-[10px] text-[#8B624C]">
+                  {isTe ? 'మ్యాప్ నేరుగా ఆ ప్రాంతానికి వెళుతుంది' : 'Flies map directly to hub'}
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-1.5">
+                {TOP_TELANGANA_GROWTH_HUBS.map((hub) => {
+                  const isSelected =
+                    (formData.village.toLowerCase() === hub.village.toLowerCase() ||
+                      formData.mandal.toLowerCase() === hub.mandal.toLowerCase()) &&
+                    formData.district.toLowerCase() === hub.district.toLowerCase();
+                  return (
+                    <button
+                      key={hub.id}
+                      type="button"
+                      onClick={() => handleSelectGrowthHub(hub)}
+                      className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium transition-all ${
+                        isSelected
+                          ? 'bg-[#201512] text-white shadow-xs'
+                          : 'bg-[#F5F0E8] hover:bg-[#E2CFB6]/50 text-[#5A382B] border border-[#E2CFB6]'
+                      }`}
+                    >
+                      <span>{isTe ? hub.villageTe || hub.nameTe : hub.village || hub.name}</span>
+                      <span className="text-[10px] opacity-75 font-mono">({hub.distanceToOrrKm}km ORR)</span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {/* District */}
               <div>
@@ -979,7 +1015,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 <input
                   type="text"
                   value={formData.district}
-                  onChange={(e) => updateField('district', e.target.value)}
+                  onChange={(e) => handleLocationInputChange('district', e.target.value)}
                   placeholder={sfDict.location.districtPlaceholder}
                   className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
                     errors.district ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
@@ -998,7 +1034,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 <input
                   type="text"
                   value={formData.mandal}
-                  onChange={(e) => updateField('mandal', e.target.value)}
+                  onChange={(e) => handleLocationInputChange('mandal', e.target.value)}
                   placeholder={sfDict.location.mandalPlaceholder}
                   className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
                     errors.mandal ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
@@ -1017,7 +1053,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 <input
                   type="text"
                   value={formData.village}
-                  onChange={(e) => updateField('village', e.target.value)}
+                  onChange={(e) => handleLocationInputChange('village', e.target.value)}
                   placeholder={sfDict.location.villagePlaceholder}
                   className={`w-full h-12 px-3.5 rounded-xl border text-sm focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B] ${
                     errors.village ? 'border-rose-400 bg-rose-50/20' : 'border-[#E2CFB6] bg-[#FAF8F3] text-[#201512] placeholder:text-[#8B624C]/60'
@@ -1077,14 +1113,25 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       : 'Plot parcel corners on high-definition satellite imagery. Area is automatically calculated.'}
                   </p>
                 </div>
-                {formData.boundaryCoordinates && formData.boundaryCoordinates.length >= 3 && (
-                  <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F0E8] text-[#5A382B] text-xs font-semibold border border-[#E2CFB6] self-start sm:self-auto shadow-xs">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-[#C79A6B]" />
-                    <span>
-                      {formData.boundaryCoordinates.length} {isTe ? 'సరిహద్దు బిందువులు' : 'Corners Demarcated'}
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={handleJumpMapToEnteredLocation}
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#201512] hover:bg-[#3A241C] text-[#FAF8F3] text-xs font-medium transition-colors shadow-xs"
+                    title={isTe ? 'ఫారమ్‌లోని వివరాల ఆధారంగా మ్యాప్‌ని ఆ ప్రదేశానికి తిప్పండి' : 'Fly map to entered district/mandal/village'}
+                  >
+                    <Compass className="w-3.5 h-3.5 text-[#C79A6B]" />
+                    <span>{isTe ? 'మ్యాప్‌లో ఈ ప్రాంతాన్ని చూపించు' : 'Open This Place on Map'}</span>
+                  </button>
+                  {formData.boundaryCoordinates && formData.boundaryCoordinates.length >= 3 && (
+                    <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#F5F0E8] text-[#5A382B] text-xs font-semibold border border-[#E2CFB6] self-start sm:self-auto shadow-xs">
+                      <CheckCircle2 className="w-3.5 h-3.5 text-[#C79A6B]" />
+                      <span>
+                        {formData.boundaryCoordinates.length} {isTe ? 'సరిహద్దు బిందువులు' : 'Corners Demarcated'}
+                      </span>
                     </span>
-                  </span>
-                )}
+                  )}
+                </div>
               </div>
 
               <LeafletPropertyMap
@@ -1098,7 +1145,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 }}
                 centerCoordinates={resolvedMapCenter}
                 locationName={`${formData.village || ''} ${formData.mandal || ''} ${formData.district || ''}`.trim() || undefined}
-                onApplyAreaToForm={(acres, sqYards) => {
+                onLocationDetected={handleLocationDetectedFromMap}
+                onApplyAreaToForm={(acres, sqYards, detectedLoc) => {
                   if (acres > 0) {
                     updateField('totalAcres', acres.toFixed(2));
                     const guntas = Math.round((acres % 1) * 40);
@@ -1107,6 +1155,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   if (sqYards > 0) {
                     updateField('sqYards', String(Math.round(sqYards)));
                     updateField('plotAreaSqYards', String(Math.round(sqYards)));
+                  }
+                  if (detectedLoc) {
+                    updateField('district', isTe && detectedLoc.localityName ? detectedLoc.localityName : detectedLoc.district);
+                    updateField('mandal', detectedLoc.mandal);
+                    updateField('village', detectedLoc.village);
+                    updateField('distanceFromOrrKm', String(detectedLoc.distanceFromOrrKm));
                   }
                 }}
               />
