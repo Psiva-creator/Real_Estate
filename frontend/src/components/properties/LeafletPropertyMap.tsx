@@ -40,8 +40,18 @@ import {
   TELANGANA_CORRIDORS,
   CorridorInfo,
   lookupTelanganaLocation,
+  findNearestTelanganaLocality,
+  calculateDistanceToOrrKm,
 } from '@/lib/telanganaMapData';
 import { calculatePolygonArea, PolygonAreaResult } from '@/lib/polygonArea';
+
+export interface DetectedLocalityPayload {
+  district: string;
+  mandal: string;
+  village: string;
+  distanceFromOrrKm: number;
+  localityName: string;
+}
 
 export interface LeafletPropertyMapProps {
   properties?: MockProperty[];
@@ -56,7 +66,8 @@ export interface LeafletPropertyMapProps {
   onPolygonChange?: (polygon: Array<[number, number]>, areaSqYards: number, areaAcres: number) => void;
   centerCoordinates?: [number, number];
   locationName?: string;
-  onApplyAreaToForm?: (acres: number, sqYards: number) => void;
+  onApplyAreaToForm?: (acres: number, sqYards: number, detectedLoc?: DetectedLocalityPayload) => void;
+  onLocationDetected?: (detectedLoc: DetectedLocalityPayload) => void;
 }
 
 type MapLayerMode = 'satellite' | 'street' | 'imagery';
@@ -76,6 +87,7 @@ export default function LeafletPropertyMap({
   centerCoordinates,
   locationName,
   onApplyAreaToForm,
+  onLocationDetected,
 }: LeafletPropertyMapProps) {
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
