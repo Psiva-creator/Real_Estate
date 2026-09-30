@@ -25,6 +25,9 @@ import {
   AlertCircle,
   Info,
   Plus,
+  Target,
+  Crosshair,
+  Square,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
