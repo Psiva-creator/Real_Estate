@@ -998,7 +998,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                           : 'bg-[#F5F0E8] hover:bg-[#E2CFB6]/50 text-[#5A382B] border border-[#E2CFB6]'
                       }`}
                     >
-                      <span>{isTe ? hub.villageTe || hub.nameTe : hub.village || hub.name}</span>
+                      <span>{isTe ? hub.labelTe || hub.villageTe : hub.labelEn || hub.village}</span>
                       <span className="text-[10px] opacity-75 font-mono">({hub.distanceToOrrKm}km ORR)</span>
                     </button>
                   );
