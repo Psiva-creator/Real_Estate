@@ -19,12 +19,21 @@ import {
   ShieldCheck,
   FileCheck,
   ExternalLink,
+  Edit3,
+  Globe,
+  CheckCircle2,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
-import { getAdminPropertyDetailApi, InternalPropertyDetail, resolveUploadUrl } from '@/lib/api';
+import {
+  getAdminPropertyDetailApi,
+  updatePropertyStatusApi,
+  InternalPropertyDetail,
+  resolveUploadUrl,
+} from '@/lib/api';
 import { formatINR } from '@/lib/formatters';
 import DocumentVerificationReviewer from '@/components/dashboard/DocumentVerificationReviewer';
 import AdminPropertyDetailsCard from '@/components/dashboard/AdminPropertyDetailsCard';
+import EditPropertyModal from '@/components/dashboard/EditPropertyModal';
 
 // ─── Status Chip ──────────────────────────────────────────────────────────────
 function StatusChip({ status }: { status: string }) {
@@ -90,6 +99,11 @@ export default function PropertyInternalReviewPage() {
   const [property, setProperty] = useState<InternalPropertyDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState<string | null>(null);
+
+  // Edit & Publish States
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [isPublishingStatus, setIsPublishingStatus] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const loadProperty = useCallback(async () => {
     if (!token || !propertyId) return;
