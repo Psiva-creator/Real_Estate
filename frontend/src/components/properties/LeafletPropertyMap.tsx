@@ -640,8 +640,8 @@ export default function LeafletPropertyMap({
         vertexGroup.addLayer(marker);
       });
 
-      // 3. Render Midpoint Insert Handles (Allow adding vertices to any boundary edge)
-      if (coords.length >= 3 && !isDrawingMode) {
+      // 3. Render Midpoint Insert Handles & Edge Dimension Badges
+      if (coords.length >= 3) {
         for (let i = 0; i < coords.length; i++) {
           const nextIdx = (i + 1) % coords.length;
           const p1 = coords[i];
@@ -649,42 +649,87 @@ export default function LeafletPropertyMap({
           const midLat = (p1[0] + p2[0]) / 2;
           const midLng = (p1[1] + p2[1]) / 2;
 
+          // Geodesic distance along boundary edge
+          const R = 6378137;
+          const dLat = ((p2[0] - p1[0]) * Math.PI) / 180;
+          const dLng = ((p2[1] - p1[1]) * Math.PI) / 180;
+          const lat1 = (p1[0] * Math.PI) / 180;
+          const lat2 = (p2[0] * Math.PI) / 180;
+          const a =
+            Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.cos(lat1) * Math.cos(lat2) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
+          const edgeMeters = R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+          const edgeFeet = Math.round(edgeMeters * 3.28084);
+
           const midIcon = L.divIcon({
             className: 'polygon-midpoint-pin',
             html: `
               <div style="
-                width: 16px;
-                height: 16px;
-                border-radius: 50%;
-                background: #FFFFFF;
-                border: 2px solid #10B981;
-                box-shadow: 0 1px 4px rgba(0,0,0,0.3);
-                color: #10B981;
-                font-size: 11px;
-                font-weight: 900;
                 display: flex;
+                flex-direction: column;
                 align-items: center;
-                justify-content: center;
-                cursor: pointer;
-              ">+</div>
+                gap: 2px;
+                transform: translate(-50%, -50%);
+              ">
+                <div style="
+                  background: rgba(32, 21, 18, 0.92);
+                  color: #FAF8F3;
+                  border: 1px solid #C79A6B;
+                  border-radius: 6px;
+                  padding: 1px 5px;
+                  font-size: 9px;
+                  font-weight: 700;
+                  font-family: monospace;
+                  white-space: nowrap;
+                  box-shadow: 0 2px 6px rgba(0,0,0,0.5);
+                  pointer-events: none;
+                ">
+                  ${edgeFeet} ft (${Math.round(edgeMeters)}m)
+                </div>
+                ${
+                  !isDrawingMode
+                    ? `
+                  <div style="
+                    width: 16px;
+                    height: 16px;
+                    border-radius: 50%;
+                    background: #FFFFFF;
+                    border: 2px solid #10B981;
+                    box-shadow: 0 1px 4px rgba(0,0,0,0.3);
+                    color: #10B981;
+                    font-size: 11px;
+                    font-weight: 900;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                  ">+</div>
+                `
+                    : ''
+                }
+              </div>
             `,
-            iconSize: [16, 16],
-            iconAnchor: [8, 8],
+            iconSize: [80, 30],
+            iconAnchor: [40, 15],
           });
 
           const midMarker = L.marker([midLat, midLng], {
             icon: midIcon,
-            title: isTe ? 'కొత్త బిందువును చేర్చండి' : 'Click to insert vertex along this boundary edge',
+            title: isTe
+              ? `కొలత: ${edgeFeet} ft (${Math.round(edgeMeters)}m)`
+              : `Edge length: ${edgeFeet} ft (${Math.round(edgeMeters)}m)`,
           });
 
-          const insertIndex = i + 1;
-          midMarker.on('click', (e: any) => {
-            L.DomEvent.stopPropagation(e);
-            const newCoords = [...polygonCoordsRef.current];
-            newCoords.splice(insertIndex, 0, [Number(midLat.toFixed(6)), Number(midLng.toFixed(6))]);
-            setPolygonCoords(newCoords);
-            triggerPolygonChange(newCoords);
-          });
+          if (!isDrawingMode) {
+            const insertIndex = i + 1;
+            midMarker.on('click', (e: any) => {
+              L.DomEvent.stopPropagation(e);
+              const newCoords = [...polygonCoordsRef.current];
+              newCoords.splice(insertIndex, 0, [Number(midLat.toFixed(6)), Number(midLng.toFixed(6))]);
+              setPolygonCoords(newCoords);
+              triggerPolygonChange(newCoords);
+            });
+          }
 
           midpointGroup.addLayer(midMarker);
         }
