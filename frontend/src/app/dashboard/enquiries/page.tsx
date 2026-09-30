@@ -134,12 +134,18 @@ function transformBackendEnquiry(be: BackendEnquiry): Lead {
       })
     : 'Recent';
 
+  // Extract clean property title or fallback
+  let cleanTitle = `Property ${be.propertyId}`;
+  if (be.notes && !be.notes.includes('Booked slot timing') && !be.notes.includes('Preferred date')) {
+    cleanTitle = be.notes.split('\n')[0].substring(0, 70);
+  }
+
   return {
     id: be.id,
     buyerName: be.buyerName,
     phone: be.phone,
     propertyId: be.propertyId,
-    propertyTitle: be.notes && be.notes.length > 5 ? be.notes : `Property ${be.propertyId}`,
+    propertyTitle: cleanTitle,
     enquiryType: be.enquiryType,
     status: be.status,
     agentName: be.assignedTo || 'Unassigned',
@@ -184,6 +190,10 @@ export default function DashboardEnquiriesPage() {
     const property = lead.propertyTitle;
     const agent = lead.agentName && lead.agentName !== 'Unassigned' ? lead.agentName : 'Suresh Reddy (Senior Land Advisor)';
 
+    // Extract booked slot timing if present in notes
+    const slotMatch = lead.notes?.match(/Booked slot timing:\s*([^\n]+)/i);
+    const slotInfo = slotMatch ? slotMatch[1].trim() : '';
+
     if (template === 'confirmation') {
       return lang === 'te'
         ? `నమస్కారం ${buyer} గారు, మీరు కోరిన ${property} ప్రాపర్టీ కన్సల్టేషన్ వివరాలు స్వీకరించబడ్డాయి. మా సీనియర్ అడ్వైజర్ ${agent} ధరణి రికార్డులు & చట్టపరమైన పత్రాలతో మిమ్మల్ని సంప్రదిస్తారు. మీకు ఏ సమయం అనుకూలంగా ఉంటుంది? - తెలంగాణ రియల్టీ హబ్`
@@ -191,9 +201,11 @@ export default function DashboardEnquiriesPage() {
     }
 
     if (template === 'site_visit') {
+      const slotMention = slotInfo ? ` (Booked slot: ${slotInfo})` : '';
+      const slotMentionTe = slotInfo ? ` (${slotInfo} స్లాట్)` : '';
       return lang === 'te'
-        ? `నమస్కారం ${buyer} గారు, ${property} కొరకు సైట్ విజిట్ షెడ్యూల్ చేయడానికి సిద్ధంగా ఉన్నాము. ప్రాపర్టీ బౌండరీలు మరియు లేఅవుట్ చూపించడానికి మా ప్రతినిధి ${agent} మీతో ఉంటారు. దయచేసి మీకు వీలైన తేదీ మరియు సమయం తెలియజేయండి.`
-        : `Hi ${buyer}, regarding your site visit request for ${property}: Our team has coordinated with the land owner. Advisor ${agent} will accompany you for an on-ground boundary inspection and survey verification. Please let us know your preferred day and time.`;
+        ? `నమస్కారం ${buyer} గారు, ${property} కొరకు మీ సైట్ విజిట్${slotMentionTe} షెడ్యూల్ చేయడానికి సిద్ధంగా ఉన్నాము. ప్రాపర్టీ బౌండరీలు మరియు లేఅవుట్ చూపించడానికి మా ప్రతినిధి ${agent} మీతో ఉంటారు. దయచేసి వివరాలు నిర్ధారించండి.`
+        : `Hi ${buyer}, regarding your site visit request for ${property}${slotMention}: Our team has coordinated with the land owner. Advisor ${agent} will accompany you for an on-ground boundary inspection and survey verification. Looking forward to meeting you!`;
     }
 
     if (template === 'legal_docs') {
@@ -206,10 +218,11 @@ export default function DashboardEnquiriesPage() {
   }, [customMessageText]);
 
   const handleOpenMessageModal = (lead: Lead) => {
+    const initialTemplate = lead.enquiryType === 'SITE_VISIT' ? 'site_visit' : 'confirmation';
     setSelectedLeadForMessage(lead);
-    setSelectedTemplate('confirmation');
+    setSelectedTemplate(initialTemplate);
     setMessageLang('en');
-    setCustomMessageText(getTemplateText(lead, 'confirmation', 'en'));
+    setCustomMessageText(getTemplateText(lead, initialTemplate, 'en'));
     setIsCopied(false);
   };
 
