@@ -81,6 +81,7 @@ describe('Enquiries & Lead Pipeline Module', () => {
     assert.ok(slotAlert.renderedText.includes('Vikram Chandra'));
     assert.ok(slotAlert.renderedText.includes('11:00 AM - 12:30 PM'));
     assert.ok(slotAlert.renderedText.includes(liveProperty.titleEn));
+    assert.ok(slotAlert.renderedText.includes(`/properties/${liveProperty.id}`), 'Must include direct hyperlink to booked property');
   });
 
   test('Submit enquiry in Telugu triggers Telugu WhatsApp template', async () => {

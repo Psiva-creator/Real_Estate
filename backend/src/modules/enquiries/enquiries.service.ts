@@ -1,4 +1,5 @@
 import { db } from '../../db/database.js';
+import { config } from '../../config/index.js';
 import { notificationService } from '../../services/notification/whatsapp.service.js';
 import { Enquiry, EnquiryType, EnquiryStatus } from '../../types/index.js';
 
@@ -87,6 +88,9 @@ export class EnquiriesService {
     const agentName = assignedAgent?.name || 'Suresh Reddy';
     const agentPhone = assignedAgent?.phone || '9876543210';
     const lang = input.preferredLanguage || 'en';
+    const baseUrl = config.frontendUrl.replace(/\/$/, '');
+    const propertyUrl = `${baseUrl}/${lang}/properties/${property.id}`;
+    const dashboardUrl = `${baseUrl}/dashboard/enquiries/${enquiry.id}`;
 
     // 1. Send WhatsApp notification to buyer
     if (input.enquiryType === 'SITE_VISIT' && slotTiming) {
@@ -103,6 +107,7 @@ export class EnquiriesService {
           buyer_name: enquiry.buyerName,
           property_title: property.titleEn,
           property_ref: property.id.slice(0, 8).toUpperCase(),
+          property_url: propertyUrl,
           slot_timing: slotTiming,
           map_link: mapLink,
           agent_name: agentName,
@@ -121,8 +126,9 @@ export class EnquiriesService {
           buyer_phone: enquiry.phone,
           slot_timing: slotTiming,
           property_title: property.titleEn,
+          property_url: propertyUrl,
           lead_score: enquiry.leadScore.toString(),
-          dashboard_url: `/dashboard/enquiries/${enquiry.id}`,
+          dashboard_url: dashboardUrl,
         },
       });
     } else {
@@ -134,6 +140,7 @@ export class EnquiriesService {
           buyer_name: enquiry.buyerName,
           property_title: property.titleEn,
           property_ref: property.id.slice(0, 8).toUpperCase(),
+          property_url: propertyUrl,
           agent_name: agentName,
           agent_phone: agentPhone,
         },
@@ -150,9 +157,10 @@ export class EnquiriesService {
             buyer_phone: enquiry.phone,
             enquiry_type: enquiry.enquiryType,
             property_title: property.titleEn,
+            property_url: propertyUrl,
             location: `${property.location.village}, ${property.location.mandal}`,
             lead_score: enquiry.leadScore.toString(),
-            dashboard_url: `/dashboard/enquiries/${enquiry.id}`,
+            dashboard_url: dashboardUrl,
           },
         });
       }

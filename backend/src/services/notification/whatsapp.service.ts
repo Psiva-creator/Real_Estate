@@ -26,20 +26,20 @@ export interface DispatchedNotification {
 
 const TEMPLATES: Record<string, { en: string; te: string }> = {
   buyer_enquiry_acknowledgement: {
-    en: 'Hello {{buyer_name}}, thank you for your interest in {{property_title}} (Ref: #{{property_ref}}). Our assigned advisor {{agent_name}} (+91-{{agent_phone}}) will contact you within 30 minutes with complete legal verification details. - Telangana Realty Hub',
-    te: 'నమస్కారం {{buyer_name}} గారు, {{property_title}} (Ref: #{{property_ref}}) పట్ల ఆసక్తి చూపించినందుకు ధన్యవాదాలు. మా అడ్వైజర్ {{agent_name}} (+91-{{agent_phone}}) 30 నిమిషాల్లో మిమ్మల్ని సంప్రదించి చట్టపరమైన వివరాలు తెలియజేస్తారు. - తెలంగాణ రియల్టీ హబ్',
+    en: 'Hello {{buyer_name}}, thank you for your interest in {{property_title}} (Ref: #{{property_ref}}).\n\n🔗 View Property: {{property_url}}\n\nOur assigned advisor {{agent_name}} (+91-{{agent_phone}}) will contact you within 30 minutes with complete legal verification details. - Telangana Realty Hub',
+    te: 'నమస్కారం {{buyer_name}} గారు, {{property_title}} (Ref: #{{property_ref}}) పట్ల ఆసక్తి చూపించినందుకు ధన్యవాదాలు.\n\n🔗 ప్రాపర్టీ వివరాలు: {{property_url}}\n\nమా అడ్వైజర్ {{agent_name}} (+91-{{agent_phone}}) 30 నిమిషాల్లో మిమ్మల్ని సంప్రదించి చట్టపరమైన వివరాలు తెలియజేస్తారు. - తెలంగాణ రియల్టీ హబ్',
   },
   site_visit_slot_booked: {
-    en: 'Hello {{buyer_name}}, your site visit slot for {{property_title}} (Ref: #{{property_ref}}) is confirmed for {{slot_timing}}! Assigned advisor: {{agent_name}} (+91-{{agent_phone}}). Location pin: {{map_link}}. Please carry valid ID. - Telangana Realty Hub',
-    te: 'నమస్కారం {{buyer_name}} గారు, {{property_title}} (Ref: #{{property_ref}}) కోసం మీ సైట్ విజిట్ స్లాట్ {{slot_timing}} సమయానికి ఖరారైంది! మా అడ్వైజర్ {{agent_name}} (+91-{{agent_phone}}) లొకేషన్ వద్ద ఉంటారు: {{map_link}}. - తెలంగాణ రియల్టీ హబ్',
+    en: '🏡 *Site Visit Slot Confirmed!*\n\nHello {{buyer_name}}, your site visit for *{{property_title}}* (Ref: #{{property_ref}}) is confirmed for *{{slot_timing}}*.\n\n🔗 *View Booked Property Page:*\n{{property_url}}\n\n📍 *Site Directions & Map Link:*\n{{map_link}}\n\n👤 *Assigned Field Advisor:* {{agent_name}} (+91-{{agent_phone}})\nPlease carry a valid ID. - Telangana Realty Hub',
+    te: '🏡 *సైట్ విజిట్ స్లాట్ బుకింగ్ నిర్ధారించబడింది!*\n\nనమస్కారం {{buyer_name}} గారు, *{{property_title}}* (Ref: #{{property_ref}}) కోసం మీ సైట్ విజిట్ స్లాట్ *{{slot_timing}}* సమయానికి ఖరారైంది.\n\n🔗 *మీరు బుక్ చేసిన ప్రాపర్టీ పేజీని ఇక్కడ చూడండి:*\n{{property_url}}\n\n📍 *సైట్ లొకేషన్ & మ్యాప్ లింక్:*\n{{map_link}}\n\n👤 *ఫీల్డ్ అడ్వైజర్:* {{agent_name}} (+91-{{agent_phone}})\nదయచేసి గుర్తింపు కార్డు వెంట తీసుకురండి. - తెలంగాణ రియల్టీ హబ్',
   },
   agent_lead_assigned: {
     en: '🚨 NEW LEAD: {{buyer_name}} (Phone: {{buyer_phone}}) submitted a {{enquiry_type}} request for property {{property_title}} located in {{location}}. Lead Score: {{lead_score}}. Open Team Dashboard to initiate contact: {{dashboard_url}}',
     te: '🚨 కొత్త లీడ్: {{buyer_name}} (ఫోన్: {{buyer_phone}}) {{location}} లోని {{property_title}} ప్రాపర్టీ కోసం {{enquiry_type}} కోరారు. లీడ్ స్కోర్: {{lead_score}}. డాష్‌బోర్డ్: {{dashboard_url}}',
   },
   agent_slot_booked_alert: {
-    en: '🚨 NEW SITE VISIT SLOT BOOKED: {{buyer_name}} (Phone: {{buyer_phone}}) booked a Site Visit for {{property_title}} on {{slot_timing}}. Lead Score: {{lead_score}}. Open Team Dashboard: {{dashboard_url}}',
-    te: '🚨 కొత్త స్లాట్ బుకింగ్: {{buyer_name}} (ఫోన్: {{buyer_phone}}) {{property_title}} కోసం {{slot_timing}} స్లాట్ బుక్ చేశారు. డాష్‌బోర్డ్: {{dashboard_url}}',
+    en: '🚨 *NEW SITE VISIT SLOT BOOKED*\n\nBuyer: {{buyer_name}} (Phone: {{buyer_phone}})\nProperty: {{property_title}}\nBooked Slot: {{slot_timing}}\nLead Score: {{lead_score}}\n\n🔗 Property: {{property_url}}\n📋 CRM Dashboard: {{dashboard_url}}',
+    te: '🚨 *కొత్త సైట్ విజిట్ స్లాట్ బుకింగ్*\n\nకస్టమర్: {{buyer_name}} (ఫోన్: {{buyer_phone}})\nప్రాపర్టీ: {{property_title}}\nస్లాట్ సమయం: {{slot_timing}}\nలీడ్ స్కోర్: {{lead_score}}\n\n🔗 ప్రాపర్టీ: {{property_url}}\n📋 డాష్‌బోర్డ్: {{dashboard_url}}',
   },
   site_visit_scheduled: {
     en: 'Hi {{buyer_name}}, your site visit for {{property_title}} is scheduled for {{visit_date_time}}. Meeting point & coordinates: {{map_link}}. Advisor {{agent_name}} (+91-{{agent_phone}}) will accompany you. Please carry valid ID.',

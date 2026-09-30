@@ -156,9 +156,12 @@ export default function EnquiryModal({
   const getWhatsAppConfirmationUrl = () => {
     const cleanPhone = phone.replace(/[^0-9]/g, '');
     const isTe = locale === 'te';
+    const baseUrl = typeof window !== 'undefined' ? window.location.origin : 'https://frontend-six-psi-ecroth2n1r.vercel.app';
+    const propertyDirectLink = `${baseUrl}/${locale}/properties/${propertyId}`;
+
     const message = isTe
-      ? `నమస్తే! నేను "${propertyTitle}" కోసం సైట్ విజిట్ బుక్ చేసుకున్నాను.\n\n📅 తేదీ: ${preferredDate}\n⏰ సమయం: ${selectedSlotTime}\n🔖 రిఫరెన్స్: ${result?.referenceId}\n👤 పేరు: ${buyerName}\n📱 ఫోన్: ${cleanPhone}\n\nదయచేసి నా విజిట్ పాస్ మరియు గూగుల్ మ్యాప్స్ లొకేషన్ కోఆర్డినేట్లను పంపగలరు.`
-      : `Hello! I have booked a site visit for "${propertyTitle}".\n\n📅 Date: ${preferredDate}\n⏰ Time Slot: ${selectedSlotTime}\n🔖 Reference: ${result?.referenceId}\n👤 Name: ${buyerName}\n📱 Phone: ${cleanPhone}\n\nKindly confirm my visit pass and exact Google Maps location coordinates.`;
+      ? `🏡 *సైట్ విజిట్ స్లాట్ బుకింగ్ వివరాలు*\n\nనమస్తే! నేను "${propertyTitle}" కోసం సైట్ విజిట్ స్లాట్ బుక్ చేసుకున్నాను.\n\n📅 *తేదీ:* ${preferredDate}\n⏰ *సమయం:* ${selectedSlotTime}\n🔖 *రిఫరెన్స్:* ${result?.referenceId}\n👤 *పేరు:* ${buyerName}\n📱 *ఫోన్:* +91 ${cleanPhone}\n\n👉 *బుక్ చేసిన ప్రాపర్టీ లింక్:*\n${propertyDirectLink}\n\nదయచేసి నా విజిట్ పాస్ మరియు గూగుల్ మ్యాప్స్ లొకేషన్ కోఆర్డినేట్లను పంపగలరు.`
+      : `🏡 *Site Visit Slot Booking Request*\n\nHello! I have booked a site visit for "${propertyTitle}".\n\n📅 *Date:* ${preferredDate}\n⏰ *Time Slot:* ${selectedSlotTime}\n🔖 *Reference:* ${result?.referenceId}\n👤 *Name:* ${buyerName}\n📱 *Phone:* +91 ${cleanPhone}\n\n👉 *Direct Property Link:*\n${propertyDirectLink}\n\nKindly confirm my visit pass and exact Google Maps location coordinates.`;
     return `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
   };
 
