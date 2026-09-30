@@ -87,6 +87,12 @@ function LoginFormContent({ params }: LoginPageProps) {
   const [sameAsPhone, setSameAsPhone] = useState(true);
   const [regPassword, setRegPassword] = useState('');
 
+  // Google / Gmail Auth Modal state
+  const [showGoogleModal, setShowGoogleModal] = useState(false);
+  const [googleEmailInput, setGoogleEmailInput] = useState('');
+  const [googleNameInput, setGoogleNameInput] = useState('');
+  const [isGoogleSubmitting, setIsGoogleSubmitting] = useState(false);
+
   // Role routing guard: Public login strictly directs sellers to their portal
   const handleRoleRedirect = (role: UserRole) => {
     if (redirectUrl && redirectUrl.startsWith('/dashboard')) {
@@ -110,6 +116,54 @@ function LoginFormContent({ params }: LoginPageProps) {
       router.replace('/dashboard');
     } else {
       router.replace('/dashboard/properties');
+    }
+  };
+
+  const handleGoogleSignIn = () => {
+    setErrorMessage(null);
+    setShowGoogleModal(true);
+  };
+
+  const handleGoogleSubmit = async (emailToUse?: string, nameToUse?: string) => {
+    const targetEmail = (emailToUse || googleEmailInput).trim();
+    const targetName = (nameToUse || googleNameInput).trim();
+
+    if (!targetEmail) {
+      setErrorMessage(
+        isTe
+          ? 'దయచేసి మీ Gmail లేదా Google ఈమెయిల్ చిరునామాను నమోదు చేయండి.'
+          : 'Please enter your Gmail or Google email address.'
+      );
+      return;
+    }
+
+    if (!targetEmail.includes('@') || !targetEmail.includes('.')) {
+      setErrorMessage(
+        isTe ? 'దయచేసి సరైన ఈమెయిల్ చిరునామాను నమోదు చేయండి.' : 'Please enter a valid email address.'
+      );
+      return;
+    }
+
+    setIsGoogleSubmitting(true);
+    setErrorMessage(null);
+    try {
+      const result = await loginWithGoogle({
+        email: targetEmail,
+        name: targetName || targetEmail.split('@')[0],
+      });
+      setShowGoogleModal(false);
+      setSuccessMessage(
+        isTe
+          ? `Google ద్వారా లాగిన్ విజయవంతమైంది! స్వాగతం ${result.user.name}...`
+          : `Signed in with Google successfully! Welcome back, ${result.user.name}...`
+      );
+      setTimeout(() => {
+        handleRoleRedirect(result.role);
+      }, 400);
+    } catch (err: unknown) {
+      setErrorMessage((err as Error).message || 'Google authentication failed');
+    } finally {
+      setIsGoogleSubmitting(false);
     }
   };
 
