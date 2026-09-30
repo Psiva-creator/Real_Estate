@@ -25,44 +25,33 @@ async function run() {
   console.log('🌐 Navigating to /en/list-property...');
   await page.goto('http://localhost:3000/en/list-property', { waitUntil: 'networkidle2' });
 
-  // Step 1: Select Property Type (LAND is selected by default, or click Next)
+  // Step 1: Click Continue
   console.log('👉 Advancing past Step 1...');
-  const nextBtn = await page.waitForSelector('button:has-text("Next"), button:has-text("Continue"), form button[type="button"]', { timeout: 5000 });
-  
-  // Find the Next Step button
-  const clickNext = async () => {
-    await page.evaluate(() => {
-      const buttons = Array.from(document.querySelectorAll('button'));
-      const btn = buttons.find(b => b.textContent && (b.textContent.includes('Next') || b.textContent.includes('ముందుకు')));
-      if (btn) btn.click();
-    });
-  };
-
-  await clickNext();
+  await page.click('#form-continue-button');
   await new Promise(r => setTimeout(r, 800));
 
   // Step 2: Fill Basic Info
   console.log('👉 Filling Step 2 fields...');
   await page.evaluate(() => {
     const inputs = Array.from(document.querySelectorAll('input'));
-    const textInputs = inputs.filter(i => i.type === 'text' || i.type === 'number');
-    textInputs.forEach(input => {
-      if (input.placeholder.toLowerCase().includes('title') || input.name === 'title') {
+    inputs.forEach(input => {
+      const ph = (input.placeholder || '').toLowerCase();
+      if (ph.includes('title')) {
         input.value = 'Premium Commercial Plot Kokapet';
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
-      if (input.placeholder.toLowerCase().includes('price') || input.name === 'totalPrice') {
+      if (ph.includes('price')) {
         input.value = '25000000';
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
-      if (input.placeholder.toLowerCase().includes('zone') || input.name === 'zone') {
+      if (ph.includes('zone')) {
         input.value = 'Commercial Zone';
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
     });
   });
 
-  await clickNext();
+  await page.click('#form-continue-button');
   await new Promise(r => setTimeout(r, 1200));
 
   console.log('📍 On Step 3: Location & Map');
@@ -83,11 +72,11 @@ async function run() {
       return {
         label: lbl,
         exists: true,
-        width: bounds.width,
-        height: bounds.height,
+        width: Math.round(bounds.width),
+        height: Math.round(bounds.height),
         totalTiles: tiles.length,
         loadedTiles: loadedTiles.length,
-        tileSrcSample: tiles[0]?.src?.substring(0, 70),
+        tileSrcSample: tiles[0]?.src?.substring(0, 65),
       };
     }, label);
   };
@@ -122,9 +111,9 @@ async function run() {
   console.log('✍️ Changing District, Mandal, Village form options...');
   await page.evaluate(() => {
     const inputs = Array.from(document.querySelectorAll('input'));
-    const distInput = inputs.find(i => i.placeholder.toLowerCase().includes('district') || i.name === 'district');
-    const mandalInput = inputs.find(i => i.placeholder.toLowerCase().includes('mandal') || i.name === 'mandal');
-    const villageInput = inputs.find(i => i.placeholder.toLowerCase().includes('village') || i.name === 'village');
+    const distInput = inputs.find(i => (i.placeholder || '').toLowerCase().includes('district'));
+    const mandalInput = inputs.find(i => (i.placeholder || '').toLowerCase().includes('mandal'));
+    const villageInput = inputs.find(i => (i.placeholder || '').toLowerCase().includes('village'));
 
     if (distInput) {
       distInput.value = 'Rangareddy';
@@ -154,18 +143,25 @@ async function run() {
   }
   let status5 = await checkMapStatus('After Plot Boundary Placed');
   console.log('STATUS:', status5);
+
+  const parcelHudText = await page.evaluate(() => {
+    const hud = document.getElementById('map-parcel-area-hud');
+    return hud ? hud.innerText.replace(/\s+/g, ' ').trim() : null;
+  });
+  console.log('PARCEL HUD:', parcelHudText);
+
   await page.screenshot({ path: path.join(screenshotDir, '6_plot_preset_placed.png') });
 
   // 5. Test step jumping back and forward
   console.log('⏮️ Jumping back to Step 1 and then back to Step 3...');
   await page.evaluate(() => {
-    const stepBtns = Array.from(document.querySelectorAll('button')).filter(b => b.textContent && (b.textContent.includes('Type') || b.textContent.includes('రకం')));
+    const stepBtns = Array.from(document.querySelectorAll('button')).filter(b => b.textContent && b.textContent.includes('Type'));
     if (stepBtns[0]) stepBtns[0].click();
   });
   await new Promise(r => setTimeout(r, 1000));
 
   await page.evaluate(() => {
-    const stepBtns = Array.from(document.querySelectorAll('button')).filter(b => b.textContent && (b.textContent.includes('Location') || b.textContent.includes('లొకేషన్')));
+    const stepBtns = Array.from(document.querySelectorAll('button')).filter(b => b.textContent && b.textContent.includes('Location'));
     if (stepBtns[0]) stepBtns[0].click();
   });
   await new Promise(r => setTimeout(r, 2000));
@@ -175,7 +171,7 @@ async function run() {
   await page.screenshot({ path: path.join(screenshotDir, '7_step_jump_revisit.png') });
 
   await browser.close();
-  console.log('✅ All map option change tests completed successfully!');
+  console.log('🎉 All map option change tests PASSED successfully!');
 }
 
 run().catch(err => {
