@@ -93,6 +93,8 @@ export default function LeafletPropertyMap({
   const midpointMarkersGroupRef = useRef<any>(null);
   const centerMarkerGroupRef = useRef<any>(null);
   const polygonCoordsRef = useRef<Array<[number, number]>>(initialPolygon || []);
+  const currentMapModeRef = useRef<MapLayerMode>('satellite');
+  const lastMovedCenterRef = useRef<string>('');
 
   // Default to High-Definition Satellite view (optimal for land survey & parcels)
   const [mapMode, setMapMode] = useState<MapLayerMode>('satellite');
