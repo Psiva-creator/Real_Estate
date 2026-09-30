@@ -905,6 +905,109 @@ export default function LeafletPropertyMap({
     }
   };
 
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchFeedback, setSearchFeedback] = useState<string | null>(null);
+  const [isLocating, setIsLocating] = useState(false);
+
+  // Live GPS geolocation handler
+  const handleLocateUser = () => {
+    if (typeof window === 'undefined' || !navigator.geolocation) {
+      setSearchFeedback(isTe ? 'మీ బ్రౌజర్‌లో GPS సదుపాయం లేదు' : 'GPS not supported on this device');
+      setTimeout(() => setSearchFeedback(null), 3500);
+      return;
+    }
+
+    setIsLocating(true);
+    setSearchFeedback(isTe ? 'GPS లొకేషన్ గుర్తిస్తున్నాము...' : 'Acquiring high-accuracy GPS...');
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setIsLocating(false);
+        const lat = Number(pos.coords.latitude.toFixed(6));
+        const lng = Number(pos.coords.longitude.toFixed(6));
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.flyTo([lat, lng], 18, { duration: 1.5 });
+          setSearchFeedback(
+            isTe
+              ? `📍 మీ GPS లొకేషన్‌కు చేరుకున్నాము! (ఖచ్చితత్వం: ±${Math.round(pos.coords.accuracy)}m)`
+              : `📍 Jumped to your GPS location! (±${Math.round(pos.coords.accuracy)}m accuracy)`
+          );
+          setTimeout(() => setSearchFeedback(null), 4000);
+        }
+      },
+      (err) => {
+        setIsLocating(false);
+        setSearchFeedback(isTe ? 'GPS అనుమతి నిరాకరించబడింది' : 'GPS permission denied or unavailable');
+        setTimeout(() => setSearchFeedback(null), 3500);
+      },
+      { enableHighAccuracy: true, timeout: 12000, maximumAge: 10000 }
+    );
+  };
+
+  // Search locality or paste Google Maps URL / coordinates
+  const handleLocationSearchOrPaste = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const q = searchQuery.trim();
+    if (!q) return;
+
+    // Check for Google Maps URL or raw coordinates like "17.4042, 78.3308"
+    const coordMatch = q.match(/(-?\d{1,2}\.\d+)[,\s]+(-?\d{1,3}\.\d+)/);
+    if (coordMatch) {
+      const lat = parseFloat(coordMatch[1]);
+      const lng = parseFloat(coordMatch[2]);
+      if (lat >= 14 && lat <= 21 && lng >= 76 && lng <= 83) {
+        if (mapInstanceRef.current) {
+          mapInstanceRef.current.flyTo([lat, lng], 18, { duration: 1.5 });
+          setSearchFeedback(isTe ? '📍 కోఆర్డినేట్లకు చేరుకున్నాము!' : '📍 Jumped to coordinates!');
+          setTimeout(() => setSearchFeedback(null), 3000);
+          return;
+        }
+      }
+    }
+
+    // Check in Telangana mandals / towns lookup
+    const localMatch = lookupTelanganaLocation(q);
+    if (localMatch && mapInstanceRef.current) {
+      mapInstanceRef.current.flyTo([localMatch.lat, localMatch.lng], 16, { duration: 1.5 });
+      setSearchFeedback(isTe ? `📍 ${localMatch.nameTe} కు చేరుకున్నాము!` : `📍 Jumped to ${localMatch.nameEn}!`);
+      setTimeout(() => setSearchFeedback(null), 3000);
+      return;
+    }
+
+    // Fallback: search via Nominatim
+    setSearchFeedback(isTe ? 'వెతుకుతున్నాము...' : 'Searching location...');
+    fetch(
+      `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(
+        q + ', Telangana, India'
+      )}&limit=1`
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.length > 0 && mapInstanceRef.current) {
+          const lat = parseFloat(data[0].lat);
+          const lng = parseFloat(data[0].lon);
+          mapInstanceRef.current.flyTo([lat, lng], 16, { duration: 1.5 });
+          setSearchFeedback(
+            isTe
+              ? `📍 ${data[0].display_name.split(',')[0]} దొరికింది!`
+              : `📍 Found ${data[0].display_name.split(',')[0]}!`
+          );
+          setTimeout(() => setSearchFeedback(null), 3500);
+        } else {
+          setSearchFeedback(
+            isTe
+              ? 'లొకేషన్ దొరకలేదు. దయచేసి సరైన పేరు లేదా కోఆర్డినేట్లు నమోదు చేయండి'
+              : 'Location not found. Try village name or coordinates.'
+          );
+          setTimeout(() => setSearchFeedback(null), 4000);
+        }
+      })
+      .catch(() => {
+        setSearchFeedback(isTe ? 'వెతకడంలో సమస్య ఎదురైంది' : 'Search request failed');
+        setTimeout(() => setSearchFeedback(null), 3000);
+      });
+  };
+
   return (
     <div className={`relative flex flex-col w-full rounded-2xl overflow-hidden border border-[#E2CFB6] bg-[#FAF8F3] shadow-[0_12px_32px_-12px_rgba(32,21,18,0.12)] ${className}`}>
       {/* Top Controls Bar */}
