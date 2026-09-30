@@ -691,6 +691,19 @@ export default function DashboardEnquiriesPage() {
                         {lead.priority}
                       </span>
                     </td>
+
+                    {/* Message Client */}
+                    <td className="px-4 py-3.5 text-right whitespace-nowrap">
+                      <button
+                        type="button"
+                        onClick={() => handleOpenMessageModal(lead)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow-xs transition-colors cursor-pointer"
+                        title={`Message ${lead.buyerName} via WhatsApp`}
+                      >
+                        <MessageSquare className="w-3.5 h-3.5" />
+                        <span>Message</span>
+                      </button>
+                    </td>
                   </tr>
                 ))
               )}
@@ -698,6 +711,201 @@ export default function DashboardEnquiriesPage() {
           </table>
         </div>
       </div>
+
+      {/* ─── Send Consultation Message Modal ─────────────────────────────── */}
+      {selectedLeadForMessage && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="message-modal-title"
+          className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-xs flex items-center justify-center p-4 animate-in fade-in duration-150"
+        >
+          <div className="bg-white rounded-2xl border border-slate-200 shadow-2xl w-full max-w-xl overflow-hidden flex flex-col max-h-[90vh]">
+            {/* Header */}
+            <div className="p-5 border-b border-slate-100 flex items-start justify-between bg-slate-50/80">
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="p-1.5 rounded-lg bg-emerald-100 text-emerald-700">
+                    <MessageSquare className="w-5 h-5" />
+                  </span>
+                  <div>
+                    <h3 id="message-modal-title" className="text-base font-bold text-slate-900">
+                      Send Consultation Message
+                    </h3>
+                    <p className="text-xs text-slate-500">
+                      To <span className="font-semibold text-slate-800">{selectedLeadForMessage.buyerName}</span> ({selectedLeadForMessage.phone})
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-2 text-xs text-slate-600 flex items-center gap-2">
+                  <span className="font-mono px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[11px] font-semibold">
+                    {selectedLeadForMessage.propertyId}
+                  </span>
+                  <span className="truncate max-w-[320px]">{selectedLeadForMessage.propertyTitle}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setSelectedLeadForMessage(null)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer"
+                aria-label="Close dialog"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="p-5 space-y-4 overflow-y-auto">
+              {/* Template Selection */}
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-2">
+                  Choose Template
+                </label>
+                <div className="grid grid-cols-2 gap-2 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleTemplateChange('confirmation', messageLang)}
+                    className={`px-3 py-2 rounded-lg text-left font-medium border transition-colors cursor-pointer ${
+                      selectedTemplate === 'confirmation'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-semibold'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    1. Consultation Time
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTemplateChange('site_visit', messageLang)}
+                    className={`px-3 py-2 rounded-lg text-left font-medium border transition-colors cursor-pointer ${
+                      selectedTemplate === 'site_visit'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-semibold'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    2. Site Visit Inspection
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTemplateChange('legal_docs', messageLang)}
+                    className={`px-3 py-2 rounded-lg text-left font-medium border transition-colors cursor-pointer ${
+                      selectedTemplate === 'legal_docs'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-semibold'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    3. Legal Clearance Dossier
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTemplateChange('custom', messageLang)}
+                    className={`px-3 py-2 rounded-lg text-left font-medium border transition-colors cursor-pointer ${
+                      selectedTemplate === 'custom'
+                        ? 'border-emerald-600 bg-emerald-50 text-emerald-900 font-semibold'
+                        : 'border-slate-200 hover:bg-slate-50 text-slate-700'
+                    }`}
+                  >
+                    4. Custom Message
+                  </button>
+                </div>
+              </div>
+
+              {/* Language Switcher */}
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-slate-700">Language:</span>
+                <div className="inline-flex rounded-lg border border-slate-200 p-0.5 bg-slate-50 text-xs">
+                  <button
+                    type="button"
+                    onClick={() => handleTemplateChange(selectedTemplate, 'en')}
+                    className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                      messageLang === 'en'
+                        ? 'bg-white shadow-xs font-bold text-slate-900'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    English
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleTemplateChange(selectedTemplate, 'te')}
+                    className={`px-2.5 py-1 rounded-md transition-colors cursor-pointer ${
+                      messageLang === 'te'
+                        ? 'bg-white shadow-xs font-bold text-emerald-800'
+                        : 'text-slate-500 hover:text-slate-900'
+                    }`}
+                  >
+                    తెలుగు (Telugu)
+                  </button>
+                </div>
+              </div>
+
+              {/* Editable Text Area */}
+              <div>
+                <div className="flex items-center justify-between mb-1.5">
+                  <label htmlFor="messageText" className="text-xs font-semibold text-slate-700">
+                    Message Preview / Edit:
+                  </label>
+                  <span className="text-[11px] text-slate-400 font-mono">
+                    {customMessageText.length} chars
+                  </span>
+                </div>
+                <textarea
+                  id="messageText"
+                  rows={5}
+                  value={customMessageText}
+                  onChange={(e) => setCustomMessageText(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/50 text-xs sm:text-sm text-slate-800 font-normal focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none transition-colors"
+                  placeholder="Type your message here..."
+                />
+                <p className="mt-1.5 text-[11px] text-slate-500 flex items-center gap-1.5">
+                  <span>💡</span>
+                  <span>
+                    Clicking &quot;Send via WhatsApp&quot; opens WhatsApp Web or Mobile with this message pre-filled. No SMS gateway fees required.
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            {/* Footer / Actions */}
+            <div className="p-4 border-t border-slate-100 bg-slate-50/80 flex flex-wrap items-center justify-between gap-3">
+              <button
+                type="button"
+                onClick={() => handleCopyText(customMessageText)}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-lg border border-slate-200 bg-white hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+              >
+                {isCopied ? (
+                  <>
+                    <Check className="w-4 h-4 text-emerald-600" />
+                    <span className="text-emerald-700">Copied!</span>
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 text-slate-500" />
+                    <span>Copy Text</span>
+                  </>
+                )}
+              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSelectedLeadForMessage(null)}
+                  className="px-3 py-2 rounded-lg text-xs font-semibold text-slate-600 hover:text-slate-800 hover:bg-slate-100 transition-colors cursor-pointer"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={() => handleSendWhatsApp(selectedLeadForMessage)}
+                  className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-colors cursor-pointer"
+                >
+                  <Send className="w-4 h-4" />
+                  <span>Send via WhatsApp</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
