@@ -1619,6 +1619,72 @@ export async function saveAdminPropertyDetailsApi(
   };
 }
 
+/**
+ * Update property core details by staff/owner
+ * Backend endpoint: PATCH /api/properties/:id
+ */
+export async function updatePropertyApi(
+  token: string,
+  propertyId: string,
+  updates: Record<string, unknown>
+): Promise<{ message: string; property: InternalPropertyDetail }> {
+  const url = `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify(updates),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((data as { error?: string }).error || `Failed to update property (${res.status})`);
+  }
+
+  // Also update in-memory MOCK_PROPERTIES if matching
+  const mockProp = MOCK_PROPERTIES.find((p) => p.id === propertyId);
+  if (mockProp) {
+    Object.assign(mockProp, updates);
+  }
+
+  return data as { message: string; property: InternalPropertyDetail };
+}
+
+/**
+ * Update property publication status (e.g. LIVE, UNDER_REVIEW, DRAFT, VERIFIED, SOLD)
+ * Backend endpoint: PATCH /api/properties/:id/status
+ */
+export async function updatePropertyStatusApi(
+  token: string,
+  propertyId: string,
+  status: string
+): Promise<{ message: string; property: InternalPropertyDetail }> {
+  const url = `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/status`;
+  const res = await fetch(url, {
+    method: 'PATCH',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+    body: JSON.stringify({ status }),
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) {
+    throw new Error((data as { error?: string }).error || `Failed to update status (${res.status})`);
+  }
+
+  // Also update in-memory MOCK_PROPERTIES if matching
+  const mockProp = MOCK_PROPERTIES.find((p) => p.id === propertyId);
+  if (mockProp) {
+    mockProp.status = status as any;
+  }
+
+  return data as { message: string; property: InternalPropertyDetail };
+}
+
 // ─── Document types for admin review ─────────────────────────────────────────
 
 export interface PropertyDocumentRecord {

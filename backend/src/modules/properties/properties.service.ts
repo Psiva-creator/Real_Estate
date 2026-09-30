@@ -39,12 +39,12 @@ export interface CreatePropertyInput {
 }
 
 const VALID_STATUS_TRANSITIONS: Record<PropertyStatus, PropertyStatus[]> = {
-  DRAFT: ['UNDER_REVIEW', 'OFF_MARKET'],
+  DRAFT: ['UNDER_REVIEW', 'VERIFIED', 'LIVE', 'OFF_MARKET'],
   UNDER_REVIEW: ['DRAFT', 'VERIFIED', 'LIVE', 'OFF_MARKET'],
   VERIFIED: ['UNDER_REVIEW', 'LIVE', 'OFF_MARKET'],
-  LIVE: ['SOLD', 'OFF_MARKET', 'UNDER_REVIEW'],
+  LIVE: ['SOLD', 'OFF_MARKET', 'UNDER_REVIEW', 'VERIFIED'],
   SOLD: ['OFF_MARKET', 'LIVE'],
-  OFF_MARKET: ['DRAFT', 'UNDER_REVIEW', 'LIVE'],
+  OFF_MARKET: ['DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE'],
 };
 
 export class PropertiesService {
