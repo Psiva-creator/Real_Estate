@@ -1392,7 +1392,7 @@ export default function LeafletPropertyMap({
       >
         <div
           ref={mapContainerRef}
-          className={`w-full h-full z-0 ${boundaryMode && isDrawingMode ? 'cursor-crosshair' : ''}`}
+          className="leaflet-container w-full h-full z-0"
         />
 
         {/* Aiming Reticle (Visible in boundary drawing mode) */}
