@@ -31,30 +31,11 @@ async function run() {
   await new Promise(r => setTimeout(r, 800));
 
   // Step 2: Fill Basic Info
-  console.log('👉 Filling Step 2 fields...');
-  await page.evaluate(() => {
-    const inputs = Array.from(document.querySelectorAll('input'));
-    inputs.forEach(input => {
-      const ph = (input.placeholder || '').toLowerCase();
-      if (ph.includes('title')) {
-        input.value = 'Premium Commercial Plot Kokapet';
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-      if (ph.includes('zone')) {
-        input.value = 'Commercial Zone';
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
-    });
-
-    const textareas = Array.from(document.querySelectorAll('textarea'));
-    textareas.forEach(ta => {
-      ta.value = 'Clear title 2000 sq yards plot suitable for immediate commercial or high-rise development with road access.';
-      ta.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-  });
-
+  console.log('👉 Filling Step 2 fields using page.type...');
+  await page.type('input[placeholder*="Parcel"]', 'Premium Commercial Plot Kokapet');
+  await page.type('textarea', 'Clear title 2000 sq yards plot suitable for immediate commercial or high-rise development with road access.');
   await page.click('#form-continue-button');
-  await new Promise(r => setTimeout(r, 1200));
+  await new Promise(r => setTimeout(r, 1500));
 
   console.log('📍 On Step 3: Location & Map');
   await page.screenshot({ path: path.join(screenshotDir, '1_step3_mounted.png') });
