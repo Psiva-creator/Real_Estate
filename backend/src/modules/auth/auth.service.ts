@@ -187,6 +187,103 @@ export class AuthService {
     const token = generateToken(user);
     return { user, token };
   }
+
+  async googleLogin(
+    input: { email?: string; name?: string; picture?: string; credential?: string },
+    meta?: { ipAddress?: string; userAgent?: string }
+  ): Promise<{ user: User; token: string; isNewUser: boolean }> {
+    let email = input.email?.trim().toLowerCase();
+    let name = input.name?.trim();
+
+    // If Google ID token credential was provided, extract payload
+    if (input.credential) {
+      try {
+        const parts = input.credential.split('.');
+        if (parts.length === 3) {
+          const payloadJson = Buffer.from(parts[1], 'base64').toString('utf8');
+          const payload = JSON.parse(payloadJson);
+          if (payload.email) {
+            email = payload.email.trim().toLowerCase();
+          }
+          if (payload.name && !name) {
+            name = payload.name.trim();
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to parse Google credential JWT:', e);
+      }
+    }
+
+    if (!email) {
+      throw new Error('Valid Google or Gmail email address is required');
+    }
+
+    // Check if user already exists
+    let user = await db.findUserByEmail(email);
+    let isNewUser = false;
+
+    if (!user) {
+      isNewUser = true;
+      const userName = name || email.split('@')[0].replace(/[._-]/g, ' ');
+      // Generate a provisional unique phone for the user
+      let hash = 0;
+      for (let i = 0; i < email.length; i++) {
+        hash = (hash * 31 + email.charCodeAt(i)) >>> 0;
+      }
+      const digits = String((hash % 900000000) + 100000000);
+      const provisionalPhone = `+919${digits}`;
+
+      user = await db.createUser({
+        name: userName,
+        phone: provisionalPhone,
+        email: email,
+        whatsapp: provisionalPhone,
+        role: 'SELLER',
+        isActive: true,
+      });
+
+      // Create owner record for seller portal
+      try {
+        await db.createOwner({
+          userId: user.id,
+          name: user.name,
+          phone: user.phone,
+          whatsapp: user.whatsapp,
+          email: user.email,
+          propertiesCount: 0,
+          dealsCompleted: 0,
+          rating: 5.0,
+        });
+      } catch (err) {
+        console.warn('Could not auto-create owner record for Google user:', (err as Error).message);
+      }
+    }
+
+    // Update last login timestamp
+    try {
+      await db.updateLastLogin(user.id);
+      user.lastLoginAt = new Date().toISOString();
+    } catch (err) {
+      console.warn('Could not update last_login_at:', (err as Error).message);
+    }
+
+    // Record login in audit log
+    try {
+      await db.recordLogin({
+        userId: user.id,
+        identifier: email,
+        role: user.role,
+        ipAddress: meta?.ipAddress,
+        userAgent: meta?.userAgent,
+        status: 'SUCCESS',
+      });
+    } catch (err) {
+      console.warn('Could not record login in user_logins table:', (err as Error).message);
+    }
+
+    const token = generateToken(user);
+    return { user, token, isNewUser };
+  }
 }
 
 export const authService = new AuthService();
