@@ -10,12 +10,12 @@ export class OwnersController {
         return res.status(401).json({ error: 'Authentication required' });
       }
 
-      const owner = await ownersService.getOwnerByUserId(req.user.id);
+      const owner = await ownersService.resolveSellerOwner(req.user);
       if (!owner) {
         return res.status(404).json({ error: 'Seller profile not found' });
       }
 
-      const properties = await ownersService.getOwnerProperties(owner.id);
+      const properties = await ownersService.getOwnerProperties(owner.id, req.user);
 
       return res.json({
         seller: owner,

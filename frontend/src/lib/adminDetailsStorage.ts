@@ -68,6 +68,16 @@ export function loadAdminDetails(
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && typeof parsed === 'object') {
+        if (fallback && typeof fallback === 'object' && Object.keys(fallback).length > 0) {
+          const fallbackTime = fallback.updatedAt ? new Date(fallback.updatedAt).getTime() : 0;
+          const localTime = parsed.updatedAt ? new Date(parsed.updatedAt).getTime() : 0;
+          if (fallbackTime >= localTime) {
+            return {
+              ...parsed,
+              ...fallback,
+            };
+          }
+        }
         return {
           ...(fallback ?? {}),
           ...parsed,

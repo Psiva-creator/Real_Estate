@@ -3,6 +3,7 @@ import { AuthRequest } from '../../middleware/auth.js';
 import { db } from '../../db/database.js';
 import { runMigrations } from '../../db/migrate.js';
 import { runSeeds } from '../../db/seeds/seed.js';
+import { MANDATORY_DOCS, ALL_13_DOCS } from '../../middleware/security.js';
 
 export class AdminController {
   /**
@@ -63,6 +64,9 @@ export class AdminController {
           const owner = await db.findOwnerById(p.sellerId);
           const docs = await db.findDocumentsByPropertyId(p.id);
           const verifiedDocs = docs.filter((d) => d.status === 'VERIFIED').length;
+          const docStatusMap = new Map(docs.map((d) => [d.documentType, d.status]));
+          const mandatory = MANDATORY_DOCS[p.type] || [];
+          const isFullyVerified = mandatory.every((reqDoc) => docStatusMap.get(reqDoc) === 'VERIFIED');
           return {
             ...p,
             seller: owner
@@ -76,6 +80,11 @@ export class AdminController {
             documentsSummary: {
               total: docs.length,
               verified: verifiedDocs,
+            },
+            verificationStatus: {
+              totalDocuments: ALL_13_DOCS.length,
+              verifiedDocuments: verifiedDocs,
+              isFullyVerified,
             },
           };
         })

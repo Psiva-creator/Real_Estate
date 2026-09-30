@@ -197,14 +197,62 @@ export class PropertiesController {
 
       const owner = await db.findOwnerById(property.sellerId);
       const documents = await db.findDocumentsByPropertyId(property.id);
+      const verifiedDocs = documents.filter((d) => d.status === 'VERIFIED').length;
+      const verificationStatus = {
+        totalDocuments: 13,
+        verifiedDocuments: verifiedDocs,
+        isFullyVerified: verifiedDocs >= 13 || property.status === 'VERIFIED' || property.status === 'LIVE',
+      };
 
       return res.json({
-        property,
+        property: {
+          ...property,
+          seller: owner,
+          verificationStatus,
+        },
         seller: owner,
         documents,
       });
     } catch (err) {
       return res.status(500).json({ error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Update admin-curated property details (Staff/Admin only)
+   * PATCH /api/properties/:id/admin-details
+   */
+  async updateAdminDetails(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      if (req.user.role !== 'ADMIN' && req.user.role !== 'AGENT') {
+        return res.status(403).json({ error: 'Forbidden: Only staff can update admin details' });
+      }
+
+      const rawDetails = req.body?.adminDetails ?? req.body;
+      if (!rawDetails || typeof rawDetails !== 'object') {
+        return res.status(400).json({ error: 'adminDetails object is required' });
+      }
+
+      const updated = await propertiesService.updateAdminDetails(
+        id,
+        rawDetails,
+        req.user.name || req.user.id
+      );
+
+      return res.json({
+        message: 'Admin property details updated successfully',
+        property: updated,
+        adminDetails: updated.adminDetails,
+      });
+    } catch (err) {
+      const message = (err as Error).message || 'Failed to update admin details';
+      const statusCode = message.includes('not found') ? 404 : 400;
+      return res.status(statusCode).json({ error: message });
     }
   }
 

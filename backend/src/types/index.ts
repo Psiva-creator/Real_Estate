@@ -155,6 +155,35 @@ export interface PropertyDocument {
   updatedAt: string;
 }
 
+export interface AdminCustomSpecification {
+  label: string;
+  value: string;
+}
+
+export interface AdminCustomSection {
+  title: string;
+  content: string;
+}
+
+export interface AdminPropertyDetails {
+  projectDescription?: string;
+  highlights?: string[];
+  amenities?: string[];
+  locationAdvantages?: string[];
+  nearbyLandmarks?: string[];
+  additionalSpecifications?: AdminCustomSpecification[];
+  specialFeatures?: string[];
+  pricingNotes?: string;
+  siteVisitInstructions?: string;
+  additionalNotes?: string;
+  internalNotes?: string;
+  customSections?: AdminCustomSection[];
+  updatedAt?: string;
+  updatedBy?: string;
+}
+
+export type BuyerFacingAdminDetails = Omit<AdminPropertyDetails, 'internalNotes'>;
+
 export interface Property {
   id: string;
   sellerId: string;
@@ -173,6 +202,7 @@ export interface Property {
   galleryImages: string[];
   sitePlanImage?: string;
   boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
+  adminDetails?: AdminPropertyDetails | null;
   isFeatured: boolean;
   viewsCount: number;
   documents?: Record<string, DocumentStatus>;
@@ -209,7 +239,8 @@ export interface Property {
  * As mandated by QA Lead Pre-Launch Security Gate #1:
  * "Direct seller contact information is completely stripped from public responses and HTML markup."
  */
-export interface PublicProperty extends Omit<Property, 'sellerId'> {
+export interface PublicProperty extends Omit<Property, 'sellerId' | 'adminDetails'> {
+  adminDetails?: BuyerFacingAdminDetails | null;
   brokerageContact: {
     name: string;
     phone: string;

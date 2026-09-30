@@ -175,6 +175,36 @@ function VerificationContent() {
           <DocumentVerificationReviewer
             propertyId={selected.id}
             propertyTitle={selected.titleEn}
+            onVerificationChange={(summary) => {
+              setSelected((prev) =>
+                prev
+                  ? {
+                      ...prev,
+                      status: summary.propertyStatus || prev.status,
+                      verificationStatus: {
+                        totalDocuments: summary.totalDocuments,
+                        verifiedDocuments: summary.verifiedDocuments,
+                        isFullyVerified: summary.isFullyVerified,
+                      },
+                    }
+                  : null
+              );
+              setQueue((prev) =>
+                prev.map((item) =>
+                  item.id === selected.id
+                    ? {
+                        ...item,
+                        status: summary.propertyStatus || item.status,
+                        verificationStatus: {
+                          totalDocuments: summary.totalDocuments,
+                          verifiedDocuments: summary.verifiedDocuments,
+                          isFullyVerified: summary.isFullyVerified,
+                        },
+                      }
+                    : item
+                )
+              );
+            }}
           />
         </div>
       </div>

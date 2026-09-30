@@ -31,6 +31,12 @@ import { useAuth } from '@/lib/auth-context';
 interface DocumentVerificationReviewerProps {
   propertyId: string;
   propertyTitle: string;
+  onVerificationChange?: (summary: {
+    propertyStatus?: string;
+    verifiedDocuments: number;
+    totalDocuments: number;
+    isFullyVerified: boolean;
+  }) => void;
 }
 
 type DocStatus = 'NOT_UPLOADED' | 'UPLOADED' | 'VERIFIED' | 'REJECTED' | 'PENDING';
@@ -50,11 +56,11 @@ interface DocRowState {
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function mapBackendStatus(s: string): DocStatus {
+function mapBackendStatus(s: string, fileUrl?: string): DocStatus {
   if (s === 'UPLOADED') return 'UPLOADED';
   if (s === 'VERIFIED') return 'VERIFIED';
   if (s === 'REJECTED') return 'REJECTED';
-  if (s === 'PENDING') return 'PENDING';
+  if (s === 'PENDING') return fileUrl && fileUrl.trim() ? 'PENDING' : 'NOT_UPLOADED';
   return 'NOT_UPLOADED';
 }
 
@@ -62,7 +68,7 @@ function buildDocMap(records: PropertyDocumentRecord[]): Record<string, DocRowSt
   const map: Record<string, DocRowState> = {};
   for (const r of records) {
     map[r.documentType] = {
-      status: mapBackendStatus(r.status),
+      status: mapBackendStatus(r.status, r.fileUrl),
       fileUrl: r.fileUrl,
       rejectionReason: r.rejectionReason,
       verifiedAt: r.verifiedAt,
@@ -195,8 +201,13 @@ function RejectionModal({ docName, onConfirm, onCancel }: RejectionModalProps) {
 export default function DocumentVerificationReviewer({
   propertyId,
   propertyTitle,
+  onVerificationChange,
 }: DocumentVerificationReviewerProps) {
   const { token, isAdmin } = useAuth();
+  const onVerificationChangeRef = React.useRef(onVerificationChange);
+  useEffect(() => {
+    onVerificationChangeRef.current = onVerificationChange;
+  }, [onVerificationChange]);
 
   const [docStates, setDocStates] = useState<Record<string, DocRowState>>(() => {
     const init: Record<string, DocRowState> = {};
@@ -208,6 +219,10 @@ export default function DocumentVerificationReviewer({
 
   const [isLoading, setIsLoading] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
+  const [actionFeedback, setActionFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
 
   // rejection modal state
   const [rejectTarget, setRejectTarget] = useState<{ key: DocumentKey; name: string } | null>(null);
@@ -221,12 +236,17 @@ export default function DocumentVerificationReviewer({
       const records = await getPropertyDocumentsApi(token, propertyId);
       const mapped = buildDocMap(records);
 
-      setDocStates((prev) => {
-        const next = { ...prev };
-        VERIFIED_13_DOCS.forEach((d) => {
-          next[d.key] = mapped[d.key] ?? { status: 'NOT_UPLOADED' };
-        });
-        return next;
+      const next: Record<string, DocRowState> = {};
+      VERIFIED_13_DOCS.forEach((d) => {
+        next[d.key] = mapped[d.key] ?? { status: 'NOT_UPLOADED' };
+      });
+      setDocStates(next);
+
+      const nextVerifiedCount = Object.values(next).filter((s) => s.status === 'VERIFIED').length;
+      onVerificationChangeRef.current?.({
+        verifiedDocuments: nextVerifiedCount,
+        totalDocuments: VERIFIED_13_DOCS.length,
+        isFullyVerified: nextVerifiedCount === VERIFIED_13_DOCS.length,
       });
     } catch (err) {
       setLoadError((err as Error).message || 'Failed to load documents');
@@ -258,6 +278,7 @@ export default function DocumentVerificationReviewer({
   const handleVerify = useCallback(
     async (key: DocumentKey) => {
       if (!token || !isAdmin) return;
+      setActionFeedback(null);
 
       setDocStates((prev) => ({
         ...prev,
@@ -266,18 +287,37 @@ export default function DocumentVerificationReviewer({
 
       try {
         const result = await verifyPropertyDocumentApi(token, propertyId, key, 'VERIFIED');
-        setDocStates((prev) => ({
-          ...prev,
+        const nextStatus = mapBackendStatus(result.document.status, result.document.fileUrl || docStates[key]?.fileUrl);
+        const nextStates: Record<string, DocRowState> = {
+          ...docStates,
           [key]: {
-            ...prev[key],
-            status: mapBackendStatus(result.document.status),
+            ...docStates[key],
+            status: nextStatus,
             verifiedAt: result.document.verifiedAt,
             rejectionReason: undefined,
             loading: null,
             justSaved: true,
             error: undefined,
           },
-        }));
+        };
+        setDocStates(nextStates);
+
+        const nextVerifiedCount = Object.values(nextStates).filter((s) => s.status === 'VERIFIED').length;
+        onVerificationChange?.({
+          propertyStatus: result.propertyStatus,
+          verifiedDocuments: nextVerifiedCount,
+          totalDocuments: VERIFIED_13_DOCS.length,
+          isFullyVerified: nextVerifiedCount === VERIFIED_13_DOCS.length,
+        });
+
+        const docLabel = VERIFIED_13_DOCS.find((d) => d.key === key)?.nameEn || key;
+        setActionFeedback({
+          type: 'success',
+          message: `${docLabel} verified and saved.${
+            result.propertyStatus ? ` Property status: ${result.propertyStatus.replace(/_/g, ' ')}.` : ''
+          }`,
+        });
+
         // clear flash after 2.5 s
         setTimeout(() => {
           setDocStates((prev) => ({
@@ -286,17 +326,19 @@ export default function DocumentVerificationReviewer({
           }));
         }, 2500);
       } catch (err) {
+        const errMsg = (err as Error).message || 'Verification failed';
+        setActionFeedback({ type: 'error', message: errMsg });
         setDocStates((prev) => ({
           ...prev,
           [key]: {
             ...prev[key],
             loading: null,
-            error: (err as Error).message || 'Verification failed',
+            error: errMsg,
           },
         }));
       }
     },
-    [token, propertyId, isAdmin]
+    [token, propertyId, isAdmin, docStates, onVerificationChange]
   );
 
   // ── Reject document (requires reason) ─────────────────────────────────────
@@ -304,6 +346,7 @@ export default function DocumentVerificationReviewer({
     async (key: DocumentKey, reason: string) => {
       setRejectTarget(null);
       if (!token || !isAdmin) return;
+      setActionFeedback(null);
 
       setDocStates((prev) => ({
         ...prev,
@@ -318,17 +361,36 @@ export default function DocumentVerificationReviewer({
           'REJECTED',
           reason
         );
-        setDocStates((prev) => ({
-          ...prev,
+        const nextStatus = mapBackendStatus(result.document.status, result.document.fileUrl || docStates[key]?.fileUrl);
+        const nextStates: Record<string, DocRowState> = {
+          ...docStates,
           [key]: {
-            ...prev[key],
-            status: mapBackendStatus(result.document.status),
-            rejectionReason: result.document.rejectionReason,
+            ...docStates[key],
+            status: nextStatus,
+            rejectionReason: result.document.rejectionReason || reason,
             loading: null,
             justSaved: true,
             error: undefined,
           },
-        }));
+        };
+        setDocStates(nextStates);
+
+        const nextVerifiedCount = Object.values(nextStates).filter((s) => s.status === 'VERIFIED').length;
+        onVerificationChange?.({
+          propertyStatus: result.propertyStatus,
+          verifiedDocuments: nextVerifiedCount,
+          totalDocuments: VERIFIED_13_DOCS.length,
+          isFullyVerified: nextVerifiedCount === VERIFIED_13_DOCS.length,
+        });
+
+        const docLabel = VERIFIED_13_DOCS.find((d) => d.key === key)?.nameEn || key;
+        setActionFeedback({
+          type: 'success',
+          message: `${docLabel} rejected (${reason}).${
+            result.propertyStatus ? ` Property status: ${result.propertyStatus.replace(/_/g, ' ')}.` : ''
+          }`,
+        });
+
         setTimeout(() => {
           setDocStates((prev) => ({
             ...prev,
@@ -336,23 +398,29 @@ export default function DocumentVerificationReviewer({
           }));
         }, 2500);
       } catch (err) {
+        const errMsg = (err as Error).message || 'Rejection failed';
+        setActionFeedback({ type: 'error', message: errMsg });
         setDocStates((prev) => ({
           ...prev,
           [key]: {
             ...prev[key],
             loading: null,
-            error: (err as Error).message || 'Rejection failed',
+            error: errMsg,
           },
         }));
       }
     },
-    [token, propertyId, isAdmin]
+    [token, propertyId, isAdmin, docStates, onVerificationChange]
   );
 
   // ── Derived counts ─────────────────────────────────────────────────────────
   const verifiedCount = Object.values(docStates).filter((s) => s.status === 'VERIFIED').length;
   const uploadedCount = Object.values(docStates).filter(
-    (s) => s.status === 'UPLOADED' || s.status === 'VERIFIED'
+    (s) =>
+      s.status === 'UPLOADED' ||
+      s.status === 'VERIFIED' ||
+      s.status === 'REJECTED' ||
+      (s.status === 'PENDING' && !!s.fileUrl)
   ).length;
   const totalDocs = VERIFIED_13_DOCS.length;
   const isFullyCleared = verifiedCount === totalDocs;
@@ -461,6 +529,35 @@ export default function DocumentVerificationReviewer({
           </div>
         )}
 
+        {/* Action feedback (Verify / Reject result) */}
+        {actionFeedback && (
+          <div
+            role="status"
+            className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium border ${
+              actionFeedback.type === 'success'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-rose-50 border-rose-200 text-rose-800'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {actionFeedback.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              )}
+              <span>{actionFeedback.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setActionFeedback(null)}
+              className="p-1 rounded hover:bg-black/5 text-current"
+              aria-label="Dismiss message"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
         {/* Document Table */}
         <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
           {isLoading && (
@@ -487,6 +584,20 @@ export default function DocumentVerificationReviewer({
                     const row = docStates[doc.key] ?? { status: 'NOT_UPLOADED' };
                     const hasFile = !!row.fileUrl;
                     const isRowLoading = !!row.loading;
+                    const canVerify =
+                      isAdmin &&
+                      !isRowLoading &&
+                      row.status !== 'VERIFIED' &&
+                      (row.status === 'UPLOADED' ||
+                        row.status === 'REJECTED' ||
+                        (row.status === 'PENDING' && hasFile));
+                    const canReject =
+                      isAdmin &&
+                      !isRowLoading &&
+                      row.status !== 'REJECTED' &&
+                      (row.status === 'UPLOADED' ||
+                        row.status === 'VERIFIED' ||
+                        (row.status === 'PENDING' && hasFile));
 
                     return (
                       <tr
@@ -581,29 +692,22 @@ export default function DocumentVerificationReviewer({
 
                             <div className="w-px h-6 bg-slate-200 mx-0.5" />
 
-                            {/* Verify button — ADMIN only, only when UPLOADED */}
+                            {/* Verify button — ADMIN only, when document is uploaded/rejected/pending-with-file */}
                             <button
                               type="button"
                               onClick={() => handleVerify(doc.key)}
-                              disabled={
-                                !isAdmin ||
-                                isRowLoading ||
-                                row.status === 'VERIFIED' ||
-                                row.status === 'NOT_UPLOADED' ||
-                                row.status === 'PENDING'
-                              }
+                              disabled={!canVerify}
                               className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-                                !isAdmin ||
-                                row.status === 'VERIFIED' ||
-                                row.status === 'NOT_UPLOADED' ||
-                                row.status === 'PENDING'
+                                !canVerify
                                   ? 'bg-emerald-50 text-emerald-400 border border-emerald-100 opacity-50 cursor-not-allowed'
                                   : 'bg-white border border-emerald-300 text-emerald-700 hover:bg-emerald-50'
                               }`}
                               title={
                                 !isAdmin
                                   ? 'Only Admins can verify'
-                                  : row.status !== 'UPLOADED'
+                                  : row.status === 'VERIFIED'
+                                  ? 'Document is already verified'
+                                  : !canVerify
                                   ? 'Document must be uploaded first'
                                   : 'Mark as Verified'
                               }
@@ -616,31 +720,24 @@ export default function DocumentVerificationReviewer({
                               {row.loading === 'VERIFIED' ? 'Saving…' : 'Verify'}
                             </button>
 
-                            {/* Reject button — ADMIN only, only when UPLOADED or VERIFIED */}
+                            {/* Reject button — ADMIN only, when document is uploaded/verified/pending-with-file */}
                             <button
                               type="button"
                               onClick={() =>
                                 setRejectTarget({ key: doc.key, name: doc.nameEn })
                               }
-                              disabled={
-                                !isAdmin ||
-                                isRowLoading ||
-                                row.status === 'REJECTED' ||
-                                row.status === 'NOT_UPLOADED' ||
-                                row.status === 'PENDING'
-                              }
+                              disabled={!canReject}
                               className={`inline-flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-colors ${
-                                !isAdmin ||
-                                row.status === 'REJECTED' ||
-                                row.status === 'NOT_UPLOADED' ||
-                                row.status === 'PENDING'
+                                !canReject
                                   ? 'bg-rose-50 text-rose-300 border border-rose-100 opacity-50 cursor-not-allowed'
                                   : 'bg-white border border-rose-300 text-rose-700 hover:bg-rose-50'
                               }`}
                               title={
                                 !isAdmin
                                   ? 'Only Admins can reject'
-                                  : row.status !== 'UPLOADED' && row.status !== 'VERIFIED'
+                                  : row.status === 'REJECTED'
+                                  ? 'Document is already rejected'
+                                  : !canReject
                                   ? 'Document must be uploaded first'
                                   : 'Reject this document'
                               }

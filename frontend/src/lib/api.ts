@@ -241,11 +241,18 @@ export interface BackendProperty {
   verificationStatus?: {
     totalDocuments: number;
     verifiedDocuments: number;
+    rejectedDocuments?: number;
+    uploadedDocuments?: number;
     isFullyVerified: boolean;
+    reviewStatus?: 'UNDER_REVIEW' | 'VERIFIED' | 'REJECTED';
     documentsChecklist?: Array<{
       documentType: string;
       status: string;
       isVerified: boolean;
+      hasFile?: boolean;
+      rejectionReason?: string;
+      verifiedAt?: string;
+      updatedAt?: string;
     }>;
   };
   adminDetails?: AdminPropertyDetails;
@@ -346,8 +353,20 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
           builtUpAreaSqFt: bp.villa.builtUpAreaSqFt ?? bp.villa.builtUpSqft,
           builtUpSqft: bp.villa.builtUpSqft ?? bp.villa.builtUpAreaSqFt ?? 0,
           configuration: bp.villa.configuration,
-          floors: typeof bp.villa.floors === 'string' ? bp.villa.floors : (bp.villa.floors ? `G+${bp.villa.floors - 1}` : undefined),
-          floorsConfig: (bp.villa.floorsConfig || (bp.villa.floors ? `G+${typeof bp.villa.floors === 'number' ? bp.villa.floors - 1 : 2}` : 'G+2')) as 'G+1' | 'G+2' | 'Triplex',
+          floors:
+            typeof bp.villa.floors === 'string'
+              ? bp.villa.floors
+              : bp.villa.floors !== undefined && bp.villa.floors !== null
+              ? `G+${Number(bp.villa.floors) - 1}`
+              : undefined,
+          floorsConfig: (
+            bp.villa.floorsConfig ||
+            (typeof bp.villa.floors === 'string'
+              ? bp.villa.floors
+              : bp.villa.floors !== undefined && bp.villa.floors !== null
+              ? `G+${Number(bp.villa.floors) - 1}`
+              : 'G+2')
+          ) as 'G+1' | 'G+2' | 'Triplex',
           facing: bp.villa.facing,
           communityName: bp.villa.communityName,
           gatedCommunity: bp.villa.gatedCommunity,
@@ -875,27 +894,7 @@ export async function loginApi(identifier: string, password?: string): Promise<A
   const cleanId = identifier.trim().toLowerCase();
   const cleanPassword = (password ?? '').trim();
 
-  // 1. Simple Demo Admin Login (Local Development / Demo Only)
-  // Supports identifier: admin, password: admin123
-  if (cleanId === 'admin' || (cleanId === 'admin@telanganarealty.in' && cleanPassword === 'admin123')) {
-    if (cleanPassword === 'admin123') {
-      return {
-        token: 'mock-jwt-admin-token-2026',
-        user: {
-          id: 'usr-admin-001',
-          name: 'Administrator',
-          email: 'admin@telanganarealty.in',
-          phone: '+919876543210',
-          whatsapp: '+919876543210',
-          role: 'ADMIN',
-          isActive: true,
-        },
-      };
-    }
-    throw new Error('Invalid credentials');
-  }
-
-  // 2. Real Backend Authentication (when available)
+  // 1. Real Backend Authentication (when available)
   const url = isRealBackend() ? `${API_BASE_URL}/auth/login` : 'https://telangana-realty-backend.onrender.com/api/auth/login';
 
   try {
@@ -921,8 +920,8 @@ export async function loginApi(identifier: string, password?: string): Promise<A
     console.warn('[auth] Real backend unreachable, verifying against demo credentials fallback:', err);
   }
 
-  // 3. Resilient Demo Role Fallback (when backend is unreachable)
-  if (cleanId === 'admin@telanganarealty.in') {
+  // 2. Resilient Demo Role Fallback (when backend is unreachable)
+  if (cleanId === 'admin' || cleanId === 'admin@telanganarealty.in') {
     if (cleanPassword !== 'Director@Telangana2026!' && cleanPassword !== 'Admin@1234' && cleanPassword !== 'admin123') {
       throw new Error('Invalid credentials');
     }
@@ -1016,19 +1015,27 @@ export async function loginApi(identifier: string, password?: string): Promise<A
 export async function registerApi(input: RegisterInput): Promise<AuthResponse> {
   const url = isRealBackend() ? `${API_BASE_URL}/auth/register` : 'https://telangana-realty-backend.onrender.com/api/auth/register';
 
+  let res: Response | null = null;
   try {
-    const res = await fetch(url, {
+    res = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(input),
     });
+  } catch (err) {
+    console.warn('[auth] Backend register unreachable, using local session:', err);
+  }
 
+  if (res) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       return data as AuthResponse;
     }
-  } catch (err) {
-    console.warn('[auth] Backend register unreachable, using local session:', err);
+    throw new Error(
+      (data as { error?: string; message?: string }).error ||
+        (data as { message?: string }).message ||
+        `Registration failed (${res.status})`
+    );
   }
 
   // Fallback registration
@@ -1229,20 +1236,29 @@ function mockPropertyToBackend(mp: MockProperty): BackendProperty {
 export async function getSellerProfileApi(token: string): Promise<SellerProfileResponse> {
   const url = isRealBackend() ? `${API_BASE_URL}/owners/me` : 'https://telangana-realty-backend.onrender.com/api/owners/me';
 
+  let res: Response | null = null;
   try {
-    const res = await fetch(url, {
+    res = await fetch(url, {
+      cache: 'no-store',
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
+  } catch (err) {
+    console.warn('[api] Backend /owners/me unreachable, using mock seller portfolio:', err);
+  }
 
+  if (res) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       return data as SellerProfileResponse;
     }
-  } catch (err) {
-    console.warn('[api] Backend /owners/me unreachable, using mock seller portfolio:', err);
+    throw new Error(
+      (data as { error?: string; message?: string }).error ||
+        (data as { message?: string }).message ||
+        `Failed to load seller submissions (${res.status})`
+    );
   }
 
   // Resilient fallback for standalone/demo usage
@@ -1313,20 +1329,45 @@ export async function getAdminPropertiesApi(
     url.searchParams.set('status', status);
   }
 
+  let res: Response | null = null;
   try {
-    const res = await fetch(url.toString(), {
+    res = await fetch(url.toString(), {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
-
-    const data = await res.json().catch(() => ({}));
-    if (res.ok) {
-      return data as { properties: BackendProperty[]; total: number };
-    }
   } catch (err) {
     console.warn('[api] Backend /admin/properties unreachable, using mock properties:', err);
+  }
+
+  if (res) {
+    const data = await res.json().catch(() => ({}));
+    if (res.ok) {
+      const rawList = Array.isArray((data as { properties?: unknown[] }).properties)
+        ? ((data as { properties: Array<BackendProperty & { documentsSummary?: { total?: number; verified?: number } }> }).properties)
+        : [];
+      const mapped = rawList.map((p) => {
+        if (!p.verificationStatus && p.documentsSummary) {
+          const verifiedDocuments = p.documentsSummary.verified ?? 0;
+          const totalDocuments = p.documentsSummary.total || 13;
+          return {
+            ...p,
+            verificationStatus: {
+              totalDocuments: 13,
+              verifiedDocuments,
+              isFullyVerified: verifiedDocuments >= totalDocuments && totalDocuments > 0,
+            },
+          };
+        }
+        return p;
+      });
+      return {
+        properties: mapped,
+        total: (data as { total?: number; count?: number }).total ?? (data as { count?: number }).count ?? mapped.length,
+      };
+    }
+    throw new Error((data as { error?: string; message?: string }).error || (data as { message?: string }).message || 'Failed to load properties');
   }
 
   let list = MOCK_PROPERTIES.map(mockPropertyToBackend);
@@ -1387,30 +1428,50 @@ export async function getAdminPropertyDetailApi(
     ? `${API_BASE_URL}/admin/properties/${encodeURIComponent(propertyId)}`
     : `https://telangana-realty-backend.onrender.com/api/admin/properties/${encodeURIComponent(propertyId)}`;
 
+  let res: Response | null = null;
   try {
-    const res = await fetch(base, {
+    res = await fetch(base, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
+  } catch (err) {
+    console.warn(`[api] Backend /admin/properties/${propertyId} unreachable, using mock detail:`, err);
+  }
 
+  if (res) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       let detail: InternalPropertyDetail;
       if ((data as { property?: unknown }).property) {
-        detail = (data as { property: InternalPropertyDetail }).property;
+        detail = { ...(data as { property: InternalPropertyDetail }).property };
+        if (!detail.seller && (data as { seller?: InternalPropertyDetail['seller'] }).seller) {
+          detail.seller = (data as { seller: InternalPropertyDetail['seller'] }).seller;
+        }
+        if (!detail.verificationStatus && Array.isArray((data as { documents?: PropertyDocumentRecord[] }).documents)) {
+          const docs = (data as { documents: PropertyDocumentRecord[] }).documents;
+          const verifiedCount = docs.filter((d) => d.status === 'VERIFIED').length;
+          detail.verificationStatus = {
+            totalDocuments: 13,
+            verifiedDocuments: verifiedCount,
+            isFullyVerified: verifiedCount >= 13 || detail.status === 'VERIFIED' || detail.status === 'LIVE',
+          };
+        }
       } else {
         detail = data as InternalPropertyDetail;
       }
-      const persisted = loadAdminDetails(propertyId, detail.adminDetails);
-      if (persisted) {
-        detail.adminDetails = persisted;
+      if (detail.adminDetails && Object.keys(detail.adminDetails).length > 0) {
+        persistAdminDetailsLocally(propertyId, detail.adminDetails);
+      } else {
+        const persisted = loadAdminDetails(propertyId, detail.adminDetails);
+        if (persisted) {
+          detail.adminDetails = persisted;
+        }
       }
       return detail;
     }
-  } catch (err) {
-    console.warn(`[api] Backend /admin/properties/${propertyId} unreachable, using mock detail:`, err);
+    throw new Error((data as { error?: string; message?: string }).error || (data as { message?: string }).message || 'Failed to load property details');
   }
 
   const found = MOCK_PROPERTIES.find((p) => p.id === propertyId) || MOCK_PROPERTIES[0];
@@ -1432,8 +1493,8 @@ export async function getAdminPropertyDetailApi(
 
 /**
  * Save Admin Added Details for a property.
- * Persists to browser localStorage for immediate reactive UI display,
- * and calls backend PATCH endpoint if available.
+ * Persists to PostgreSQL via PATCH /api/properties/:id/admin-details,
+ * and caches in browser localStorage for reactive UI display.
  */
 export async function saveAdminPropertyDetailsApi(
   token: string,
@@ -1445,14 +1506,10 @@ export async function saveAdminPropertyDetailsApi(
   persistedLocally: boolean;
   backendPersisted: boolean;
 }> {
-  // Always persist locally first so state is never lost in UI
-  persistAdminDetailsLocally(propertyId, details);
-
-  // Also update in-memory MOCK_PROPERTIES for current session
-  const mockProp = MOCK_PROPERTIES.find((p) => p.id === propertyId);
-  if (mockProp) {
-    mockProp.adminDetails = details;
-  }
+  let savedDetails: AdminPropertyDetails = {
+    ...details,
+    updatedAt: details.updatedAt || new Date().toISOString(),
+  };
 
   let backendPersisted = false;
   if (isRealBackend()) {
@@ -1464,10 +1521,18 @@ export async function saveAdminPropertyDetailsApi(
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ adminDetails: details }),
+        body: JSON.stringify({ adminDetails: savedDetails }),
       });
       if (res.ok) {
         backendPersisted = true;
+        const data = await res.json().catch(() => ({}));
+        const returnedDetails =
+          (data as { adminDetails?: AdminPropertyDetails; property?: { adminDetails?: AdminPropertyDetails } })
+            ?.adminDetails ||
+          (data as { property?: { adminDetails?: AdminPropertyDetails } })?.property?.adminDetails;
+        if (returnedDetails && typeof returnedDetails === 'object') {
+          savedDetails = returnedDetails;
+        }
       } else {
         console.warn(
           `[api] Backend PATCH /properties/${propertyId}/admin-details returned ${res.status}. Data is safely preserved in browser local storage.`
@@ -1481,9 +1546,16 @@ export async function saveAdminPropertyDetailsApi(
     }
   }
 
+  // Persist locally and update in-memory MOCK_PROPERTIES for current session
+  persistAdminDetailsLocally(propertyId, savedDetails);
+  const mockProp = MOCK_PROPERTIES.find((p) => p.id === propertyId);
+  if (mockProp) {
+    mockProp.adminDetails = savedDetails;
+  }
+
   return {
     success: true,
-    details,
+    details: savedDetails,
     persistedLocally: true,
     backendPersisted,
   };
@@ -1516,20 +1588,28 @@ export async function getPropertyDocumentsApi(
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents`
     : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents`;
 
+  let res: Response | null = null;
   try {
-    const res = await fetch(base, {
+    res = await fetch(base, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
+  } catch (err) {
+    console.warn(`[api] Backend /properties/${propertyId}/documents unreachable, using mock docs:`, err);
+  }
 
+  if (res) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       return ((data as { documents?: PropertyDocumentRecord[] }).documents ?? []);
     }
-  } catch (err) {
-    console.warn(`[api] Backend /properties/${propertyId}/documents unreachable, using mock docs:`, err);
+    throw new Error(
+      (data as { error?: string; message?: string }).error ||
+        (data as { message?: string }).message ||
+        `Failed to load property documents (${res.status})`
+    );
   }
 
   return MOCK_ALL_13_KEYS.map((docType, idx) => ({
@@ -1560,22 +1640,30 @@ export async function getPropertyDocumentApi(
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`
     : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}`;
 
+  let res: Response | null = null;
   try {
-    const res = await fetch(base, {
+    res = await fetch(base, {
       headers: {
         'Content-Type': 'application/json',
         Authorization: `Bearer ${token}`,
       },
     });
+  } catch (err) {
+    console.warn(`[api] Backend document ${docType} unreachable, using mock doc:`, err);
+  }
 
+  if (res) {
     if (res.status === 404) return null;
 
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       return (data as { document?: PropertyDocumentRecord }).document ?? null;
     }
-  } catch (err) {
-    console.warn(`[api] Backend document ${docType} unreachable, using mock doc:`, err);
+    throw new Error(
+      (data as { error?: string; message?: string }).error ||
+        (data as { message?: string }).message ||
+        `Failed to load document ${docType} (${res.status})`
+    );
   }
 
   return {
@@ -1613,8 +1701,9 @@ export async function verifyPropertyDocumentApi(
     ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`
     : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(docType)}/verify`;
 
+  let res: Response | null = null;
   try {
-    const res = await fetch(base, {
+    res = await fetch(base, {
       method: 'PATCH',
       headers: {
         'Content-Type': 'application/json',
@@ -1622,13 +1711,20 @@ export async function verifyPropertyDocumentApi(
       },
       body: JSON.stringify({ status, rejectionReason }),
     });
+  } catch (err) {
+    console.warn(`[api] Backend document verification unreachable, using mock update:`, err);
+  }
 
+  if (res) {
     const data = await res.json().catch(() => ({}));
     if (res.ok) {
       return data as VerifyDocumentResult;
     }
-  } catch (err) {
-    console.warn(`[api] Backend document verification unreachable, using mock update:`, err);
+    throw new Error(
+      (data as { error?: string; message?: string }).error ||
+        (data as { message?: string }).message ||
+        `Failed to ${status === 'VERIFIED' ? 'verify' : 'reject'} document (${res.status})`
+    );
   }
 
   return {

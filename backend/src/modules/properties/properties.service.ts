@@ -13,6 +13,7 @@ import {
   FlatDetails,
   VillaDetails,
   PricingDetails,
+  AdminPropertyDetails,
 } from '../../types/index.js';
 
 export interface CreatePropertyInput {
@@ -94,6 +95,9 @@ export class PropertiesService {
       }
       if (!input.villa?.bathrooms || input.villa.bathrooms <= 0) {
         throw new Error('Number of bathrooms is required for Villa listings');
+      }
+      if (input.villa.floors !== undefined && input.villa.floors !== null) {
+        input.villa.floors = String(input.villa.floors).trim();
       }
     } else {
       throw new Error('Invalid property type. Must be LAND, FLAT, or VILLA');
@@ -314,6 +318,9 @@ export class PropertiesService {
       if (updates.villa.plotAreaSqYards !== undefined && (typeof updates.villa.plotAreaSqYards !== 'number' || updates.villa.plotAreaSqYards <= 0)) {
         throw new Error('Plot area must be a positive number');
       }
+      if (updates.villa.floors !== undefined && updates.villa.floors !== null) {
+        updates.villa.floors = String(updates.villa.floors).trim();
+      }
     }
   }
 
@@ -329,7 +336,7 @@ export class PropertiesService {
     this.validateUpdateInput(updates);
 
     // Strip protected system fields
-    const { status, sellerId, id: _id, createdAt, updatedAt, viewsCount, isFeatured, ...safeUpdates } = updates as any;
+    const { status, sellerId, id: _id, createdAt, updatedAt, viewsCount, isFeatured, adminDetails: _adminDetails, ...safeUpdates } = updates as any;
 
     let location = safeUpdates.location;
     if (location) {
@@ -361,6 +368,71 @@ export class PropertiesService {
     }
 
     const updated = await db.updateProperty(id, safeUpdates);
+    if (!updated) {
+      throw new Error(`Property ${id} not found`);
+    }
+    return updated;
+  }
+
+  /**
+   * Update admin-curated property details (Staff/Admin only)
+   */
+  async updateAdminDetails(
+    id: string,
+    adminDetails: AdminPropertyDetails,
+    updatedBy?: string
+  ): Promise<Property> {
+    const property = await db.findPropertyById(id);
+    if (!property) {
+      throw new Error(`Property ${id} not found`);
+    }
+
+    if (!adminDetails || typeof adminDetails !== 'object') {
+      throw new Error('Valid adminDetails object is required');
+    }
+
+    const sanitizedDetails: AdminPropertyDetails = {
+      projectDescription:
+        typeof adminDetails.projectDescription === 'string' ? adminDetails.projectDescription : undefined,
+      highlights: Array.isArray(adminDetails.highlights)
+        ? adminDetails.highlights.filter((v) => typeof v === 'string')
+        : undefined,
+      amenities: Array.isArray(adminDetails.amenities)
+        ? adminDetails.amenities.filter((v) => typeof v === 'string')
+        : undefined,
+      locationAdvantages: Array.isArray(adminDetails.locationAdvantages)
+        ? adminDetails.locationAdvantages.filter((v) => typeof v === 'string')
+        : undefined,
+      nearbyLandmarks: Array.isArray(adminDetails.nearbyLandmarks)
+        ? adminDetails.nearbyLandmarks.filter((v) => typeof v === 'string')
+        : undefined,
+      additionalSpecifications: Array.isArray(adminDetails.additionalSpecifications)
+        ? adminDetails.additionalSpecifications
+            .filter((s) => s && typeof s.label === 'string' && typeof s.value === 'string')
+            .map((s) => ({ label: s.label, value: s.value }))
+        : undefined,
+      specialFeatures: Array.isArray(adminDetails.specialFeatures)
+        ? adminDetails.specialFeatures.filter((v) => typeof v === 'string')
+        : undefined,
+      pricingNotes: typeof adminDetails.pricingNotes === 'string' ? adminDetails.pricingNotes : undefined,
+      siteVisitInstructions:
+        typeof adminDetails.siteVisitInstructions === 'string'
+          ? adminDetails.siteVisitInstructions
+          : undefined,
+      additionalNotes:
+        typeof adminDetails.additionalNotes === 'string' ? adminDetails.additionalNotes : undefined,
+      internalNotes:
+        typeof adminDetails.internalNotes === 'string' ? adminDetails.internalNotes : undefined,
+      customSections: Array.isArray(adminDetails.customSections)
+        ? adminDetails.customSections
+            .filter((c) => c && typeof c.title === 'string' && typeof c.content === 'string')
+            .map((c) => ({ title: c.title, content: c.content }))
+        : undefined,
+      updatedAt: adminDetails.updatedAt || new Date().toISOString(),
+      updatedBy: updatedBy || adminDetails.updatedBy,
+    };
+
+    const updated = await db.updateProperty(id, { adminDetails: sanitizedDetails });
     if (!updated) {
       throw new Error(`Property ${id} not found`);
     }

@@ -173,7 +173,9 @@ function mapPropertyRow(row: any): Property {
         ? parseInt(row.villa_built_up_area_sq_ft, 10)
         : (row.sqft !== null && row.sqft !== undefined ? parseInt(row.sqft, 10) : undefined),
       configuration: row.villa_configuration || undefined,
-      floors: row.villa_floors || (row.total_floors !== null && row.total_floors !== undefined ? parseInt(row.total_floors, 10) : undefined),
+      floors: row.villa_floors !== null && row.villa_floors !== undefined && String(row.villa_floors).trim() !== ''
+        ? String(row.villa_floors)
+        : (row.total_floors !== null && row.total_floors !== undefined ? `G+${Math.max(1, parseInt(row.total_floors, 10) - 1)}` : undefined),
       facing: row.villa_facing || undefined,
       communityName: row.villa_community_name || undefined,
       gatedCommunity: row.villa_gated_community !== null && row.villa_gated_community !== undefined ? !!row.villa_gated_community : undefined,
@@ -198,6 +200,7 @@ function mapPropertyRow(row: any): Property {
     galleryImages: row.gallery_images || [],
     sitePlanImage: row.site_plan_image || undefined,
     boundaryCoordinates: row.boundary_coordinates ?? null,
+    adminDetails: row.admin_details ?? undefined,
     isFeatured: !!row.is_featured,
     viewsCount: parseInt(row.views_count || '0', 10),
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
@@ -927,7 +930,7 @@ class Database {
           villa_facing, villa_community_name, villa_gated_community, villa_bedrooms, villa_bathrooms,
           villa_amenities,
           price_per_acre, price_per_sqft, total_price, outrate, half_development_value, is_negotiable,
-          main_image, gallery_images, site_plan_image, is_featured, views_count, boundary_coordinates
+          main_image, gallery_images, site_plan_image, is_featured, views_count, boundary_coordinates, admin_details
         ) VALUES (
           $1, $2, $3, $4, $5, $6, $7,
           $8, $9, $10, $11, $12, $13, $14, $15,
@@ -936,7 +939,7 @@ class Database {
           $24, $25, $26, $27, $28, $29, $30,
           $31, $32, $33, $34, $35, $36, $37, $38, $39, $40,
           $41, $42, $43, $44, $45, $46,
-          $47, $48, $49, $50, $51, $52
+          $47, $48, $49, $50, $51, $52, $53
         ) RETURNING *;
       `;
 
@@ -968,13 +971,13 @@ class Database {
         data.type === 'VILLA' ? (data.villa?.bedrooms ?? null) : (data.flat?.bedrooms ?? null),
         data.type === 'VILLA' ? (data.villa?.bathrooms ?? null) : (data.flat?.bathrooms ?? null),
         data.flat?.floor ?? null,
-        data.type === 'VILLA' ? (typeof data.villa?.floors === 'number' ? data.villa.floors : null) : (data.flat?.totalFloors ?? null),
+        data.type === 'VILLA' ? null : (data.flat?.totalFloors ?? null),
         data.type === 'VILLA' ? (data.villa?.amenities || null) : (data.flat?.amenities || null),
         data.type === 'VILLA' ? (data.villa?.possessionStatus || null) : (data.flat?.possessionStatus || null),
         data.villa?.plotAreaSqYards ?? data.villa?.plotSqYards ?? null,
         data.villa?.builtUpAreaSqFt ?? data.villa?.builtUpSqft ?? null,
         data.villa?.configuration || null,
-        data.villa?.floors !== undefined ? String(data.villa.floors) : null,
+        data.villa?.floors !== undefined && data.villa?.floors !== null ? String(data.villa.floors) : null,
         data.villa?.facing || null,
         data.villa?.communityName || null,
         data.villa?.gatedCommunity ?? false,
@@ -993,6 +996,7 @@ class Database {
         data.isFeatured ?? false,
         0,
         data.boundaryCoordinates ? JSON.stringify(data.boundaryCoordinates) : null,
+        data.adminDetails ? JSON.stringify(data.adminDetails) : null,
       ];
 
       const res = await client.query(insertQuery, values);
@@ -1045,6 +1049,7 @@ class Database {
         villa: updates.villa ? (existing.villa ? { ...existing.villa, ...updates.villa } : updates.villa) : existing.villa,
         pricing: updates.pricing ? { ...existing.pricing, ...updates.pricing } : existing.pricing,
         boundaryCoordinates: updates.boundaryCoordinates !== undefined ? updates.boundaryCoordinates : existing.boundaryCoordinates,
+        adminDetails: updates.adminDetails !== undefined ? updates.adminDetails : existing.adminDetails,
         id: existing.id,
         updatedAt: new Date().toISOString(),
       };
@@ -1177,13 +1182,15 @@ class Database {
       setClauses.push(`possession_status = $${idx++}`);
       values.push(updates.flat.possessionStatus);
     }
-    if (updates.villa?.plotAreaSqYards !== undefined) {
+    const villaPlotArea = updates.villa?.plotAreaSqYards ?? updates.villa?.plotSqYards;
+    if (villaPlotArea !== undefined) {
       setClauses.push(`villa_plot_area_sq_yards = $${idx++}`);
-      values.push(updates.villa.plotAreaSqYards);
+      values.push(villaPlotArea);
     }
-    if (updates.villa?.builtUpAreaSqFt !== undefined) {
+    const villaBuiltUpArea = updates.villa?.builtUpAreaSqFt ?? updates.villa?.builtUpSqft;
+    if (villaBuiltUpArea !== undefined) {
       setClauses.push(`villa_built_up_area_sq_ft = $${idx++}`);
-      values.push(updates.villa.builtUpAreaSqFt);
+      values.push(villaBuiltUpArea);
     }
     if (updates.villa?.configuration !== undefined) {
       setClauses.push(`villa_configuration = $${idx++}`);
@@ -1191,7 +1198,7 @@ class Database {
     }
     if (updates.villa?.floors !== undefined) {
       setClauses.push(`villa_floors = $${idx++}`);
-      values.push(updates.villa.floors);
+      values.push(updates.villa.floors !== null ? String(updates.villa.floors) : null);
     }
     if (updates.villa?.facing !== undefined) {
       setClauses.push(`villa_facing = $${idx++}`);
@@ -1265,31 +1272,31 @@ class Database {
       setClauses.push(`boundary_coordinates = $${idx++}`);
       values.push(updates.boundaryCoordinates ? JSON.stringify(updates.boundaryCoordinates) : null);
     }
-    if (updates.villa?.plotSqYards !== undefined) {
+    if (updates.adminDetails !== undefined) {
+      setClauses.push(`admin_details = $${idx++}`);
+      values.push(updates.adminDetails ? JSON.stringify(updates.adminDetails) : null);
+    }
+    if (villaPlotArea !== undefined && updates.land?.totalAcres === undefined) {
       setClauses.push(`total_acres = $${idx++}`);
-      values.push(updates.villa.plotSqYards / 4840);
+      values.push(villaPlotArea / 4840);
     }
-    if (updates.villa?.builtUpSqft !== undefined) {
+    if (villaBuiltUpArea !== undefined && updates.flat?.sqft === undefined) {
       setClauses.push(`sqft = $${idx++}`);
-      values.push(updates.villa.builtUpSqft);
+      values.push(villaBuiltUpArea);
     }
-    if (updates.villa?.bedrooms !== undefined) {
+    if (updates.villa?.bedrooms !== undefined && updates.flat?.bedrooms === undefined) {
       setClauses.push(`bedrooms = $${idx++}`);
       values.push(updates.villa.bedrooms);
     }
-    if (updates.villa?.bathrooms !== undefined) {
+    if (updates.villa?.bathrooms !== undefined && updates.flat?.bathrooms === undefined) {
       setClauses.push(`bathrooms = $${idx++}`);
       values.push(updates.villa.bathrooms);
     }
-    if (updates.villa?.floors !== undefined) {
-      setClauses.push(`total_floors = $${idx++}`);
-      values.push(updates.villa.floors);
-    }
-    if (updates.villa?.amenities !== undefined) {
+    if (updates.villa?.amenities !== undefined && updates.flat?.amenities === undefined) {
       setClauses.push(`amenities = $${idx++}`);
       values.push(updates.villa.amenities);
     }
-    if (updates.villa?.possessionStatus !== undefined) {
+    if (updates.villa?.possessionStatus !== undefined && updates.flat?.possessionStatus === undefined) {
       setClauses.push(`possession_status = $${idx++}`);
       values.push(updates.villa.possessionStatus);
     }

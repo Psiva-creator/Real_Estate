@@ -416,6 +416,22 @@ export default function PropertyInternalReviewPage() {
         <DocumentVerificationReviewer
           propertyId={property.id}
           propertyTitle={property.titleEn}
+          onVerificationChange={(summary) => {
+            setProperty((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    status: summary.propertyStatus || prev.status,
+                    verificationStatus: {
+                      ...prev.verificationStatus,
+                      totalDocuments: summary.totalDocuments,
+                      verifiedDocuments: summary.verifiedDocuments,
+                      isFullyVerified: summary.isFullyVerified,
+                    },
+                  }
+                : null
+            );
+          }}
         />
       </div>
     </div>

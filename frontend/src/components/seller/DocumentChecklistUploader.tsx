@@ -336,14 +336,15 @@ export default function DocumentChecklistUploader({
           };
 
           const isUploading = docState.status === 'UPLOADING';
-          const isUploaded = docState.status === 'UPLOADED' || docState.status === 'VERIFIED';
+          const isVerified = docState.status === 'VERIFIED';
+          const isRejected = docState.status === 'REJECTED';
+          const isUploaded = docState.status === 'UPLOADED' || isVerified;
           const isFailed = docState.status === 'FAILED';
           const isOptional = doc.isGpa;
 
           // Check if document is tailored for land vs flat
           const isLandOnly = doc.appliesTo === 'LAND';
           const isFlatOnly = doc.appliesTo === 'FLAT';
-          const isRelevant = doc.appliesTo === 'BOTH' || doc.appliesTo === propertyType || propertyType === 'VILLA';
 
           return (
             <div
@@ -351,7 +352,7 @@ export default function DocumentChecklistUploader({
               className={`p-4 rounded-xl border transition-all duration-200 ${
                 isUploaded
                   ? 'border-emerald-300/70 bg-[#FAF8F5] shadow-xs'
-                  : isFailed
+                  : isRejected || isFailed
                   ? 'border-rose-200 bg-rose-50/30'
                   : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:shadow-xs'
               }`}
@@ -380,7 +381,7 @@ export default function DocumentChecklistUploader({
                     className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-bold shrink-0 mt-0.5 ${
                       isUploaded
                         ? 'bg-emerald-100 text-emerald-800'
-                        : isFailed
+                        : isRejected || isFailed
                         ? 'bg-rose-100 text-rose-800'
                         : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#5A382B]'
                     }`}
@@ -421,6 +422,16 @@ export default function DocumentChecklistUploader({
                     <p className="text-xs text-[#8B624C] mt-0.5 line-clamp-1">
                       {isTe ? doc.descTe : doc.descEn}
                     </p>
+
+                    {/* Rejection reason display if document was rejected */}
+                    {isRejected && (
+                      <div className="mt-2 flex items-center gap-1.5 text-xs text-rose-700 font-medium">
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-600 shrink-0" />
+                        <span>
+                          Rejection Reason: {docState.rejectionReason || 'Document requires correction and re-upload.'}
+                        </span>
+                      </div>
+                    )}
 
                     {/* Error display if upload failed */}
                     {isFailed && docState.errorMessage && (
@@ -472,7 +483,7 @@ export default function DocumentChecklistUploader({
 
                 {/* Right Actions — self-start on mobile so they don't stretch */}
                 <div className="flex items-center gap-2 self-start min-[560px]:self-center shrink-0">
-                  {!isUploaded && !isUploading && !isFailed && (
+                  {!isUploaded && !isUploading && !isFailed && !isRejected && (
                     <button
                       type="button"
                       onClick={() => handleTriggerFileInput(doc.key)}
@@ -481,6 +492,25 @@ export default function DocumentChecklistUploader({
                       <Upload className="w-3.5 h-3.5 text-[#C79A6B]" />
                       <span>{uploaderDict.btnChooseFile}</span>
                     </button>
+                  )}
+
+                  {isRejected && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-rose-100 text-rose-800 text-xs font-bold">
+                        <AlertCircle className="w-3.5 h-3.5 text-rose-600" />
+                        <span>Rejected</span>
+                      </span>
+
+                      <button
+                        type="button"
+                        onClick={() => handleTriggerFileInput(doc.key)}
+                        className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-700 hover:bg-rose-800 text-white text-xs font-semibold shadow-xs transition-colors tap-target"
+                        title={uploaderDict.btnReplace}
+                      >
+                        <Upload className="w-3.5 h-3.5" />
+                        <span>Re-upload</span>
+                      </button>
+                    </div>
                   )}
 
                   {isFailed && (
@@ -516,28 +546,32 @@ export default function DocumentChecklistUploader({
                     <div className="flex items-center gap-1.5">
                       <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-md bg-emerald-100 text-emerald-800 text-xs font-bold">
                         <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
-                        <span>{uploaderDict.statusUploaded}</span>
+                        <span>{isVerified ? 'Verified' : uploaderDict.statusUploaded}</span>
                       </span>
 
-                      <button
-                        type="button"
-                        onClick={() => handleTriggerFileInput(doc.key)}
-                        className="p-2 rounded-lg text-[#8B624C] hover:text-[#201512] hover:bg-[#F5F0E8] transition-colors tap-target flex items-center justify-center"
-                        title={uploaderDict.btnReplace}
-                        aria-label={uploaderDict.btnReplace}
-                      >
-                        <RefreshCw className="w-4 h-4" />
-                      </button>
+                      {!isVerified && (
+                        <>
+                          <button
+                            type="button"
+                            onClick={() => handleTriggerFileInput(doc.key)}
+                            className="p-2 rounded-lg text-[#8B624C] hover:text-[#201512] hover:bg-[#F5F0E8] transition-colors tap-target flex items-center justify-center"
+                            title={uploaderDict.btnReplace}
+                            aria-label={uploaderDict.btnReplace}
+                          >
+                            <RefreshCw className="w-4 h-4" />
+                          </button>
 
-                      <button
-                        type="button"
-                        onClick={() => handleRemove(doc.key)}
-                        className="p-2 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors tap-target flex items-center justify-center"
-                        title={uploaderDict.btnRemove}
-                        aria-label={uploaderDict.btnRemove}
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
+                          <button
+                            type="button"
+                            onClick={() => handleRemove(doc.key)}
+                            className="p-2 rounded-lg text-rose-500 hover:text-rose-700 hover:bg-rose-50 transition-colors tap-target flex items-center justify-center"
+                            title={uploaderDict.btnRemove}
+                            aria-label={uploaderDict.btnRemove}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </>
+                      )}
                     </div>
                   )}
                 </div>

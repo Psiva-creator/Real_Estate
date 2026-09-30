@@ -193,6 +193,7 @@ describe('Properties Module & Seller Privacy Gate', () => {
     assert.strictEqual(res.body.property.villa.plotAreaSqYards, 350);
     assert.strictEqual(res.body.property.villa.builtUpAreaSqFt, 4200);
     assert.strictEqual(res.body.property.villa.configuration, '4 BHK');
+    assert.strictEqual(res.body.property.villa.floors, 'G+2');
     assert.strictEqual(res.body.property.villa.facing, 'EAST');
     assert.strictEqual(res.body.property.villa.communityName, 'Kokapet Greens');
     assert.strictEqual(res.body.property.villa.gatedCommunity, true);
@@ -355,5 +356,189 @@ describe('Properties Module & Seller Privacy Gate', () => {
     assert.strictEqual(syncRes.status, 200);
     assert.ok(syncRes.body.totalProperties >= 8);
     assert.ok(syncRes.body.totalSellers >= 5);
+  });
+
+  test('Staff-edited AdminPropertyDetails persist in PostgreSQL and are visible to original seller via GET /api/owners/me without internalNotes', async () => {
+    // 1. Register Seller A (original seller) and Seller B (another seller)
+    const sellerAReg = await request(app).post('/api/auth/register').send({
+      name: 'Original Seller A',
+      email: 'seller.a.details@example.com',
+      phone: '+919700011101',
+      password: 'Password@123',
+      role: 'SELLER',
+    });
+    assert.strictEqual(sellerAReg.status, 201);
+    const sellerAToken = sellerAReg.body.token;
+
+    const sellerBReg = await request(app).post('/api/auth/register').send({
+      name: 'Other Seller B',
+      email: 'seller.b.details@example.com',
+      phone: '+919700011102',
+      password: 'Password@123',
+      role: 'SELLER',
+    });
+    assert.strictEqual(sellerBReg.status, 201);
+    const sellerBToken = sellerBReg.body.token;
+
+    // 2. Seller A submits a property
+    const createRes = await request(app)
+      .post('/api/properties')
+      .set('Authorization', `Bearer ${sellerAToken}`)
+      .send({
+        type: 'VILLA',
+        titleEn: 'Seller A Original Villa Submission',
+        descriptionEn: 'Original seller description for gated villa.',
+        location: {
+          district: 'Rangareddy',
+          mandal: 'Gandipet',
+          village: 'Kokapet',
+        },
+        villa: {
+          plotAreaSqYards: 400,
+          builtUpAreaSqFt: 4800,
+          configuration: '4 BHK',
+          floors: 'G+2',
+          bedrooms: 4,
+          bathrooms: 5,
+        },
+        pricing: {
+          totalPrice: 72000000,
+          isNegotiable: true,
+        },
+        mainImage: 'https://example.com/seller-a-villa.jpg',
+      });
+    assert.strictEqual(createRes.status, 201);
+    const propertyId = createRes.body.property.id;
+
+    // 3. Verify Seller cannot call PATCH /api/properties/:id/admin-details
+    const forbiddenRes = await request(app)
+      .patch(`/api/properties/${propertyId}/admin-details`)
+      .set('Authorization', `Bearer ${sellerAToken}`)
+      .send({
+        adminDetails: { projectDescription: 'Unauthorized seller edit' },
+      });
+    assert.strictEqual(forbiddenRes.status, 403);
+
+    // 4. Staff (ADMIN) logs in and updates AdminPropertyDetails (including confidential internalNotes)
+    const adminLogin = await request(app)
+      .post('/api/auth/login')
+      .send({ email: 'admin@telanganarealty.in', password: 'Admin@1234' });
+    assert.strictEqual(adminLogin.status, 200);
+    const adminToken = adminLogin.body.token;
+
+    const staffCuratedPayload = {
+      projectDescription: 'Staff-curated luxury triplex villa overview near ORR Exit 1.',
+      highlights: ['HMDA Approved Layout', '100% Vastu Compliant East Facing'],
+      amenities: ['Clubhouse', 'Heated Infinity Pool', '24x7 Armed Security'],
+      locationAdvantages: ['2 mins from Neopolis Kokapet SEZ', '5 mins from Financial District'],
+      nearbyLandmarks: ['ORR Exit 1', 'Rockwell International School'],
+      additionalSpecifications: [
+        { label: 'Flooring', value: 'Italian Marble' },
+        { label: 'Elevator', value: 'Schindler 6-Passenger Home Lift' },
+      ],
+      specialFeatures: ['Private Terrace Deck', 'Solar Roof Integration'],
+      pricingNotes: 'All-inclusive of club membership and corpus fund.',
+      siteVisitInstructions: 'Prior 24-hour notice required with Deal Desk.',
+      additionalNotes: 'Clear title verified across 30-year EC.',
+      internalNotes: 'CONFIDENTIAL STAFF ONLY: Seller willing to close at 6.8 Cr for immediate full payment.',
+      customSections: [
+        { title: 'Water & Power Backup', content: 'Manjeera water connection + 100% DG backup.' },
+      ],
+    };
+
+    const patchRes = await request(app)
+      .patch(`/api/properties/${propertyId}/admin-details`)
+      .set('Authorization', `Bearer ${adminToken}`)
+      .send({ adminDetails: staffCuratedPayload });
+
+    assert.strictEqual(patchRes.status, 200);
+    assert.strictEqual(
+      patchRes.body.adminDetails.projectDescription,
+      staffCuratedPayload.projectDescription
+    );
+    assert.strictEqual(
+      patchRes.body.adminDetails.internalNotes,
+      staffCuratedPayload.internalNotes
+    );
+
+    // 5. Verify staff internal detail endpoint returns full adminDetails (including internalNotes) from PostgreSQL
+    const adminDetailRes = await request(app)
+      .get(`/api/admin/properties/${propertyId}`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    assert.strictEqual(adminDetailRes.status, 200);
+    assert.strictEqual(
+      adminDetailRes.body.property.adminDetails.internalNotes,
+      staffCuratedPayload.internalNotes
+    );
+
+    // 6. Seller A refreshes Seller Portal (GET /api/owners/me) and sees all 11 curated fields, but NEVER internalNotes
+    const sellerAMeRes = await request(app)
+      .get('/api/owners/me')
+      .set('Authorization', `Bearer ${sellerAToken}`);
+    assert.strictEqual(sellerAMeRes.status, 200);
+    const sellerAProp = sellerAMeRes.body.properties.find((p: any) => p.id === propertyId);
+    assert.ok(sellerAProp, 'Original seller must see their submitted property');
+
+    // Original seller-submitted details remain intact and separate
+    assert.strictEqual(sellerAProp.titleEn, 'Seller A Original Villa Submission');
+    assert.strictEqual(sellerAProp.descriptionEn, 'Original seller description for gated villa.');
+
+    // Staff-updated details are present
+    assert.ok(sellerAProp.adminDetails, 'Seller must receive staff-updated adminDetails');
+    assert.strictEqual(
+      sellerAProp.adminDetails.projectDescription,
+      staffCuratedPayload.projectDescription
+    );
+    assert.deepStrictEqual(sellerAProp.adminDetails.highlights, staffCuratedPayload.highlights);
+    assert.deepStrictEqual(sellerAProp.adminDetails.amenities, staffCuratedPayload.amenities);
+    assert.deepStrictEqual(
+      sellerAProp.adminDetails.locationAdvantages,
+      staffCuratedPayload.locationAdvantages
+    );
+    assert.deepStrictEqual(
+      sellerAProp.adminDetails.nearbyLandmarks,
+      staffCuratedPayload.nearbyLandmarks
+    );
+    assert.deepStrictEqual(
+      sellerAProp.adminDetails.additionalSpecifications,
+      staffCuratedPayload.additionalSpecifications
+    );
+    assert.deepStrictEqual(
+      sellerAProp.adminDetails.specialFeatures,
+      staffCuratedPayload.specialFeatures
+    );
+    assert.strictEqual(sellerAProp.adminDetails.pricingNotes, staffCuratedPayload.pricingNotes);
+    assert.strictEqual(
+      sellerAProp.adminDetails.siteVisitInstructions,
+      staffCuratedPayload.siteVisitInstructions
+    );
+    assert.strictEqual(
+      sellerAProp.adminDetails.additionalNotes,
+      staffCuratedPayload.additionalNotes
+    );
+    assert.deepStrictEqual(
+      sellerAProp.adminDetails.customSections,
+      staffCuratedPayload.customSections
+    );
+
+    // Security check: internalNotes and discrepancyNotes MUST NEVER be exposed to seller
+    assert.strictEqual(
+      sellerAProp.adminDetails.internalNotes,
+      undefined,
+      'internalNotes must NEVER be exposed to seller'
+    );
+    assert.strictEqual(
+      sellerAProp.discrepancyNotes,
+      undefined,
+      'discrepancyNotes must NEVER be exposed to seller'
+    );
+
+    // 7. Seller B fetches GET /api/owners/me and must NOT see Seller A's property or details
+    const sellerBMeRes = await request(app)
+      .get('/api/owners/me')
+      .set('Authorization', `Bearer ${sellerBToken}`);
+    assert.strictEqual(sellerBMeRes.status, 200);
+    const leakedProp = sellerBMeRes.body.properties.find((p: any) => p.id === propertyId);
+    assert.strictEqual(leakedProp, undefined, 'Another seller must never see Seller A property');
   });
 });

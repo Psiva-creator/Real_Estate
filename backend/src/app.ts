@@ -107,6 +107,12 @@ propertiesRouter.patch(
   propertiesController.updateStatus.bind(propertiesController)
 );
 propertiesRouter.patch(
+  '/:id/admin-details',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  propertiesController.updateAdminDetails.bind(propertiesController)
+);
+propertiesRouter.patch(
   '/:id',
   requireAuth,
   propertiesController.updateProperty.bind(propertiesController)

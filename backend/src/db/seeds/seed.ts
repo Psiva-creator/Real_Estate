@@ -998,7 +998,7 @@ export async function runSeeds() {
       builtUpSqft: 4200,
       bedrooms: 4,
       bathrooms: 5,
-      floors: 3,
+      floors: 'G+2',
       amenities: ['Clubhouse', 'Swimming Pool', 'Private Garden', 'Power Backup', '24/7 Security'],
       possessionStatus: 'READY_TO_MOVE',
     },

@@ -29,8 +29,21 @@ export class DocumentsController {
     if (req.user.role === 'ADMIN' || req.user.role === 'AGENT') return true;
     if (req.user.role === 'SELLER') {
       const owner = await db.findOwnerByUserId(req.user.id);
-      const ownerId = owner?.id || req.user.id;
-      return property.sellerId === ownerId || property.sellerId === req.user.id;
+      if (owner && property.sellerId === owner.id) return true;
+      if (property.sellerId === req.user.id) return true;
+      const propertyOwner = await db.findOwnerById(property.sellerId);
+      if (propertyOwner) {
+        if (propertyOwner.userId && propertyOwner.userId === req.user.id) return true;
+        if (
+          propertyOwner.phone &&
+          req.user.phone &&
+          propertyOwner.phone.replace(/\D/g, '').slice(-10) ===
+            req.user.phone.replace(/\D/g, '').slice(-10)
+        ) {
+          return true;
+        }
+      }
+      return false;
     }
     return false;
   }
@@ -215,6 +228,10 @@ export class DocumentsController {
       }
 
       const docs = await documentsService.getPropertyDocuments(propertyId);
+      if (req.user.role === 'SELLER') {
+        const sellerSafeDocs = docs.map(({ verifiedBy: _verifiedBy, ...rest }) => rest);
+        return res.json({ documents: sellerSafeDocs });
+      }
       return res.json({ documents: docs });
     } catch (err) {
       return res.status(400).json({ error: (err as Error).message });
@@ -248,6 +265,11 @@ export class DocumentsController {
       const doc = await documentsService.getDocument(propertyId, docType as DocumentType);
       if (!doc) {
         return res.status(404).json({ error: `Document of type ${docType} not found for this property` });
+      }
+
+      if (req.user.role === 'SELLER') {
+        const { verifiedBy: _verifiedBy, ...sellerSafeDoc } = doc;
+        return res.json({ document: sellerSafeDoc });
       }
 
       return res.json({ document: doc });

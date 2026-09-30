@@ -84,11 +84,17 @@ export async function sanitizePropertyForPublic(property: Property): Promise<Pub
 
   const isFullyVerified = mandatory.every((reqDoc) => docStatusMap.get(reqDoc) === 'VERIFIED');
 
-  // Strip sellerId & confidential metadata
-  const { sellerId, ...cleanProperty } = property;
+  // Strip sellerId & confidential metadata (including internalNotes in adminDetails)
+  const { sellerId, adminDetails, ...cleanProperty } = property;
+  let publicAdminDetails = undefined;
+  if (adminDetails) {
+    const { internalNotes: _internalNotes, ...safeAdminDetails } = adminDetails;
+    publicAdminDetails = safeAdminDetails;
+  }
 
   return {
     ...cleanProperty,
+    ...(publicAdminDetails !== undefined ? { adminDetails: publicAdminDetails } : {}),
     brokerageContact: {
       name: 'Telangana Realty Hub - Dedicated Deal Desk',
       phone: '+91-9876543210',

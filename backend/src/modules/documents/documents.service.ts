@@ -89,7 +89,7 @@ export class DocumentsService {
       throw new Error(`Document of type ${docType} has not been uploaded yet for this property`);
     }
 
-    if (existingDoc.status === 'PENDING') {
+    if (existingDoc.status === 'PENDING' && (!existingDoc.fileUrl || !existingDoc.fileUrl.trim())) {
       throw new Error(`Cannot verify or reject document ${docType} with status PENDING. The document must be UPLOADED first.`);
     }
 
@@ -104,7 +104,7 @@ export class DocumentsService {
       status,
       verifiedBy: verifiedByAdminId,
       verifiedAt: new Date().toISOString(),
-      rejectionReason: status === 'REJECTED' ? rejectionReason : undefined,
+      rejectionReason: status === 'REJECTED' ? rejectionReason?.trim() : undefined,
     });
 
     // Check if all mandatory documents are now verified
@@ -130,6 +130,8 @@ export class DocumentsService {
           },
         });
       }
+    } else if (!allMandatoryVerified && property.status === 'VERIFIED') {
+      updatedProperty = (await db.updateProperty(propertyId, { status: 'UNDER_REVIEW' })) || property;
     }
 
     return { document: updatedDoc, property: updatedProperty };

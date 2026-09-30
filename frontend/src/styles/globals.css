@@ -94,9 +94,20 @@ html.dark {
 /* ── Luxury Dark Theme Overrides ─────────────────────────────────────────── */
 html.dark .bg-\[\#FAF8F5\],
 html.dark .bg-\[\#FBF8F3\],
-html.dark .bg-\[\#FAF8F3\],
 html.dark .bg-\[\#FAF5EE\] {
   background-color: #12100E !important;
+  background-image: none !important;
+}
+
+html.dark .from-\[\#FBF8F3\],
+html.dark .via-\[\#F5F0E8\],
+html.dark .to-\[\#FAF8F5\],
+html.dark .from-\[\#EDE6DA\]\/70,
+html.dark .from-\[\#EDE6DA\]\/50 {
+  --tw-gradient-from: #12100E var(--tw-gradient-from-position) !important;
+  --tw-gradient-via: #161310 var(--tw-gradient-via-position) !important;
+  --tw-gradient-to: #12100E var(--tw-gradient-to-position) !important;
+  --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-via), var(--tw-gradient-to) !important;
 }
 
 html.dark .bg-\[\#FAF8F5\]\/90,
@@ -105,6 +116,7 @@ html.dark .bg-\[\#FAF8F5\]\/95 {
 }
 
 html.dark .bg-white,
+html.dark .bg-\[\#FAF8F3\],
 html.dark .luxury-card {
   background-color: #1A1714 !important;
 }
@@ -184,6 +196,16 @@ html.dark .border-neutral-300,
 html.dark .luxury-card,
 html.dark .shield-badge {
   border-color: #2E2822 !important;
+}
+
+html.dark .border-\[\#201512\],
+html.dark .border-\[\#191512\] {
+  border-color: #C79A6B !important;
+}
+
+html.dark .ring-\[\#201512\],
+html.dark .ring-\[\#191512\] {
+  --tw-ring-color: rgba(199, 154, 107, 0.55) !important;
 }
 
 html.dark .divide-slate-100 > :not([hidden]) ~ :not([hidden]),

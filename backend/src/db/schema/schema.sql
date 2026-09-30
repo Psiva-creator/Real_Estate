@@ -144,10 +144,11 @@ CREATE TABLE IF NOT EXISTS properties (
     gallery_images TEXT[] DEFAULT ARRAY[]::TEXT[],
     site_plan_image TEXT,
     
-    -- Stats
+    -- Stats & Admin Curated Details
     is_featured BOOLEAN DEFAULT FALSE,
     views_count INT DEFAULT 0,
     boundary_coordinates JSONB DEFAULT NULL,
+    admin_details JSONB DEFAULT NULL,
     
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -155,6 +156,7 @@ CREATE TABLE IF NOT EXISTS properties (
 
 -- Migration Alteration for Existing Properties Table
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS boundary_coordinates JSONB DEFAULT NULL;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS admin_details JSONB DEFAULT NULL;
 
 -- 5. PROPERTY DOCUMENTS TABLE (13 Required Verification Gates)
 CREATE TABLE IF NOT EXISTS property_documents (
@@ -203,6 +205,7 @@ ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_plot_area_sq_yards DECIMAL
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_built_up_area_sq_ft INT;
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_configuration VARCHAR(100);
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_floors VARCHAR(50);
+ALTER TABLE properties ALTER COLUMN villa_floors TYPE VARCHAR(50) USING villa_floors::VARCHAR(50);
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_facing VARCHAR(20);
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_community_name VARCHAR(255);
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS villa_gated_community BOOLEAN DEFAULT FALSE;

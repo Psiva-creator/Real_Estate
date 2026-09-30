@@ -122,32 +122,32 @@ export default function Navbar({ locale }: NavbarProps) {
         isScrolled ? 'border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.06)]' : 'border-[#E8E2D9]/60'
       }`}
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-20 sm:h-24">
+      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between gap-4 h-20 sm:h-24">
           {/* Logo & Brand */}
           <Link
             href={`/${locale}`}
-            className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8C653E] rounded-lg min-w-0"
+            className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8C653E] rounded-lg shrink-0"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#191512] text-[#FAF8F5] flex items-center justify-center border border-[#8C653E]/40 shadow-sm group-hover:border-[#8C653E] transition-all duration-300 shrink-0">
-              <Shield className="w-5 h-5 sm:w-6 sm:h-6 text-[#C5A880]" />
+            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#191512] dark:bg-[#231F1B] text-[#FAF8F5] flex items-center justify-center border border-[#8C653E]/50 shadow-sm group-hover:border-[#8C653E] transition-all duration-300 shrink-0">
+              <Shield className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-[#C5A880]" />
             </div>
-            <div className="flex flex-col min-w-0">
-              <span className="font-serif text-lg sm:text-2xl font-bold text-[#191512] tracking-wider uppercase leading-none group-hover:text-[#8C653E] transition-colors truncate">
+            <div className="flex flex-col">
+              <span className="font-serif text-lg sm:text-xl xl:text-2xl font-bold text-[#191512] tracking-wider uppercase leading-none group-hover:text-[#8C653E] transition-colors whitespace-nowrap">
                 {dict.brand.name}
               </span>
-              <span className="text-[9px] sm:text-[10px] font-medium text-[#8C653E] tracking-[0.18em] uppercase hidden xs:block truncate mt-1">
+              <span className="text-[9px] xl:text-[10px] font-medium text-[#8C653E] tracking-[0.15em] uppercase hidden sm:block whitespace-nowrap mt-1">
                 {locale === 'te' ? 'ధృవీకరించబడిన లగ్జరీ బ్రోకరేజ్' : 'Verified Luxury Real Estate Brokerage'}
               </span>
             </div>
           </Link>
 
           {/* Desktop Navigation Links */}
-          <nav className="hidden lg:flex items-center gap-1.5 xl:gap-3" aria-label="Main Navigation" ref={dropdownRef}>
+          <nav className="hidden lg:flex items-center gap-1 xl:gap-2 shrink-0" aria-label="Main Navigation" ref={dropdownRef}>
             {/* All Properties */}
             <Link
               href={`/${locale}/properties`}
-              className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all relative ${
+              className={`px-3 py-2 rounded-full text-xs font-medium tracking-wide uppercase whitespace-nowrap transition-all relative ${
                 pathname === `/${locale}/properties` && !activeDropdown
                   ? 'text-[#191512] font-bold bg-[#EFE9E0]'
                   : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
@@ -166,7 +166,7 @@ export default function Navbar({ locale }: NavbarProps) {
                 type="button"
                 onClick={() => setActiveDropdown(activeDropdown === 'forSale' ? null : 'forSale')}
                 aria-expanded={activeDropdown === 'forSale'}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium tracking-wide uppercase whitespace-nowrap transition-all ${
                   activeDropdown === 'forSale' || (pathname.includes('/properties') && pathname.includes('status=FOR_SALE'))
                     ? 'text-[#191512] font-bold bg-[#EFE9E0]'
                     : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
@@ -236,7 +236,7 @@ export default function Navbar({ locale }: NavbarProps) {
                 type="button"
                 onClick={() => setActiveDropdown(activeDropdown === 'sold' ? null : 'sold')}
                 aria-expanded={activeDropdown === 'sold'}
-                className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all ${
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-xs font-medium tracking-wide uppercase whitespace-nowrap transition-all ${
                   activeDropdown === 'sold' || (pathname.includes('/properties') && pathname.includes('status=SOLD'))
                     ? 'text-[#191512] font-bold bg-[#EFE9E0]'
                     : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
@@ -299,7 +299,7 @@ export default function Navbar({ locale }: NavbarProps) {
             {/* About */}
             <Link
               href={`/${locale}/about`}
-              className={`px-3.5 py-2 rounded-full text-xs font-medium tracking-wide uppercase transition-all relative ${
+              className={`px-3 py-2 rounded-full text-xs font-medium tracking-wide uppercase whitespace-nowrap transition-all relative ${
                 pathname === `/${locale}/about`
                   ? 'text-[#191512] font-bold bg-[#EFE9E0]'
                   : 'text-[#574F48] hover:text-[#191512] hover:bg-[#F5F1EA]'
@@ -310,7 +310,7 @@ export default function Navbar({ locale }: NavbarProps) {
           </nav>
 
           {/* Actions & Utilities */}
-          <div className="hidden md:flex items-center gap-3">
+          <div className="hidden md:flex items-center gap-2.5 shrink-0">
             {/* Language Switcher */}
             <LanguageToggle currentLocale={locale} />
 
@@ -320,7 +320,7 @@ export default function Navbar({ locale }: NavbarProps) {
             {/* Saved / Favorites Indicator */}
             <Link
               href={`/${locale}/saved-properties`}
-              className="relative p-2.5 rounded-full hover:bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] transition-colors flex items-center justify-center border border-[#E8E2D9] bg-white shadow-xs group"
+              className="relative p-2.5 rounded-full hover:bg-[#F5F1EA] text-[#574F48] hover:text-[#191512] transition-colors flex items-center justify-center border border-[#E8E2D9] bg-white shadow-xs group shrink-0"
               title={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
               aria-label={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
             >
@@ -339,9 +339,9 @@ export default function Navbar({ locale }: NavbarProps) {
             {/* List Property CTA */}
             <Link
               href={`/${locale}/list-property`}
-              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#191512] hover:bg-[#8C653E] text-[#FAF8F5] text-xs font-semibold tracking-wide uppercase shadow-sm transition-all duration-200 active:scale-[0.98]"
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#191512] dark:bg-[#231F1B] hover:bg-[#8C653E] dark:hover:bg-[#8C653E] text-[#FAF8F5] border border-[#8C653E]/40 text-xs font-semibold tracking-wide uppercase whitespace-nowrap shadow-sm transition-all duration-200 active:scale-[0.98]"
             >
-              <PlusCircle className="w-3.5 h-3.5 text-[#C5A880]" />
+              <PlusCircle className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
               <span>{dict.nav.listProperty}</span>
             </Link>
 
@@ -351,7 +351,7 @@ export default function Navbar({ locale }: NavbarProps) {
               <div className="flex items-center gap-2 pl-2 border-l border-[#E8E2D9]">
                 <Link
                   href={dashboardHref}
-                  className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5F1EA] hover:bg-[#EFE9E0] text-[#191512] border border-[#E8E2D9] text-xs font-semibold transition-colors"
+                  className="group inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-[#F5F1EA] hover:bg-[#EFE9E0] text-[#191512] border border-[#E8E2D9] text-xs font-semibold transition-colors whitespace-nowrap"
                   title={isSeller ? dict.nav.sellerDashboard || 'Seller Dashboard' : dict.nav.adminDashboard || 'Dashboard'}
                 >
                   <UserCheck className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
@@ -374,7 +374,7 @@ export default function Navbar({ locale }: NavbarProps) {
               /* ── Unauthenticated: luxury portal login CTA ───────────────── */
               <Link
                 href={`/${locale}/login`}
-                className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-[#E8E2D9] bg-white hover:bg-[#F5F1EA] text-[#191512] text-xs font-semibold tracking-wide uppercase transition-all duration-200 shadow-sm"
+                className="group inline-flex items-center gap-2 px-3.5 py-2 rounded-full border border-[#E8E2D9] bg-white hover:bg-[#F5F1EA] text-[#191512] text-xs font-semibold tracking-wide uppercase whitespace-nowrap transition-all duration-200 shadow-sm"
                 title={dict.nav.teamLogin}
                 aria-label={dict.nav.teamLogin}
               >

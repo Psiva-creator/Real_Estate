@@ -409,7 +409,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           : [];
 
         const plotVal = parseFloat(formData.plotSqYards || formData.plotAreaSqYards) || 300;
-        const builtUpVal = parseFloat(formData.builtUpSqft || formData.builtUpAreaSqFt) || 3000;
+        const builtUpVal = Math.round(parseFloat(formData.builtUpSqft || formData.builtUpAreaSqFt) || 3000);
+        const villaFloors = (formData.floors || formData.floorsConfig || 'G+2').trim();
 
         villaPayload = {
           plotAreaSqYards: plotVal,
@@ -417,9 +418,9 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           builtUpAreaSqFt: builtUpVal,
           builtUpSqft: builtUpVal,
           configuration: formData.configuration || '4 BHK Triplex',
-          floors: formData.floors || formData.floorsConfig || 'G+2',
-          floorsConfig: formData.floorsConfig || 'G+2',
-          facing: formData.facing || 'East',
+          floors: villaFloors,
+          floorsConfig: formData.floorsConfig || villaFloors || 'G+2',
+          facing: formData.facing || 'EAST',
           communityName: formData.communityName || undefined,
           gatedCommunity: formData.gatedCommunity,
           privateGarden: formData.privateGarden,
@@ -643,26 +644,26 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
   }
 
   return (
-    <div className="bg-[#FAF8F3] overflow-hidden">
+    <div className="bg-white dark:bg-[#1A1714] overflow-hidden">
       {/* Luxury Editorial Stepper Bar */}
-      <div className="bg-[#F5F0E8] text-[#201512] p-4 sm:p-6 border-b border-[#E2CFB6]">
+      <div className="bg-[#F5F0E8] dark:bg-[#231F1B] text-[#201512] p-5 sm:p-6 border-b border-[#E2CFB6] dark:border-[#2E2822]">
         <div className="flex items-center justify-between mb-3.5">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-[#5A382B]">
+            <span className="text-[11px] font-bold uppercase tracking-[0.2em] text-[#5A382B] dark:text-[#E0B684]">
               {sfDict.navigation.stepIndicator
                 .replace('{current}', (currentStepIndex + 1).toString())
                 .replace('{total}', steps.length.toString())
                 .replace('{name}', currentStep.label)}
             </span>
           </div>
-          <span className="text-xs font-mono font-medium text-[#8B624C] tracking-wider">
+          <span className="text-xs font-mono font-bold text-[#8B624C] dark:text-[#E0B684] tracking-wider">
             {Math.round(((currentStepIndex + 1) / steps.length) * 100)}%
           </span>
         </div>
 
         {/* Stepper Dots & Progress Track */}
         <div className="relative">
-          <div className="w-full h-1 bg-[#E2CFB6]/80 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-[#E2CFB6]/80 dark:bg-[#2E2822] rounded-full overflow-hidden">
             <div
               className="h-full bg-gradient-to-r from-[#C79A6B] via-[#8B624C] to-[#5A382B] transition-all duration-300 rounded-full"
               style={{ width: `${((currentStepIndex + 1) / steps.length) * 100}%` }}
@@ -670,7 +671,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           </div>
 
           {/* Step Pill Icons (scrollable on narrow mobile screens) */}
-          <div className="flex items-center justify-between gap-1 mt-3.5 overflow-x-auto pb-1 no-scrollbar">
+          <div className="flex items-center justify-between gap-1.5 mt-4 overflow-x-auto pb-1 no-scrollbar">
             {steps.map((step, idx) => {
               const Icon = step.icon;
               const isCompleted = idx < currentStepIndex;
@@ -686,19 +687,19 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                       setCurrentStepIndex(idx);
                     }
                   }}
-                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap transition-all duration-200 tap-target ${
+                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-[11px] font-semibold uppercase tracking-wider whitespace-nowrap transition-all duration-200 tap-target ${
                     isCurrent
-                      ? 'bg-[#201512] text-[#F5F0E8] shadow-sm ring-1 ring-[#C79A6B]/50'
+                      ? 'bg-[#201512] dark:bg-[#C79A6B] text-[#F5F0E8] dark:text-[#191512] font-bold shadow-sm ring-1 ring-[#C79A6B]'
                       : isCompleted
-                      ? 'text-[#5A382B] hover:text-[#201512] hover:bg-[#E2CFB6]/40'
-                      : 'text-[#8B624C]/60 hover:text-[#5A382B]'
+                      ? 'text-[#5A382B] dark:text-[#E0B684] hover:text-[#201512] hover:bg-[#E2CFB6]/40 dark:hover:bg-[#2E2822]'
+                      : 'text-[#8B624C]/75 dark:text-[#BDB2A4] hover:text-[#5A382B]'
                   }`}
                   aria-current={isCurrent ? 'step' : undefined}
                 >
                   {isCompleted ? (
                     <Check className="w-3.5 h-3.5 text-[#C79A6B] shrink-0" />
                   ) : (
-                    <Icon className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-[#C79A6B]' : ''}`} />
+                    <Icon className={`w-3.5 h-3.5 shrink-0 ${isCurrent ? 'text-[#C79A6B] dark:text-[#191512]' : ''}`} />
                   )}
                   <span className="hidden sm:inline">{step.label}</span>
                 </button>
@@ -709,12 +710,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       </div>
 
       {/* Main Form Body */}
-      <form onSubmit={handleSubmit} className="p-4 sm:p-8 space-y-6">
+      <form onSubmit={handleSubmit} className="p-5 sm:p-8 lg:p-10 space-y-6">
         {/* Step 1: Property Type */}
         {currentStep.id === 'type' && (
           <div className="space-y-6">
-            <div className="space-y-1">
-              <h2 className="font-serif text-xl sm:text-2xl font-normal text-[#201512] tracking-tight">
+            <div className="space-y-1.5">
+              <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#201512] tracking-tight">
                 {sfDict.typeSelection.heading}
               </h2>
               <p className="text-xs sm:text-sm text-[#8B624C]">
@@ -722,38 +723,42 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
               {/* Land Card */}
               <button
                 type="button"
                 onClick={() => updateField('propertyType', 'LAND')}
-                className={`p-5 sm:p-6 rounded-xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-4 group ${
+                className={`p-6 rounded-2xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-5 group ${
                   formData.propertyType === 'LAND'
-                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_10px_25px_-8px_rgba(32,21,18,0.12)] -translate-y-0.5'
+                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_12px_28px_-8px_rgba(32,21,18,0.14)] -translate-y-0.5'
                     : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:bg-[#F5F0E8]/50 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                     formData.propertyType === 'LAND'
-                      ? 'bg-[#201512] border border-[#3A241C] text-[#C79A6B]'
+                      ? 'bg-[#201512] dark:bg-[#C79A6B] border border-[#3A241C] dark:border-[#C79A6B] text-[#C79A6B] dark:text-[#191512]'
                       : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#8B624C] group-hover:text-[#5A382B]'
                   }`}>
                     <Layers className="w-6 h-6" />
                   </div>
                   {formData.propertyType === 'LAND' && (
-                    <div className="w-6 h-6 rounded-full bg-[#201512] text-[#C79A6B] border border-[#C79A6B]/50 flex items-center justify-center shadow-xs">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-6 h-6 rounded-full bg-[#8C653E] dark:bg-[#C79A6B] text-white dark:text-[#191512] flex items-center justify-center shadow-xs">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                     </div>
                   )}
                 </div>
-                <div>
-                  <h3 className="font-serif text-lg font-medium text-[#201512] tracking-tight">
+                <div className="space-y-2">
+                  <h3 className="font-serif text-xl font-semibold text-[#201512] tracking-tight leading-snug">
                     {sfDict.typeSelection.landTitle}
                   </h3>
-                  <p className="text-xs text-[#8B624C] mt-1.5 leading-relaxed">
+                  <p className="text-xs text-[#8B624C] leading-relaxed">
                     {sfDict.typeSelection.landDesc}
                   </p>
+                </div>
+                <div className="pt-3 border-t border-[#E2CFB6]/70 flex items-center gap-1.5 text-[11px] font-medium text-[#8C653E]">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                  <span>{isTe ? 'ధరణి పాస్‌బుక్ & సర్వే నం. తనిఖీ' : 'Dharani Passbook · Survey Verified'}</span>
                 </div>
               </button>
 
@@ -761,33 +766,37 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <button
                 type="button"
                 onClick={() => updateField('propertyType', 'FLAT')}
-                className={`p-5 sm:p-6 rounded-xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-4 group ${
+                className={`p-6 rounded-2xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-5 group ${
                   formData.propertyType === 'FLAT'
-                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_10px_25px_-8px_rgba(32,21,18,0.12)] -translate-y-0.5'
+                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_12px_28px_-8px_rgba(32,21,18,0.14)] -translate-y-0.5'
                     : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:bg-[#F5F0E8]/50 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                     formData.propertyType === 'FLAT'
-                      ? 'bg-[#201512] border border-[#3A241C] text-[#C79A6B]'
+                      ? 'bg-[#201512] dark:bg-[#C79A6B] border border-[#3A241C] dark:border-[#C79A6B] text-[#C79A6B] dark:text-[#191512]'
                       : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#8B624C] group-hover:text-[#5A382B]'
                   }`}>
                     <Home className="w-6 h-6" />
                   </div>
                   {formData.propertyType === 'FLAT' && (
-                    <div className="w-6 h-6 rounded-full bg-[#201512] text-[#C79A6B] border border-[#C79A6B]/50 flex items-center justify-center shadow-xs">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-6 h-6 rounded-full bg-[#8C653E] dark:bg-[#C79A6B] text-white dark:text-[#191512] flex items-center justify-center shadow-xs">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                     </div>
                   )}
                 </div>
-                <div>
-                  <h3 className="font-serif text-lg font-medium text-[#201512] tracking-tight">
+                <div className="space-y-2">
+                  <h3 className="font-serif text-xl font-semibold text-[#201512] tracking-tight leading-snug">
                     {sfDict.typeSelection.flatTitle}
                   </h3>
-                  <p className="text-xs text-[#8B624C] mt-1.5 leading-relaxed">
+                  <p className="text-xs text-[#8B624C] leading-relaxed">
                     {sfDict.typeSelection.flatDesc}
                   </p>
+                </div>
+                <div className="pt-3 border-t border-[#E2CFB6]/70 flex items-center gap-1.5 text-[11px] font-medium text-[#8C653E]">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                  <span>{isTe ? 'HMDA / RERA & ఆక్యుపెన్సీ తనిఖీ' : 'HMDA / RERA · Occupancy Verified'}</span>
                 </div>
               </button>
 
@@ -795,35 +804,39 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               <button
                 type="button"
                 onClick={() => updateField('propertyType', 'VILLA')}
-                className={`p-5 sm:p-6 rounded-xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-4 group ${
+                className={`p-6 rounded-2xl border text-left transition-all duration-200 tap-target flex flex-col justify-between space-y-5 group ${
                   formData.propertyType === 'VILLA'
-                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_10px_25px_-8px_rgba(32,21,18,0.12)] -translate-y-0.5'
+                    ? 'border-[#201512] bg-[#F5F0E8] ring-1 ring-[#201512] shadow-[0_12px_28px_-8px_rgba(32,21,18,0.14)] -translate-y-0.5'
                     : 'border-[#E2CFB6] bg-[#FAF8F3] hover:border-[#C79A6B] hover:bg-[#F5F0E8]/50 hover:shadow-xs hover:-translate-y-0.5'
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center transition-colors ${
                     formData.propertyType === 'VILLA'
-                      ? 'bg-[#201512] border border-[#3A241C] text-[#C79A6B]'
+                      ? 'bg-[#201512] dark:bg-[#C79A6B] border border-[#3A241C] dark:border-[#C79A6B] text-[#C79A6B] dark:text-[#191512]'
                       : 'bg-[#F5F0E8] border border-[#E2CFB6] text-[#8B624C] group-hover:text-[#5A382B]'
                   }`}>
                     <Sparkles className="w-6 h-6" />
                   </div>
                   {formData.propertyType === 'VILLA' && (
-                    <div className="w-6 h-6 rounded-full bg-[#201512] text-[#C79A6B] border border-[#C79A6B]/50 flex items-center justify-center shadow-xs">
-                      <Check className="w-3.5 h-3.5" />
+                    <div className="w-6 h-6 rounded-full bg-[#8C653E] dark:bg-[#C79A6B] text-white dark:text-[#191512] flex items-center justify-center shadow-xs">
+                      <Check className="w-3.5 h-3.5 stroke-[2.5]" />
                     </div>
                   )}
                 </div>
-                <div>
-                  <h3 className="font-serif text-lg font-medium text-[#201512] tracking-tight">
+                <div className="space-y-2">
+                  <h3 className="font-serif text-xl font-semibold text-[#201512] tracking-tight leading-snug">
                     {isTe ? 'గేటెడ్ లగ్జరీ విల్లా' : 'Luxury Gated Villa'}
                   </h3>
-                  <p className="text-xs text-[#8B624C] mt-1.5 leading-relaxed">
+                  <p className="text-xs text-[#8B624C] leading-relaxed">
                     {isTe
                       ? 'వ్యక్తిగత స్థలం, తోట మరియు క్లబ్‌హౌస్ సదుపాయాలతో కూడిన ట్రిప్లెక్స్ లేదా డ్యూప్లెక్స్ విల్లా'
                       : 'Independent duplex / triplex villa with private plot, lawn, and community amenities'}
                   </p>
+                </div>
+                <div className="pt-3 border-t border-[#E2CFB6]/70 flex items-center gap-1.5 text-[11px] font-medium text-[#8C653E]">
+                  <ShieldCheck className="w-3.5 h-3.5 shrink-0" />
+                  <span>{isTe ? 'ప్లాట్ టైటిల్ & లింక్ డాక్యుమెంట్ల తనిఖీ' : 'Plot Title · Link Deeds Verified'}</span>
                 </div>
               </button>
             </div>
@@ -2038,18 +2051,18 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
               type="button"
               id="form-continue-button"
               onClick={handleNext}
-              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-[#201512] hover:bg-[#3A241C] text-[#F5F0E8] text-xs sm:text-sm font-semibold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target group"
+              className="inline-flex items-center gap-2.5 px-7 py-3.5 rounded-xl bg-[#201512] dark:bg-[#C79A6B] hover:bg-[#3A241C] dark:hover:bg-[#D4AA7D] text-[#F5F0E8] dark:text-[#191512] text-xs sm:text-sm font-bold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target group"
             >
               <span>{sfDict.navigation.next}</span>
-              <ArrowRight className="w-4 h-4 text-[#C79A6B] transition-transform duration-300 group-hover:translate-x-1" />
+              <ArrowRight className="w-4 h-4 text-[#C79A6B] dark:text-[#191512] transition-transform duration-300 group-hover:translate-x-1" />
             </button>
           ) : (
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#201512] hover:bg-[#3A241C] disabled:bg-[#3A241C]/60 text-[#F5F0E8] text-xs sm:text-sm font-semibold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#201512] dark:bg-[#C79A6B] hover:bg-[#3A241C] dark:hover:bg-[#D4AA7D] disabled:opacity-60 text-[#F5F0E8] dark:text-[#191512] text-xs sm:text-sm font-bold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target"
             >
-              <ShieldCheck className="w-4 h-4 text-[#C79A6B]" />
+              <ShieldCheck className="w-4 h-4 text-[#C79A6B] dark:text-[#191512]" />
               <span>{isSubmitting ? sfDict.review.submitting : sfDict.review.submitButton}</span>
             </button>
           )}
