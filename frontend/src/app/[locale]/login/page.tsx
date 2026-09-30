@@ -703,48 +703,184 @@ function LoginFormContent({ params }: LoginPageProps) {
                     )}
                   </button>
                 </form>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Legal Trust Footer & Secure Navigation */}
-        <div className="text-center space-y-3 pt-1">
-          <div className="flex items-center justify-center gap-4 text-xs text-[#8C827A] font-mono">
-            <span className="flex items-center gap-1.5">
-              <FileCheck2 className="w-3.5 h-3.5 text-[#8C653E]" />
-              <span>Dharani & HMDA Vetted</span>
-            </span>
-            <span>•</span>
-            <span className="flex items-center gap-1.5">
-              <Landmark className="w-3.5 h-3.5 text-[#8C653E]" />
-              <span>Telangana SRO Compliant</span>
-            </span>
-          </div>
-
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 pt-1 text-xs">
-            <Link
-              href={`/${locale}`}
-              className="font-semibold text-[#574F48] hover:text-[#8C653E] transition-colors inline-flex items-center gap-1.5 uppercase tracking-wider"
-            >
-              <span>← {isTe ? 'ప్రజా వెబ్‌సైట్' : 'Public Marketplace'}</span>
-            </Link>
-
-            <span className="hidden sm:inline text-slate-300">•</span>
-
-            <Link
-              href={`/${locale}/trh-internal-desk`}
-              className="text-[#8C827A] hover:text-[#191512] transition-colors inline-flex items-center gap-1"
-            >
-              <Lock className="w-3 h-3 text-[#8C827A]" />
-              <span>{isTe ? 'అధికారిక సిబ్బంది టెర్మినల్' : 'Authorized Staff Terminal'}</span>
-            </Link>
+              </div>
+            )}
           </div>
         </div>
+      )}
 
+      {/* Legal Trust Footer & Secure Navigation */}
+      <div className="text-center space-y-3 pt-1">
+        <div className="flex items-center justify-center gap-4 text-xs text-[#8C827A] font-mono">
+          <span className="flex items-center gap-1.5">
+            <FileCheck2 className="w-3.5 h-3.5 text-[#8C653E]" />
+            <span>Dharani & HMDA Vetted</span>
+          </span>
+          <span>•</span>
+          <span className="flex items-center gap-1.5">
+            <Landmark className="w-3.5 h-3.5 text-[#8C653E]" />
+            <span>Telangana SRO Compliant</span>
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-6 pt-1 text-xs">
+          <Link
+            href={`/${locale}`}
+            className="font-semibold text-[#574F48] hover:text-[#8C653E] transition-colors inline-flex items-center gap-1.5 uppercase tracking-wider"
+          >
+            <span>← {isTe ? 'ప్రజా వెబ్‌సైట్' : 'Public Marketplace'}</span>
+          </Link>
+
+          <span className="hidden sm:inline text-slate-300">•</span>
+
+          <Link
+            href={`/${locale}/trh-internal-desk`}
+            className="text-[#8C827A] hover:text-[#191512] transition-colors inline-flex items-center gap-1"
+          >
+            <Lock className="w-3 h-3 text-[#8C827A]" />
+            <span>{isTe ? 'అధికారిక సిబ్బంది టెర్మినల్' : 'Authorized Staff Terminal'}</span>
+          </Link>
+        </div>
       </div>
+
+      {/* Google / Gmail Sign-In Sheet / Modal */}
+      {showGoogleModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-fadeIn"
+          onClick={() => !isGoogleSubmitting && setShowGoogleModal(false)}
+        >
+          <div
+            className="bg-white rounded-3xl max-w-md w-full p-6 sm:p-7 shadow-2xl border border-[#E8E2D9] space-y-5 text-left relative"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-2xl bg-[#FAF8F5] border border-[#E8E2D9] flex items-center justify-center shadow-xs">
+                  <GoogleIcon className="w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="font-serif text-lg font-bold text-[#191512]">
+                    {isTe ? 'Google తో సైన్ ఇన్ చేయండి' : 'Sign in with Google'}
+                  </h3>
+                  <p className="text-xs text-[#8C827A]">
+                    {isTe ? 'తెలంగాణ రియల్టీ హబ్ పోర్టల్' : 'to continue to Telangana Realty Hub'}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowGoogleModal(false)}
+                disabled={isGoogleSubmitting}
+                className="w-8 h-8 rounded-full hover:bg-[#FAF8F5] flex items-center justify-center text-[#8C827A] hover:text-[#191512] transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            {/* Fast-Track Account Preset */}
+            <div className="space-y-2">
+              <span className="text-[11px] font-semibold text-[#8C827A] uppercase tracking-wider block">
+                {isTe ? 'త్వరిత ఎంపిక (ధృవీకరించబడిన ఖాతా):' : 'Verified Google Account:'}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleGoogleSubmit('kvrao.hyderabad@gmail.com', 'K. Venkateshwara Rao')}
+                disabled={isGoogleSubmitting}
+                className="w-full p-3 rounded-2xl border border-[#E8E2D9] hover:border-[#8C653E] bg-[#FAF8F5] hover:bg-white transition-all flex items-center justify-between text-left group"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-[#191512] text-[#FAF8F5] font-serif font-bold text-xs flex items-center justify-center">
+                    KV
+                  </div>
+                  <div>
+                    <p className="text-xs font-bold text-[#191512] group-hover:text-[#8C653E] transition-colors">
+                      K. Venkateshwara Rao
+                    </p>
+                    <p className="text-[11px] text-[#8C827A] font-mono">kvrao.hyderabad@gmail.com</p>
+                  </div>
+                </div>
+                <span className="text-[10px] font-semibold px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 border border-emerald-200">
+                  {isTe ? 'ధృవీకరించబడిన సెల్లర్' : 'Verified Seller'}
+                </span>
+              </button>
+            </div>
+
+            {/* Or enter custom Gmail address */}
+            <div className="pt-2 border-t border-[#E8E2D9] space-y-3">
+              <span className="text-[11px] font-semibold text-[#8C827A] uppercase tracking-wider block">
+                {isTe ? 'లేదా మీ Gmail చిరునామా నమోదు చేయండి:' : 'Or enter your Gmail address:'}
+              </span>
+
+              <div className="space-y-2.5">
+                <div>
+                  <label className="block text-xs font-semibold text-[#191512] mb-1">
+                    {isTe ? 'Gmail ఈమెయిల్' : 'Gmail Email Address'} *
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8C827A]">
+                      <Mail className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      type="email"
+                      value={googleEmailInput}
+                      onChange={(e) => setGoogleEmailInput(e.target.value)}
+                      placeholder="yourname@gmail.com"
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white font-mono"
+                      disabled={isGoogleSubmitting}
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-xs font-semibold text-[#191512] mb-1">
+                    {isTe ? 'మీ పూర్తి పేరు (ఐచ్ఛికం)' : 'Full Name (Optional)'}
+                  </label>
+                  <div className="relative">
+                    <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-[#8C827A]">
+                      <User className="w-3.5 h-3.5" />
+                    </div>
+                    <input
+                      type="text"
+                      value={googleNameInput}
+                      onChange={(e) => setGoogleNameInput(e.target.value)}
+                      placeholder={isTe ? 'మీ పేరు' : 'e.g. Siva Krishna'}
+                      className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-[#E8E2D9] bg-[#FAF8F5] text-xs text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E] focus:border-[#8C653E] focus:bg-white"
+                      disabled={isGoogleSubmitting}
+                    />
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => handleGoogleSubmit()}
+                disabled={isGoogleSubmitting || !googleEmailInput.trim()}
+                className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-[#191512] hover:bg-[#8C653E] disabled:bg-[#8C827A]/40 text-[#FAF8F5] text-xs font-semibold uppercase tracking-wider shadow-sm transition-all tap-target"
+              >
+                <GoogleIcon className="w-3.5 h-3.5 shrink-0" />
+                <span>
+                  {isGoogleSubmitting
+                    ? isTe ? 'ధృవీకరిస్తున్నాం...' : 'Signing in...'
+                    : isTe ? 'Gmail తో కొనసాగించండి' : 'Continue with this Gmail'}
+                </span>
+              </button>
+            </div>
+
+            {/* Privacy Footer */}
+            <p className="text-[10px] text-[#8C827A] text-center leading-relaxed">
+              {isTe
+                ? 'కొనసాగడం ద్వారా, మీరు తెలంగాణ రియల్టీ హబ్ గోప్యతా విధానం మరియు నిబంధనలకు అంగీకరిస్తున్నారు.'
+                : 'To continue, Google will share your name and email address with Telangana Realty Hub in accordance with our Privacy Policy.'}
+            </p>
+          </div>
+        </div>
+      )}
+
     </div>
-  );
+  </div>
+);
 }
 
 export default function CommonPortalLoginPage({ params }: LoginPageProps) {
