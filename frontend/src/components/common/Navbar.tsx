@@ -24,6 +24,7 @@ import { Locale, getDictionary } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import { useFavorites } from '@/lib/favorites';
 import LanguageToggle from './LanguageToggle';
+import ThemeToggle from './ThemeToggle';
 
 interface NavbarProps {
   locale: Locale;
@@ -313,6 +314,9 @@ export default function Navbar({ locale }: NavbarProps) {
             {/* Language Switcher */}
             <LanguageToggle currentLocale={locale} />
 
+            {/* Theme Switcher Icon (Light / Dark) */}
+            <ThemeToggle locale={locale} />
+
             {/* Saved / Favorites Indicator */}
             <Link
               href={`/${locale}/saved-properties`}
@@ -382,9 +386,10 @@ export default function Navbar({ locale }: NavbarProps) {
             )}
           </div>
 
-          {/* Mobile Menu Button & Language Toggle on Mobile */}
+          {/* Mobile Menu Button, Theme & Language Toggle on Mobile */}
           <div className="flex items-center gap-2 lg:hidden">
             <LanguageToggle currentLocale={locale} className="scale-90" />
+            <ThemeToggle locale={locale} className="p-2" />
             <Link
               href={`/${locale}/saved-properties`}
               className="relative p-2 rounded-full bg-white border border-[#E8E2D9] text-[#191512] flex items-center justify-center tap-target"

@@ -55,10 +55,7 @@ function formatDate(iso: string) {
 function StatusBadge({ status }: { status: string }) {
   if (status === 'VERIFIED') {
     return (
-      <span
-        className="px-2.5 py-0.5 rounded-full font-bold text-xs"
-        style={{ background: '#EDE6DA', color: '#3A241C', border: '1px solid #C79A6B' }}
-      >
+      <span className="px-2.5 py-0.5 rounded-full font-bold text-xs bg-[#EDE6DA] text-[#3A241C] border border-[#C79A6B]">
         VERIFIED
       </span>
     );
@@ -168,7 +165,7 @@ export default function DashboardPropertiesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
-          <span className="px-3 py-1 rounded-full text-xs font-bold" style={{ background: '#EDE6DA', color: '#3A241C', border: '1px solid #C79A6B' }}>
+          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#EDE6DA] text-[#3A241C] border border-[#C79A6B]">
             {filtered.length} / {allProperties.length} Listings
           </span>
           <button
@@ -186,8 +183,8 @@ export default function DashboardPropertiesPage() {
 
       {/* Loading */}
       {isLoading && (
-        <div className="flex items-center justify-center gap-2 py-12 text-sm" style={{ color: '#8B624C' }}>
-          <Loader2 className="w-5 h-5 animate-spin" style={{ color: '#C79A6B' }} />
+        <div className="flex items-center justify-center gap-2 py-12 text-sm text-[#8B624C]">
+          <Loader2 className="w-5 h-5 animate-spin text-[#C79A6B]" />
           Loading properties from backend…
         </div>
       )}
@@ -285,7 +282,7 @@ export default function DashboardPropertiesPage() {
                   </span>
                 )}
                 {statusFilter !== 'ALL' && (
-                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium" style={{ background: '#F5F0E8', color: '#5A382B', border: '1px solid #E2CFB6' }}>
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#F5F0E8] text-[#5A382B] border border-[#E2CFB6]">
                     Status: {statusFilter}
                   </span>
                 )}
@@ -348,7 +345,7 @@ export default function DashboardPropertiesPage() {
                           <tr key={prop.id} className="hover:bg-slate-50/60 transition-colors">
                             {/* ID & Title */}
                             <td className="px-4 py-3.5 max-w-[220px]">
-                              <span className="font-mono text-[11px] font-bold block" style={{ color: '#8B624C' }}>
+                              <span className="font-mono text-[11px] font-bold block text-[#8C653E]">
                                 {prop.id}
                               </span>
                               <span className="font-semibold text-slate-900 line-clamp-1 text-xs sm:text-sm">
@@ -359,11 +356,11 @@ export default function DashboardPropertiesPage() {
                             {/* Type */}
                             <td className="px-4 py-3.5">
                               <span
-                                className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase"
-                                style={prop.type === 'LAND'
-                                  ? { background: '#FEF3C7', color: '#92400E', border: '1px solid #FDE68A' }
-                                  : { background: '#F5F0E8', color: '#3A241C', border: '1px solid #C79A6B' }
-                                }
+                                className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-md text-[11px] font-bold uppercase ${
+                                  prop.type === 'LAND'
+                                    ? 'bg-amber-100 text-amber-800 border border-amber-200'
+                                    : 'bg-[#F5F0E8] text-[#3A241C] border border-[#C79A6B]'
+                                }`}
                               >
                                 {prop.type === 'LAND' ? (
                                   <MapPin className="w-3 h-3" />
@@ -397,8 +394,8 @@ export default function DashboardPropertiesPage() {
                             {/* 13-Doc Gate */}
                             <td className="px-4 py-3.5">
                               {verified >= total && total > 0 ? (
-                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[11px]" style={{ background: '#EDE6DA', color: '#3A241C', border: '1px solid #C79A6B' }}>
-                                  <ShieldCheck className="w-3 h-3" style={{ color: '#8B624C' }} />
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full font-bold text-[11px] bg-[#EDE6DA] text-[#3A241C] border border-[#C79A6B]">
+                                  <ShieldCheck className="w-3 h-3 text-[#8C653E]" />
                                   {verified}/{total}
                                 </span>
                               ) : (
@@ -426,11 +423,10 @@ export default function DashboardPropertiesPage() {
                             <td className="px-4 py-3.5 text-right">
                               <Link
                                 href={`/dashboard/properties/${prop.id}`}
-                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 hover:opacity-90"
-                                style={{ background: '#201512', color: '#FBF8F3', border: '1px solid #3A241C' }}
+                                className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-semibold transition-all duration-150 hover:opacity-90 bg-[#201512] text-[#FBF8F3] border border-[#3A241C]"
                                 title="Open internal review — seller details and documents"
                               >
-                                <FileCheck className="w-3.5 h-3.5" style={{ color: '#C79A6B' }} />
+                                <FileCheck className="w-3.5 h-3.5 text-[#C79A6B]" />
                                 <span>Review</span>
                               </Link>
                             </td>

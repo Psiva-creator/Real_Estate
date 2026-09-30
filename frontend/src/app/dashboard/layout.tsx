@@ -21,6 +21,7 @@ import {
 import { useAuth } from '@/lib/auth-context';
 import { getPublicUrl } from '@/lib/domain';
 import { getAdminDashboardApi } from '@/lib/api';
+import ThemeToggle from '@/components/common/ThemeToggle';
 
 export default function DashboardLayout({
   children,
@@ -215,6 +216,9 @@ export default function DashboardLayout({
 
           {/* Right Executive Profile & Controls */}
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+            {/* Theme Toggle Icon */}
+            <ThemeToggle className="p-2" />
+
             {/* User Profile Card */}
             <div className="flex items-center gap-2.5 px-3 py-1.5 rounded-xl bg-[#F5F0E8] border border-[#E2CFB6]">
               <div className="w-7 h-7 rounded-lg bg-[#201512] text-[#FBF8F3] border border-[#C79A6B]/40 flex items-center justify-center font-bold text-xs">

@@ -86,9 +86,17 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+      suppressHydrationWarning
       className={`h-full scroll-smooth ${inter.variable} ${notoSansTelugu.variable} ${cormorantGaramond.variable}`}
     >
-      <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#191512] antialiased selection:bg-[#B9825A]/20 selection:text-[#191512] font-sans">
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(localStorage.getItem('trh_theme')==='dark'){document.documentElement.classList.add('dark');}}catch(e){}`,
+          }}
+        />
+      </head>
+      <body className="min-h-full flex flex-col bg-[#FAF8F5] text-[#191512] antialiased selection:bg-[#B9825A]/20 selection:text-[#191512] font-sans transition-colors duration-300">
         <AppProviders>{children}</AppProviders>
       </body>
     </html>
