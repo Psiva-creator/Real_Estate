@@ -19,6 +19,9 @@ import {
   RefreshCw,
   Loader2,
   Download,
+  Send,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import {
