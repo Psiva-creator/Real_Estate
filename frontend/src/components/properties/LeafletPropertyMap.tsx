@@ -55,8 +55,10 @@ export interface LeafletPropertyMapProps {
 
 type MapLayerMode = 'satellite' | 'street' | 'imagery';
 
+const EMPTY_PROPERTIES: MockProperty[] = [];
+
 export default function LeafletPropertyMap({
-  properties = [],
+  properties = EMPTY_PROPERTIES,
   locale,
   selectedPropertyId,
   onSelectProperty,
@@ -101,10 +103,29 @@ export default function LeafletPropertyMap({
   });
   const [appliedAreaFeedback, setAppliedAreaFeedback] = useState(false);
 
+  const isDrawingModeRef = useRef<boolean>(isDrawingMode);
+  const onPolygonChangeRef = useRef(onPolygonChange);
+
+  useEffect(() => {
+    onPolygonChangeRef.current = onPolygonChange;
+  }, [onPolygonChange]);
+
+  useEffect(() => {
+    isDrawingModeRef.current = isDrawingMode;
+  }, [isDrawingMode]);
+
   // Synchronize ref with state
   useEffect(() => {
     polygonCoordsRef.current = polygonCoords;
   }, [polygonCoords]);
+
+  // Sync initialPolygon if passed late or step mounted
+  useEffect(() => {
+    if (initialPolygon && initialPolygon.length > 0 && polygonCoords.length === 0) {
+      setPolygonCoords(initialPolygon);
+      polygonCoordsRef.current = initialPolygon;
+    }
+  }, [initialPolygon]);
 
   // Compute real-time polygon area
   const areaResult: PolygonAreaResult = useMemo(() => {
@@ -114,12 +135,12 @@ export default function LeafletPropertyMap({
   // Notify parent on boundary change
   const triggerPolygonChange = useCallback(
     (coords: Array<[number, number]>) => {
-      if (onPolygonChange) {
+      if (onPolygonChangeRef.current) {
         const area = calculatePolygonArea(coords);
-        onPolygonChange(coords, area.sqYards, area.acres);
+        onPolygonChangeRef.current(coords, area.sqYards, area.acres);
       }
     },
-    [onPolygonChange]
+    []
   );
 
   // Filter properties according to active type filter
