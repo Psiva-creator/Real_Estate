@@ -172,6 +172,73 @@ export default function DashboardEnquiriesPage() {
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [typeFilter, setTypeFilter] = useState<string>('ALL');
 
+  // Message Client Modal State
+  const [selectedLeadForMessage, setSelectedLeadForMessage] = useState<Lead | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<'confirmation' | 'site_visit' | 'legal_docs' | 'custom'>('confirmation');
+  const [messageLang, setMessageLang] = useState<'en' | 'te'>('en');
+  const [customMessageText, setCustomMessageText] = useState('');
+  const [isCopied, setIsCopied] = useState(false);
+
+  const getTemplateText = useCallback((lead: Lead, template: string, lang: 'en' | 'te') => {
+    const buyer = lead.buyerName;
+    const property = lead.propertyTitle;
+    const agent = lead.agentName && lead.agentName !== 'Unassigned' ? lead.agentName : 'Suresh Reddy (Senior Land Advisor)';
+
+    if (template === 'confirmation') {
+      return lang === 'te'
+        ? `నమస్కారం ${buyer} గారు, మీరు కోరిన ${property} ప్రాపర్టీ కన్సల్టేషన్ వివరాలు స్వీకరించబడ్డాయి. మా సీనియర్ అడ్వైజర్ ${agent} ధరణి రికార్డులు & చట్టపరమైన పత్రాలతో మిమ్మల్ని సంప్రదిస్తారు. మీకు ఏ సమయం అనుకూలంగా ఉంటుంది? - తెలంగాణ రియల్టీ హబ్`
+        : `Hello ${buyer}, thank you for booking a consultation for ${property} with Telangana Realty Hub. I am ${agent}, your assigned senior property advisor. All 13 legal documents and revenue records are verified. Would today or tomorrow be a good time to connect for a detailed briefing?`;
+    }
+
+    if (template === 'site_visit') {
+      return lang === 'te'
+        ? `నమస్కారం ${buyer} గారు, ${property} కొరకు సైట్ విజిట్ షెడ్యూల్ చేయడానికి సిద్ధంగా ఉన్నాము. ప్రాపర్టీ బౌండరీలు మరియు లేఅవుట్ చూపించడానికి మా ప్రతినిధి ${agent} మీతో ఉంటారు. దయచేసి మీకు వీలైన తేదీ మరియు సమయం తెలియజేయండి.`
+        : `Hi ${buyer}, regarding your site visit request for ${property}: Our team has coordinated with the land owner. Advisor ${agent} will accompany you for an on-ground boundary inspection and survey verification. Please let us know your preferred day and time.`;
+    }
+
+    if (template === 'legal_docs') {
+      return lang === 'te'
+        ? `నమస్కారం ${buyer} గారు, ${property} కి సంబంధించిన ధరణి పట్టాదారు పాస్‌బుక్, 30 ఏళ్ల EC మరియు రెవెన్యూ సర్వే నంబర్ల పరిశీలన నివేదిక సిద్ధంగా ఉంది. వివరాలు పరిశీలించడానికి కాల్ చేయగలరు: +91 98765 43210.`
+        : `Dear ${buyer}, the legal verification report for ${property} is ready. It covers 30-year Encumbrance Certificate (EC), Dharani Pattadar Passbook, and SRO market valuation. Please let us know if you would like to review the document dossier.`;
+    }
+
+    return customMessageText;
+  }, [customMessageText]);
+
+  const handleOpenMessageModal = (lead: Lead) => {
+    setSelectedLeadForMessage(lead);
+    setSelectedTemplate('confirmation');
+    setMessageLang('en');
+    setCustomMessageText(getTemplateText(lead, 'confirmation', 'en'));
+    setIsCopied(false);
+  };
+
+  const handleTemplateChange = (template: 'confirmation' | 'site_visit' | 'legal_docs' | 'custom', lang: 'en' | 'te') => {
+    setSelectedTemplate(template);
+    setMessageLang(lang);
+    if (selectedLeadForMessage && template !== 'custom') {
+      setCustomMessageText(getTemplateText(selectedLeadForMessage, template, lang));
+    }
+  };
+
+  const handleSendWhatsApp = (lead: Lead) => {
+    const rawPhone = lead.phone.replace(/[^0-9]/g, '');
+    const cleanPhone = rawPhone.length === 10 ? `91${rawPhone}` : rawPhone;
+    const textToSend = customMessageText || getTemplateText(lead, selectedTemplate, messageLang);
+    const url = `https://wa.me/${cleanPhone}?text=${encodeURIComponent(textToSend)}`;
+    window.open(url, '_blank');
+
+    if (lead.status === 'NEW' || lead.status === 'ASSIGNED') {
+      updateStatus(lead.id, 'CONTACTED');
+    }
+  };
+
+  const handleCopyText = (text: string) => {
+    navigator.clipboard.writeText(text);
+    setIsCopied(true);
+    setTimeout(() => setIsCopied(false), 2000);
+  };
+
   // Fetch real enquiries from the backend
   const fetchEnquiries = useCallback(async () => {
     setIsLoading(true);
