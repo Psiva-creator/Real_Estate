@@ -92,25 +92,12 @@ async function run() {
 
   // 3. Change Options / Form inputs (District, Mandal, Village)
   console.log('✍️ Changing District, Mandal, Village form options...');
-  await page.evaluate(() => {
-    const inputs = Array.from(document.querySelectorAll('input'));
-    const distInput = inputs.find(i => (i.placeholder || '').toLowerCase().includes('district'));
-    const mandalInput = inputs.find(i => (i.placeholder || '').toLowerCase().includes('mandal'));
-    const villageInput = inputs.find(i => (i.placeholder || '').toLowerCase().includes('village'));
-
-    if (distInput) {
-      distInput.value = 'Rangareddy';
-      distInput.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    if (mandalInput) {
-      mandalInput.value = 'Rajendranagar';
-      mandalInput.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-    if (villageInput) {
-      villageInput.value = 'Narsingi';
-      villageInput.dispatchEvent(new Event('input', { bubbles: true }));
-    }
-  });
+  const distInput = await page.$('input[placeholder*="District" i], input[placeholder*="e.g. Rangareddy" i]');
+  if (distInput) await distInput.type('Rangareddy');
+  const mandalInput = await page.$('input[placeholder*="Mandal" i], input[placeholder*="e.g. Gandipet" i]');
+  if (mandalInput) await mandalInput.type('Rajendranagar');
+  const villageInput = await page.$('input[placeholder*="Village" i], input[placeholder*="e.g. Kokapet" i]');
+  if (villageInput) await villageInput.type('Narsingi');
 
   await new Promise(r => setTimeout(r, 1500));
   let status4 = await checkMapStatus('After Form Options Changed');
