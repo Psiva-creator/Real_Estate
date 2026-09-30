@@ -172,6 +172,30 @@ export default function PropertyInternalReviewPage() {
     );
   }
 
+  const handleUpdateStatus = async (newStatus: string) => {
+    if (!token || !property) return;
+    setIsPublishingStatus(true);
+    setStatusMessage(null);
+    try {
+      await updatePropertyStatusApi(token, property.id, newStatus);
+      setProperty((prev) => (prev ? { ...prev, status: newStatus as any } : null));
+      setStatusMessage({
+        type: 'success',
+        text: `Property status successfully updated to ${newStatus}. ${
+          newStatus === 'LIVE' ? 'It is now active and visible on the public website!' : ''
+        }`,
+      });
+      setTimeout(() => setStatusMessage(null), 5000);
+    } catch (err) {
+      setStatusMessage({
+        type: 'error',
+        text: (err as Error).message || `Failed to update status to ${newStatus}`,
+      });
+    } finally {
+      setIsPublishingStatus(false);
+    }
+  };
+
   // ─── Render ────────────────────────────────────────────────────────────
   const verified = property.verificationStatus?.verifiedDocuments ?? 0;
   const total = property.verificationStatus?.totalDocuments ?? 13;
@@ -200,6 +224,47 @@ export default function PropertyInternalReviewPage() {
         </div>
         {/* Actions & Doc count */}
         <div className="shrink-0 flex items-center gap-2 flex-wrap">
+          {property.status === 'LIVE' ? (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold shadow-xs">
+                <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>LIVE ON PUBLIC SITE</span>
+              </span>
+              <button
+                type="button"
+                onClick={() => handleUpdateStatus('UNDER_REVIEW')}
+                disabled={isPublishingStatus}
+                className="text-xs text-slate-500 hover:text-slate-800 font-semibold underline underline-offset-2 cursor-pointer disabled:opacity-50"
+              >
+                Unpublish
+              </button>
+            </div>
+          ) : (
+            <button
+              type="button"
+              disabled={isPublishingStatus}
+              onClick={() => handleUpdateStatus('LIVE')}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+              title="Post this listing live on the public website"
+            >
+              {isPublishingStatus ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <Globe className="w-3.5 h-3.5" />
+              )}
+              <span>Publish to Public Website</span>
+            </button>
+          )}
+
+          <button
+            type="button"
+            onClick={() => setIsEditModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-300 text-xs font-bold text-slate-800 bg-white hover:bg-slate-50 hover:text-emerald-800 transition-colors shadow-xs cursor-pointer"
+          >
+            <Edit3 className="w-3.5 h-3.5 text-emerald-700" />
+            <span>Edit Property Details</span>
+          </button>
+
           <Link
             href={`/en/properties/${property.id}`}
             target="_blank"
@@ -207,8 +272,9 @@ export default function PropertyInternalReviewPage() {
             className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 hover:text-emerald-700 transition-colors shadow-sm"
           >
             <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-            View Public Listing
+            <span>View Public Listing</span>
           </Link>
+
           <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-slate-200 text-xs font-bold text-slate-700 bg-slate-50">
             <ShieldCheck
               className={`w-4 h-4 ${verified >= total && total > 0 ? 'text-emerald-600' : 'text-amber-500'}`}
@@ -217,6 +283,33 @@ export default function PropertyInternalReviewPage() {
           </div>
         </div>
       </div>
+
+      {/* Status Feedback Banner */}
+      {statusMessage && (
+        <div
+          className={`p-3.5 rounded-xl border text-xs flex items-center justify-between gap-3 ${
+            statusMessage.type === 'success'
+              ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+              : 'bg-red-50 border-red-200 text-red-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {statusMessage.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+            ) : (
+              <AlertCircle className="w-4 h-4 shrink-0 text-red-600" />
+            )}
+            <span className="font-medium">{statusMessage.text}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setStatusMessage(null)}
+            className="text-slate-400 hover:text-slate-600 text-xs font-semibold"
+          >
+            Dismiss
+          </button>
+        </div>
+      )}
 
       {/* Property Details grid */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -448,6 +541,18 @@ export default function PropertyInternalReviewPage() {
           }}
         />
       </div>
+
+      {/* Edit Property Details Modal */}
+      {property && (
+        <EditPropertyModal
+          property={property}
+          isOpen={isEditModalOpen}
+          onClose={() => setIsEditModalOpen(false)}
+          onSaved={(updated) => {
+            setProperty((prev) => (prev ? { ...prev, ...updated } : updated));
+          }}
+        />
+      )}
     </div>
   );
 }
