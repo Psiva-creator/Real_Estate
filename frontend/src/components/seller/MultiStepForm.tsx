@@ -922,6 +922,23 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   }
                 }}
               />
+
+              {/* Concierge Verification Assurance Banner */}
+              <div className="p-3 sm:p-4 rounded-xl bg-[#201512]/5 border border-[#E2CFB6] flex items-start gap-3">
+                <span className="text-base sm:text-lg">💡</span>
+                <div className="space-y-1 text-xs">
+                  <p className="font-semibold text-[#201512]">
+                    {isTe
+                      ? 'ఖచ్చితమైన సరిహద్దులు గుర్తించడం కష్టంగా ఉందా? సుమారుగా మార్క్ చేసినా ఫర్వాలేదు!'
+                      : 'Finding it tricky to pinpoint exact boundaries? Approximate marking is completely fine!'}
+                  </p>
+                  <p className="text-[#8B624C] leading-relaxed">
+                    {isTe
+                      ? 'మీరు కేవలం భూమి సాధారణ స్థానం మరియు సుమారు ఆకారాన్ని గుర్తించండి. మీరు తదుపరి స్టెప్‌లో అప్‌లోడ్ చేసే FMB (ఫీల్డ్ మెజర్‌మెంట్ బుక్ టిప్పన్) మరియు ధరణి రికార్డులను పరిశీలించి మా TRH లీగల్ సర్వే బృందం అధికారికంగా ఖచ్చితమైన సరిహద్దులను సరిచేస్తుంది.'
+                      : 'You only need to outline the general plot area and shape. Our TRH Legal & Survey Desk will mathematically cross-reference your uploaded FMB (Field Measurement Book) and Dharani records to calibrate the exact cadastral boundaries before buyer diligence.'}
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         )}
