@@ -20,12 +20,15 @@ import {
   Calendar,
   Check,
   Compass,
+  Upload,
+  Camera,
+  Trash2,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { SellerFormData, INITIAL_SELLER_FORM_DATA, PropertyType } from '@/types/seller';
 import DocumentChecklistUploader from './DocumentChecklistUploader';
 import { formatINR } from '@/lib/formatters';
-import { createProperty, CreatePropertyDTO } from '@/lib/api';
+import { createProperty, CreatePropertyDTO, uploadPropertyDocument, uploadImageApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import LeafletPropertyMap from '@/components/properties/LeafletPropertyMap';
 import { lookupTelanganaLocation } from '@/lib/telanganaMapData';
@@ -342,12 +345,24 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       };
 
       // Representative default imagery by property type
-      const mainImage =
+      let mainImage =
         formData.propertyType === 'LAND'
           ? 'https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=1200&q=80'
           : formData.propertyType === 'VILLA'
           ? 'https://images.unsplash.com/photo-1613977257363-707ba9348227?auto=format&fit=crop&w=1200&q=80'
           : 'https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=1200&q=80';
+
+      // If user uploaded a custom property photo, upload it to backend & Supabase
+      if (formData.photoFile) {
+        try {
+          const imgUpload = await uploadImageApi(formData.photoFile, token || undefined);
+          if (imgUpload.data?.fileUrl) {
+            mainImage = imgUpload.data.fileUrl;
+          }
+        } catch (imgErr) {
+          console.warn('[MultiStepForm] Custom photo upload fallback:', imgErr);
+        }
+      }
 
       const payload: CreatePropertyDTO = {
         seller: {
@@ -382,7 +397,31 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       const result = await createProperty(payload, token || undefined);
 
       if (result.success && result.propertyId) {
-        setSubmittedRefId(result.propertyId);
+        const newPropertyId = result.propertyId;
+
+        // Upload any staged 13-point revenue verification documents to backend & Supabase
+        const stagedDocs = Object.entries(formData.documents).filter(
+          ([_, docItem]) => docItem.file && (docItem.status === 'UPLOADED' || docItem.status === 'UPLOADING')
+        );
+
+        if (stagedDocs.length > 0) {
+          await Promise.allSettled(
+            stagedDocs.map(([key, docItem]) => {
+              if (docItem.file) {
+                return uploadPropertyDocument(
+                  newPropertyId,
+                  key,
+                  docItem.file,
+                  undefined,
+                  token || undefined
+                );
+              }
+              return Promise.resolve();
+            })
+          );
+        }
+
+        setSubmittedRefId(newPropertyId);
         window.scrollTo({ top: 100, behavior: 'smooth' });
       } else {
         throw new Error(
@@ -765,6 +804,60 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                   placeholder={sfDict.basicInfo.zonePlaceholder}
                   className="w-full h-12 px-3.5 rounded-xl border border-[#E2CFB6] bg-[#FAF8F3] text-sm text-[#201512] placeholder:text-[#8B624C]/60 focus:outline-none focus:ring-1 focus:ring-[#C79A6B] focus:border-[#C79A6B]"
                 />
+              </div>
+
+              {/* Property Cover Photo Upload */}
+              <div>
+                <label className="block text-xs font-semibold text-[#3A241C] mb-1.5">
+                  {isTe ? 'ప్రాపర్టీ ఫోటో (ముఖ్య చిత్రం)' : 'Property Cover Photo (Optional)'}
+                </label>
+                <div className="relative border-2 border-dashed border-[#E2CFB6] hover:border-[#C79A6B] rounded-2xl p-4 bg-[#FAF8F3] transition-colors text-center">
+                  {formData.photoPreview ? (
+                    <div className="relative w-full max-w-xs mx-auto">
+                      <img
+                        src={formData.photoPreview}
+                        alt="Property preview"
+                        className="w-full h-36 object-cover rounded-xl border border-[#E2CFB6] shadow-sm"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          updateField('photoFile', undefined);
+                          updateField('photoPreview', undefined);
+                        }}
+                        className="absolute -top-2 -right-2 p-1.5 rounded-full bg-rose-600 text-white shadow-md hover:bg-rose-700 transition-colors"
+                        title="Remove photo"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  ) : (
+                    <label className="flex flex-col items-center justify-center cursor-pointer py-3 space-y-2">
+                      <div className="w-10 h-10 rounded-full bg-[#F5F0E8] border border-[#E2CFB6] flex items-center justify-center text-[#8B624C]">
+                        <Camera className="w-5 h-5 text-[#C79A6B]" />
+                      </div>
+                      <span className="text-xs font-medium text-[#5A382B]">
+                        {isTe ? 'ఫోటోను అప్‌లోడ్ చేయడానికి క్లిక్ చేయండి' : 'Click or drop a property photo (JPG, PNG)'}
+                      </span>
+                      <span className="text-[11px] text-[#8B624C]">
+                        {isTe ? 'గరిష్ట పరిమాణం: 15MB. నేరుగా డేటాబేస్‌లో నిల్వ చేయబడుతుంది' : 'Max 15MB. Stored directly in Supabase'}
+                      </span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            const previewUrl = URL.createObjectURL(file);
+                            updateField('photoFile', file);
+                            updateField('photoPreview', previewUrl);
+                          }
+                        }}
+                      />
+                    </label>
+                  )}
+                </div>
               </div>
             </div>
           </div>

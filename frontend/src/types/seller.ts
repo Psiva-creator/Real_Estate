@@ -24,6 +24,8 @@ export interface SellerFormData {
   title: string;
   description: string;
   zone: string;
+  photoFile?: File;
+  photoPreview?: string;
 
   // Step 3: Location
   district: string;
