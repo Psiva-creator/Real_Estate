@@ -21,6 +21,8 @@ import { VERIFIED_13_DOCS, DocumentKey } from '@/lib/constants';
 import {
   getPropertyDocumentsApi,
   verifyPropertyDocumentApi,
+  publishVerificationApi,
+  getVerificationPublishStatusApi,
   PropertyDocumentRecord,
   resolveUploadUrl,
 } from '@/lib/api';
@@ -224,6 +226,16 @@ export default function DocumentVerificationReviewer({
     message: string;
   } | null>(null);
 
+  // Verification publish workflow state
+  const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState<boolean>(false);
+  const [unpublishedCount, setUnpublishedCount] = useState<number>(0);
+  const [lastPublishedAt, setLastPublishedAt] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState<boolean>(false);
+  const [publishFeedback, setPublishFeedback] = useState<{
+    type: 'success' | 'error';
+    message: string;
+  } | null>(null);
+
   // rejection modal state
   const [rejectTarget, setRejectTarget] = useState<{ key: DocumentKey; name: string } | null>(null);
 
@@ -248,12 +260,19 @@ export default function DocumentVerificationReviewer({
         totalDocuments: VERIFIED_13_DOCS.length,
         isFullyVerified: nextVerifiedCount === VERIFIED_13_DOCS.length,
       });
+
+      if (isAdmin) {
+        const pubStatus = await getVerificationPublishStatusApi(token, propertyId);
+        setHasUnpublishedChanges(pubStatus.hasUnpublishedChanges);
+        setUnpublishedCount(pubStatus.unpublishedCount);
+        setLastPublishedAt(pubStatus.verificationPublishedAt || null);
+      }
     } catch (err) {
       setLoadError((err as Error).message || 'Failed to load documents');
     } finally {
       setIsLoading(false);
     }
-  }, [token, propertyId]);
+  }, [token, propertyId, isAdmin]);
 
   useEffect(() => {
     loadDocuments();
@@ -313,18 +332,22 @@ export default function DocumentVerificationReviewer({
         const docLabel = VERIFIED_13_DOCS.find((d) => d.key === key)?.nameEn || key;
         setActionFeedback({
           type: 'success',
-          message: `${docLabel} verified and saved.${
-            result.propertyStatus ? ` Property status: ${result.propertyStatus.replace(/_/g, ' ')}.` : ''
+          message: `${docLabel} verified internally (Staff Draft). Click "Send Verification Update to Seller" to publish to seller.${
+            result.propertyStatus ? ` Status: ${result.propertyStatus.replace(/_/g, ' ')}.` : ''
           }`,
         });
 
-        // clear flash after 2.5 s
+        const pubStatus = await getVerificationPublishStatusApi(token, propertyId);
+        setHasUnpublishedChanges(pubStatus.hasUnpublishedChanges);
+        setUnpublishedCount(pubStatus.unpublishedCount);
+
+        // clear flash after 3 s
         setTimeout(() => {
           setDocStates((prev) => ({
             ...prev,
             [key]: { ...prev[key], justSaved: false },
           }));
-        }, 2500);
+        }, 3000);
       } catch (err) {
         const errMsg = (err as Error).message || 'Verification failed';
         setActionFeedback({ type: 'error', message: errMsg });
@@ -386,17 +409,21 @@ export default function DocumentVerificationReviewer({
         const docLabel = VERIFIED_13_DOCS.find((d) => d.key === key)?.nameEn || key;
         setActionFeedback({
           type: 'success',
-          message: `${docLabel} rejected (${reason}).${
-            result.propertyStatus ? ` Property status: ${result.propertyStatus.replace(/_/g, ' ')}.` : ''
+          message: `${docLabel} rejected internally (Staff Draft: ${reason}). Click "Send Verification Update to Seller" to publish to seller.${
+            result.propertyStatus ? ` Status: ${result.propertyStatus.replace(/_/g, ' ')}.` : ''
           }`,
         });
+
+        const pubStatus = await getVerificationPublishStatusApi(token, propertyId);
+        setHasUnpublishedChanges(pubStatus.hasUnpublishedChanges);
+        setUnpublishedCount(pubStatus.unpublishedCount);
 
         setTimeout(() => {
           setDocStates((prev) => ({
             ...prev,
             [key]: { ...prev[key], justSaved: false },
           }));
-        }, 2500);
+        }, 3000);
       } catch (err) {
         const errMsg = (err as Error).message || 'Rejection failed';
         setActionFeedback({ type: 'error', message: errMsg });
@@ -412,6 +439,40 @@ export default function DocumentVerificationReviewer({
     },
     [token, propertyId, isAdmin, docStates, onVerificationChange]
   );
+
+  // ── Send verification updates to seller ────────────────────────────────────
+  const handleSendToSeller = useCallback(async () => {
+    if (!token || !isAdmin || isPublishing) return;
+    setIsPublishing(true);
+    setPublishFeedback(null);
+    try {
+      const result = await publishVerificationApi(token, propertyId);
+      setHasUnpublishedChanges(false);
+      setUnpublishedCount(0);
+      setLastPublishedAt(result.verificationPublishedAt || new Date().toISOString());
+      setPublishFeedback({
+        type: 'success',
+        message: 'Verification update sent to seller successfully! The seller portal now reflects the latest verified and rejected documents.',
+      });
+      if (result.propertyStatus) {
+        const nextVerified = Object.values(docStates).filter((s) => s.status === 'VERIFIED').length;
+        onVerificationChange?.({
+          propertyStatus: result.propertyStatus,
+          verifiedDocuments: nextVerified,
+          totalDocuments: VERIFIED_13_DOCS.length,
+          isFullyVerified: nextVerified === VERIFIED_13_DOCS.length,
+        });
+      }
+      setTimeout(() => setPublishFeedback(null), 5000);
+    } catch (err) {
+      setPublishFeedback({
+        type: 'error',
+        message: (err as Error).message || 'Failed to send verification update to seller',
+      });
+    } finally {
+      setIsPublishing(false);
+    }
+  }, [token, propertyId, isAdmin, isPublishing, docStates, onVerificationChange]);
 
   // ── Derived counts ─────────────────────────────────────────────────────────
   const verifiedCount = Object.values(docStates).filter((s) => s.status === 'VERIFIED').length;
@@ -550,6 +611,97 @@ export default function DocumentVerificationReviewer({
             <button
               type="button"
               onClick={() => setActionFeedback(null)}
+              className="p-1 rounded hover:bg-black/5 text-current"
+              aria-label="Dismiss message"
+            >
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {/* Verification Publishing Workflow Action Bar */}
+        {isAdmin && (
+          <div className="bg-white rounded-xl border border-slate-200 p-4 shadow-sm flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div className="space-y-1">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-xs font-bold uppercase tracking-wider text-slate-700">
+                  Seller Verification Visibility
+                </span>
+                {hasUnpublishedChanges ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                    <AlertTriangle className="w-3.5 h-3.5 text-amber-600" />
+                    {unpublishedCount} Unpublished {unpublishedCount === 1 ? 'Change' : 'Changes'}
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    Up to Date with Seller
+                  </span>
+                )}
+              </div>
+              <p className="text-xs text-slate-500">
+                Verify/Reject changes are saved internally as staff drafts. Sellers only see verification results after you send this update.
+                {lastPublishedAt && (
+                  <span className="ml-1 text-slate-400 font-medium">
+                    • Last sent: {new Date(lastPublishedAt).toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })}
+                  </span>
+                )}
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 shrink-0">
+              <button
+                type="button"
+                onClick={handleSendToSeller}
+                disabled={!hasUnpublishedChanges || isPublishing}
+                className={`inline-flex items-center gap-2 px-4 py-2.5 rounded-xl font-bold text-xs shadow-sm transition-all ${
+                  hasUnpublishedChanges
+                    ? 'bg-emerald-700 hover:bg-emerald-800 text-white cursor-pointer active:scale-95 ring-2 ring-emerald-500/20'
+                    : 'bg-slate-100 text-slate-400 border border-slate-200 cursor-not-allowed opacity-80'
+                }`}
+              >
+                {isPublishing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin text-white" />
+                    Sending to Seller…
+                  </>
+                ) : hasUnpublishedChanges ? (
+                  <>
+                    <Upload className="w-4 h-4" />
+                    Send Verification Update to Seller
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 text-slate-400" />
+                    No Changes to Send
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Publish feedback */}
+        {publishFeedback && (
+          <div
+            role="status"
+            className={`flex items-center justify-between gap-3 px-4 py-3 rounded-lg text-sm font-medium border ${
+              publishFeedback.type === 'success'
+                ? 'bg-emerald-50 border-emerald-200 text-emerald-800'
+                : 'bg-rose-50 border-rose-200 text-rose-800'
+            }`}
+          >
+            <div className="flex items-center gap-2">
+              {publishFeedback.type === 'success' ? (
+                <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+              ) : (
+                <AlertCircle className="w-4 h-4 shrink-0 text-rose-600" />
+              )}
+              <span>{publishFeedback.message}</span>
+            </div>
+            <button
+              type="button"
+              onClick={() => setPublishFeedback(null)}
               className="p-1 rounded hover:bg-black/5 text-current"
               aria-label="Dismiss message"
             >

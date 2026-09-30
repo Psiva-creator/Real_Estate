@@ -201,6 +201,10 @@ function mapPropertyRow(row: any): Property {
     sitePlanImage: row.site_plan_image || undefined,
     boundaryCoordinates: row.boundary_coordinates ?? null,
     adminDetails: row.admin_details ?? undefined,
+    publishedAdminDetails: row.published_admin_details ?? undefined,
+    adminDetailsPublishedAt: row.admin_details_published_at instanceof Date ? row.admin_details_published_at.toISOString() : (row.admin_details_published_at ? String(row.admin_details_published_at) : undefined),
+    publishedVerification: row.published_verification ?? undefined,
+    verificationPublishedAt: row.verification_published_at instanceof Date ? row.verification_published_at.toISOString() : (row.verification_published_at ? String(row.verification_published_at) : undefined),
     isFeatured: !!row.is_featured,
     viewsCount: parseInt(row.views_count || '0', 10),
     createdAt: row.created_at instanceof Date ? row.created_at.toISOString() : String(row.created_at),
@@ -1050,6 +1054,10 @@ class Database {
         pricing: updates.pricing ? { ...existing.pricing, ...updates.pricing } : existing.pricing,
         boundaryCoordinates: updates.boundaryCoordinates !== undefined ? updates.boundaryCoordinates : existing.boundaryCoordinates,
         adminDetails: updates.adminDetails !== undefined ? updates.adminDetails : existing.adminDetails,
+        publishedAdminDetails: updates.publishedAdminDetails !== undefined ? updates.publishedAdminDetails : existing.publishedAdminDetails,
+        adminDetailsPublishedAt: updates.adminDetailsPublishedAt !== undefined ? updates.adminDetailsPublishedAt : existing.adminDetailsPublishedAt,
+        publishedVerification: updates.publishedVerification !== undefined ? updates.publishedVerification : existing.publishedVerification,
+        verificationPublishedAt: updates.verificationPublishedAt !== undefined ? updates.verificationPublishedAt : existing.verificationPublishedAt,
         id: existing.id,
         updatedAt: new Date().toISOString(),
       };
@@ -1275,6 +1283,22 @@ class Database {
     if (updates.adminDetails !== undefined) {
       setClauses.push(`admin_details = $${idx++}`);
       values.push(updates.adminDetails ? JSON.stringify(updates.adminDetails) : null);
+    }
+    if (updates.publishedAdminDetails !== undefined) {
+      setClauses.push(`published_admin_details = $${idx++}`);
+      values.push(updates.publishedAdminDetails ? JSON.stringify(updates.publishedAdminDetails) : null);
+    }
+    if (updates.adminDetailsPublishedAt !== undefined) {
+      setClauses.push(`admin_details_published_at = $${idx++}`);
+      values.push(updates.adminDetailsPublishedAt);
+    }
+    if (updates.publishedVerification !== undefined) {
+      setClauses.push(`published_verification = $${idx++}`);
+      values.push(updates.publishedVerification ? JSON.stringify(updates.publishedVerification) : null);
+    }
+    if (updates.verificationPublishedAt !== undefined) {
+      setClauses.push(`verification_published_at = $${idx++}`);
+      values.push(updates.verificationPublishedAt);
     }
     if (villaPlotArea !== undefined && updates.land?.totalAcres === undefined) {
       setClauses.push(`total_acres = $${idx++}`);

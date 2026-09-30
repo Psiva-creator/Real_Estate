@@ -182,6 +182,18 @@ export interface AdminPropertyDetails {
   updatedBy?: string;
 }
 
+export interface PublishedVerificationDoc {
+  status: DocumentStatus;
+  rejectionReason?: string;
+  verifiedAt?: string;
+}
+
+export interface PublishedVerificationData {
+  publishedAt: string;
+  publishedBy?: string;
+  documents: Record<string, PublishedVerificationDoc>;
+}
+
 export type BuyerFacingAdminDetails = Omit<AdminPropertyDetails, 'internalNotes'>;
 
 export interface Property {
@@ -203,6 +215,10 @@ export interface Property {
   sitePlanImage?: string;
   boundaryCoordinates?: Array<{ lat: number; lng: number }> | null;
   adminDetails?: AdminPropertyDetails | null;
+  publishedAdminDetails?: BuyerFacingAdminDetails | null;
+  adminDetailsPublishedAt?: string;
+  publishedVerification?: PublishedVerificationData | null;
+  verificationPublishedAt?: string;
   isFeatured: boolean;
   viewsCount: number;
   documents?: Record<string, DocumentStatus>;

@@ -471,7 +471,28 @@ describe('Properties Module & Seller Privacy Gate', () => {
       staffCuratedPayload.internalNotes
     );
 
-    // 6. Seller A refreshes Seller Portal (GET /api/owners/me) and sees all 11 curated fields, but NEVER internalNotes
+    // 6. Before publish: Seller A refreshes Seller Portal (GET /api/owners/me) and must NOT see unpublished draft adminDetails
+    const prePublishSellerRes = await request(app)
+      .get('/api/owners/me')
+      .set('Authorization', `Bearer ${sellerAToken}`);
+    assert.strictEqual(prePublishSellerRes.status, 200);
+    const prePublishProp = prePublishSellerRes.body.properties.find((p: any) => p.id === propertyId);
+    assert.ok(prePublishProp);
+    assert.strictEqual(prePublishProp.adminDetails, undefined, 'Seller must NOT see unpublished draft adminDetails');
+
+    // 7. Authorization check: Seller cannot publish admin details
+    const unauthorizedPublishRes = await request(app)
+      .post(`/api/properties/${propertyId}/admin-details/publish`)
+      .set('Authorization', `Bearer ${sellerAToken}`);
+    assert.strictEqual(unauthorizedPublishRes.status, 403);
+
+    // 8. Admin publishes admin details to seller
+    const publishRes = await request(app)
+      .post(`/api/properties/${propertyId}/admin-details/publish`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    assert.strictEqual(publishRes.status, 200);
+
+    // 9. After publish: Seller A refreshes Seller Portal (GET /api/owners/me) and sees all 11 curated fields, but NEVER internalNotes
     const sellerAMeRes = await request(app)
       .get('/api/owners/me')
       .set('Authorization', `Bearer ${sellerAToken}`);
@@ -484,7 +505,7 @@ describe('Properties Module & Seller Privacy Gate', () => {
     assert.strictEqual(sellerAProp.descriptionEn, 'Original seller description for gated villa.');
 
     // Staff-updated details are present
-    assert.ok(sellerAProp.adminDetails, 'Seller must receive staff-updated adminDetails');
+    assert.ok(sellerAProp.adminDetails, 'Seller must receive published adminDetails');
     assert.strictEqual(
       sellerAProp.adminDetails.projectDescription,
       staffCuratedPayload.projectDescription

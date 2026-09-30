@@ -509,8 +509,21 @@ export default function PropertyInternalReviewPage() {
         propertyId={property.id}
         propertyTitle={property.titleEn}
         initialDetails={property.adminDetails}
-        onDetailsUpdated={(updated) => {
-          setProperty((prev) => (prev ? { ...prev, adminDetails: updated } : null));
+        publishedDetails={property.publishedAdminDetails}
+        publishedAt={property.adminDetailsPublishedAt}
+        hasUnpublishedChanges={property.hasUnpublishedAdminDetailsChanges}
+        onDetailsUpdated={(updated, isPublished) => {
+          setProperty((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  adminDetails: updated,
+                  publishedAdminDetails: isPublished ? updated : prev.publishedAdminDetails,
+                  adminDetailsPublishedAt: isPublished ? new Date().toISOString() : prev.adminDetailsPublishedAt,
+                  hasUnpublishedAdminDetailsChanges: !isPublished,
+                }
+              : null
+          );
         }}
       />
 

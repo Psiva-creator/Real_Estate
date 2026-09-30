@@ -229,7 +229,31 @@ export class DocumentsController {
 
       const docs = await documentsService.getPropertyDocuments(propertyId);
       if (req.user.role === 'SELLER') {
-        const sellerSafeDocs = docs.map(({ verifiedBy: _verifiedBy, ...rest }) => rest);
+        const pubMap = property.publishedVerification?.documents || {};
+        const sellerSafeDocs = docs.map(({ verifiedBy: _verifiedBy, ...rest }) => {
+          const published = pubMap[rest.documentType];
+          let status = rest.status;
+          let rejectionReason = rest.rejectionReason;
+          let verifiedAt = rest.verifiedAt;
+
+          if (published) {
+            status = published.status;
+            rejectionReason = published.status === 'REJECTED' ? published.rejectionReason : undefined;
+            verifiedAt = published.status === 'VERIFIED' ? published.verifiedAt : undefined;
+          } else {
+            // Not yet published to seller
+            status = rest.fileUrl ? 'UPLOADED' : 'PENDING';
+            rejectionReason = undefined;
+            verifiedAt = undefined;
+          }
+
+          return {
+            ...rest,
+            status,
+            rejectionReason,
+            verifiedAt,
+          };
+        });
         return res.json({ documents: sellerSafeDocs });
       }
       return res.json({ documents: docs });
@@ -269,10 +293,81 @@ export class DocumentsController {
 
       if (req.user.role === 'SELLER') {
         const { verifiedBy: _verifiedBy, ...sellerSafeDoc } = doc;
+        const pubMap = property.publishedVerification?.documents || {};
+        const published = pubMap[doc.documentType];
+        if (published) {
+          sellerSafeDoc.status = published.status;
+          sellerSafeDoc.rejectionReason = published.status === 'REJECTED' ? published.rejectionReason : undefined;
+          sellerSafeDoc.verifiedAt = published.status === 'VERIFIED' ? published.verifiedAt : undefined;
+        } else {
+          sellerSafeDoc.status = doc.fileUrl ? 'UPLOADED' : 'PENDING';
+          sellerSafeDoc.rejectionReason = undefined;
+          sellerSafeDoc.verifiedAt = undefined;
+        }
         return res.json({ document: sellerSafeDoc });
       }
 
       return res.json({ document: doc });
+    } catch (err) {
+      return res.status(400).json({ error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Publish verification updates to the seller
+   * POST /api/properties/:id/verification/publish
+   */
+  async publishVerification(req: AuthRequest, res: Response) {
+    try {
+      const { id: propertyId } = req.params;
+
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      if (req.user.role !== 'ADMIN' && req.user.role !== 'AGENT') {
+        return res.status(403).json({ error: 'Forbidden: Only administrators can publish verification updates to the seller' });
+      }
+
+      const property = await db.findPropertyById(propertyId);
+      if (!property) {
+        return res.status(404).json({ error: 'Property not found' });
+      }
+
+      const result = await documentsService.publishVerification(
+        propertyId,
+        req.user.name || req.user.id
+      );
+
+      return res.json({
+        message: 'Verification update sent to seller successfully',
+        publishedVerification: result.publishedVerification,
+        verificationPublishedAt: result.verificationPublishedAt,
+        propertyStatus: result.property.status,
+      });
+    } catch (err) {
+      return res.status(400).json({ error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Check verification publishing status
+   * GET /api/properties/:id/verification/publish-status
+   */
+  async getPublishStatus(req: AuthRequest, res: Response) {
+    try {
+      const { id: propertyId } = req.params;
+
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      if (req.user.role !== 'ADMIN' && req.user.role !== 'AGENT') {
+        return res.status(403).json({ error: 'Forbidden: Only staff can view verification publish status' });
+      }
+
+      const status = await documentsService.checkUnpublishedVerificationChanges(propertyId);
+      return res.json(status);
     } catch (err) {
       return res.status(400).json({ error: (err as Error).message });
     }

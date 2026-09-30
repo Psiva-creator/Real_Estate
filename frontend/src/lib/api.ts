@@ -1474,6 +1474,12 @@ export interface InternalPropertyDetail {
     }>;
   };
   adminDetails?: AdminPropertyDetails;
+  publishedAdminDetails?: AdminPropertyDetails;
+  adminDetailsPublishedAt?: string;
+  hasUnpublishedAdminDetailsChanges?: boolean;
+  publishedVerification?: any;
+  verificationPublishedAt?: string;
+  hasUnpublishedVerificationChanges?: boolean;
 }
 
 /**
@@ -1559,10 +1565,14 @@ export async function getAdminPropertyDetailApi(
 export async function saveAdminPropertyDetailsApi(
   token: string,
   propertyId: string,
-  details: AdminPropertyDetails
+  details: AdminPropertyDetails,
+  publishToSeller: boolean = false
 ): Promise<{
   success: boolean;
   details: AdminPropertyDetails;
+  publishedAdminDetails?: any;
+  adminDetailsPublishedAt?: string;
+  hasUnpublishedAdminDetailsChanges?: boolean;
   persistedLocally: boolean;
   backendPersisted: boolean;
 }> {
@@ -1572,6 +1582,10 @@ export async function saveAdminPropertyDetailsApi(
   };
 
   let backendPersisted = false;
+  let publishedAdminDetails: any = undefined;
+  let adminDetailsPublishedAt: string | undefined = undefined;
+  let hasUnpublishedAdminDetailsChanges: boolean | undefined = undefined;
+
   if (isRealBackend()) {
     try {
       const base = `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/admin-details`;
@@ -1581,7 +1595,7 @@ export async function saveAdminPropertyDetailsApi(
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ adminDetails: savedDetails }),
+        body: JSON.stringify({ adminDetails: savedDetails, publishToSeller }),
       });
       if (res.ok) {
         backendPersisted = true;
@@ -1593,6 +1607,9 @@ export async function saveAdminPropertyDetailsApi(
         if (returnedDetails && typeof returnedDetails === 'object') {
           savedDetails = returnedDetails;
         }
+        publishedAdminDetails = (data as any)?.publishedAdminDetails;
+        adminDetailsPublishedAt = (data as any)?.adminDetailsPublishedAt;
+        hasUnpublishedAdminDetailsChanges = (data as any)?.hasUnpublishedAdminDetailsChanges;
       } else {
         console.warn(
           `[api] Backend PATCH /properties/${propertyId}/admin-details returned ${res.status}. Data is safely preserved in browser local storage.`
@@ -1611,11 +1628,18 @@ export async function saveAdminPropertyDetailsApi(
   const mockProp = MOCK_PROPERTIES.find((p) => p.id === propertyId);
   if (mockProp) {
     mockProp.adminDetails = savedDetails;
+    if (publishToSeller) {
+      (mockProp as any).publishedAdminDetails = savedDetails;
+      (mockProp as any).adminDetailsPublishedAt = new Date().toISOString();
+    }
   }
 
   return {
     success: true,
     details: savedDetails,
+    publishedAdminDetails,
+    adminDetailsPublishedAt,
+    hasUnpublishedAdminDetailsChanges,
     persistedLocally: true,
     backendPersisted,
   };
@@ -1867,6 +1891,119 @@ export async function verifyPropertyDocumentApi(
     },
     propertyStatus: 'LIVE',
   };
+}
+
+export interface PublishVerificationResult {
+  message: string;
+  publishedVerification: any;
+  verificationPublishedAt: string;
+  propertyStatus: string;
+}
+
+/**
+ * Publish latest document verification state to the seller
+ * Backend endpoint: POST /api/properties/:id/verification/publish
+ */
+export async function publishVerificationApi(
+  token: string,
+  propertyId: string
+): Promise<PublishVerificationResult> {
+  const base = isRealBackend()
+    ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/verification/publish`
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/verification/publish`;
+
+  const res = await fetch(base, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    return data as PublishVerificationResult;
+  }
+  throw new Error((data as { error?: string }).error || 'Failed to publish verification updates');
+}
+
+export interface VerificationPublishStatusResult {
+  hasUnpublishedChanges: boolean;
+  publishedVerification: any;
+  verificationPublishedAt?: string;
+  unpublishedCount: number;
+}
+
+/**
+ * Check whether unpublished verification changes exist
+ * Backend endpoint: GET /api/properties/:id/verification/publish-status
+ */
+export async function getVerificationPublishStatusApi(
+  token: string,
+  propertyId: string
+): Promise<VerificationPublishStatusResult> {
+  const base = isRealBackend()
+    ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/verification/publish-status`
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/verification/publish-status`;
+
+  try {
+    const res = await fetch(base, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      const data = await res.json().catch(() => ({}));
+      return data as VerificationPublishStatusResult;
+    }
+  } catch (err) {
+    console.warn('[api] Failed to get verification publish status:', err);
+  }
+
+  return {
+    hasUnpublishedChanges: false,
+    publishedVerification: null,
+    unpublishedCount: 0,
+  };
+}
+
+export interface PublishAdminDetailsResult {
+  message: string;
+  property: any;
+  adminDetails: AdminPropertyDetails;
+  publishedAdminDetails: any;
+  adminDetailsPublishedAt: string;
+  hasUnpublishedAdminDetailsChanges: boolean;
+}
+
+/**
+ * Publish admin curated details to the seller
+ * Backend endpoint: POST /api/properties/:id/admin-details/publish
+ */
+export async function publishAdminDetailsApi(
+  token: string,
+  propertyId: string
+): Promise<PublishAdminDetailsResult> {
+  const base = isRealBackend()
+    ? `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/admin-details/publish`
+    : `https://telangana-realty-backend.onrender.com/api/properties/${encodeURIComponent(propertyId)}/admin-details/publish`;
+
+  const res = await fetch(base, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      Authorization: `Bearer ${token}`,
+    },
+  });
+
+  const data = await res.json().catch(() => ({}));
+  if (res.ok) {
+    return data as PublishAdminDetailsResult;
+  }
+  throw new Error((data as { error?: string }).error || 'Failed to publish admin details to seller');
 }
 
 // ─── Backend URL & Upload Path Helpers ────────────────────────────────────────

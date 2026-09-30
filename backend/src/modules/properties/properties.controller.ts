@@ -3,6 +3,7 @@ import { AuthRequest } from '../../middleware/auth.js';
 import { propertiesService } from './properties.service.js';
 import { PropertySearchParams, PropertyStatus, PropertyType, ServiceTier } from '../../types/index.js';
 import { db } from '../../db/database.js';
+import { documentsService } from '../documents/documents.service.js';
 
 export class PropertiesController {
   /**
@@ -204,14 +205,25 @@ export class PropertiesController {
         isFullyVerified: verifiedDocs >= 13 || property.status === 'VERIFIED' || property.status === 'LIVE',
       };
 
+      const hasUnpublishedVerificationChanges = await documentsService.checkUnpublishedVerificationChanges(property.id);
+      const hasUnpublishedAdminDetailsChanges = propertiesService.checkUnpublishedAdminDetailsChanges(property);
+
       return res.json({
         property: {
           ...property,
           seller: owner,
           verificationStatus,
+          hasUnpublishedVerificationChanges,
+          hasUnpublishedAdminDetailsChanges,
         },
         seller: owner,
         documents,
+        hasUnpublishedVerificationChanges,
+        hasUnpublishedAdminDetailsChanges,
+        publishedVerification: property.publishedVerification,
+        verificationPublishedAt: property.verificationPublishedAt,
+        publishedAdminDetails: property.publishedAdminDetails,
+        adminDetailsPublishedAt: property.adminDetailsPublishedAt,
       });
     } catch (err) {
       return res.status(500).json({ error: (err as Error).message });
@@ -238,19 +250,62 @@ export class PropertiesController {
         return res.status(400).json({ error: 'adminDetails object is required' });
       }
 
+      const publishToSeller = Boolean(req.body?.publishToSeller);
+
       const updated = await propertiesService.updateAdminDetails(
         id,
         rawDetails,
+        req.user.name || req.user.id,
+        publishToSeller
+      );
+
+      return res.json({
+        message: publishToSeller
+          ? 'Admin property details saved and published to seller successfully'
+          : 'Admin property details draft saved successfully',
+        property: updated,
+        adminDetails: updated.adminDetails,
+        publishedAdminDetails: updated.publishedAdminDetails,
+        adminDetailsPublishedAt: updated.adminDetailsPublishedAt,
+        hasUnpublishedAdminDetailsChanges: propertiesService.checkUnpublishedAdminDetailsChanges(updated),
+      });
+    } catch (err) {
+      const message = (err as Error).message || 'Failed to update admin details';
+      const statusCode = message.includes('not found') ? 404 : 400;
+      return res.status(statusCode).json({ error: message });
+    }
+  }
+
+  /**
+   * Publish admin details to seller
+   * POST /api/properties/:id/admin-details/publish
+   */
+  async publishAdminDetails(req: AuthRequest, res: Response) {
+    try {
+      const { id } = req.params;
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required' });
+      }
+
+      if (req.user.role !== 'ADMIN' && req.user.role !== 'AGENT') {
+        return res.status(403).json({ error: 'Forbidden: Only staff can publish admin details' });
+      }
+
+      const updated = await propertiesService.publishAdminDetails(
+        id,
         req.user.name || req.user.id
       );
 
       return res.json({
-        message: 'Admin property details updated successfully',
+        message: 'Admin property details published to seller successfully',
         property: updated,
         adminDetails: updated.adminDetails,
+        publishedAdminDetails: updated.publishedAdminDetails,
+        adminDetailsPublishedAt: updated.adminDetailsPublishedAt,
+        hasUnpublishedAdminDetailsChanges: false,
       });
     } catch (err) {
-      const message = (err as Error).message || 'Failed to update admin details';
+      const message = (err as Error).message || 'Failed to publish admin details';
       const statusCode = message.includes('not found') ? 404 : 400;
       return res.status(statusCode).json({ error: message });
     }

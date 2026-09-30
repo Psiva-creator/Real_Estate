@@ -149,6 +149,10 @@ CREATE TABLE IF NOT EXISTS properties (
     views_count INT DEFAULT 0,
     boundary_coordinates JSONB DEFAULT NULL,
     admin_details JSONB DEFAULT NULL,
+    published_admin_details JSONB DEFAULT NULL,
+    admin_details_published_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
+    published_verification JSONB DEFAULT NULL,
+    verification_published_at TIMESTAMP WITH TIME ZONE DEFAULT NULL,
     
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -157,6 +161,10 @@ CREATE TABLE IF NOT EXISTS properties (
 -- Migration Alteration for Existing Properties Table
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS boundary_coordinates JSONB DEFAULT NULL;
 ALTER TABLE properties ADD COLUMN IF NOT EXISTS admin_details JSONB DEFAULT NULL;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS published_admin_details JSONB DEFAULT NULL;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS admin_details_published_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS published_verification JSONB DEFAULT NULL;
+ALTER TABLE properties ADD COLUMN IF NOT EXISTS verification_published_at TIMESTAMP WITH TIME ZONE DEFAULT NULL;
 
 -- 5. PROPERTY DOCUMENTS TABLE (13 Required Verification Gates)
 CREATE TABLE IF NOT EXISTS property_documents (

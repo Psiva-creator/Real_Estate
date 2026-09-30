@@ -113,6 +113,12 @@ propertiesRouter.patch(
   requireRole(['ADMIN', 'AGENT']),
   propertiesController.updateAdminDetails.bind(propertiesController)
 );
+propertiesRouter.post(
+  '/:id/admin-details/publish',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  propertiesController.publishAdminDetails.bind(propertiesController)
+);
 propertiesRouter.patch(
   '/:id',
   requireAuth,
@@ -160,7 +166,20 @@ documentsRouter.patch(
   requireRole(['ADMIN']),
   documentsController.verifyDocument.bind(documentsController)
 );
+documentsRouter.post(
+  '/properties/:id/verification/publish',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  documentsController.publishVerification.bind(documentsController)
+);
+documentsRouter.get(
+  '/properties/:id/verification/publish-status',
+  requireAuth,
+  requireRole(['ADMIN', 'AGENT']),
+  documentsController.getPublishStatus.bind(documentsController)
+);
 app.use('/api', documentsRouter);
+app.use('/', documentsRouter);
 
 // --- ENQUIRIES & LEAD PIPELINE ROUTES ---
 const enquiriesRouter = express.Router();

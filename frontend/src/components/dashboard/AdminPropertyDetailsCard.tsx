@@ -31,19 +31,29 @@ interface AdminPropertyDetailsCardProps {
   propertyId: string;
   propertyTitle: string;
   initialDetails?: AdminPropertyDetails | null;
-  onDetailsUpdated?: (updated: AdminPropertyDetails) => void;
+  publishedDetails?: AdminPropertyDetails | null;
+  publishedAt?: string | null;
+  hasUnpublishedChanges?: boolean;
+  onDetailsUpdated?: (updated: AdminPropertyDetails, isPublished?: boolean) => void;
 }
 
 export default function AdminPropertyDetailsCard({
   propertyId,
   propertyTitle,
   initialDetails,
+  publishedDetails,
+  publishedAt: initialPublishedAt,
+  hasUnpublishedChanges: initialHasUnpublishedChanges,
   onDetailsUpdated,
 }: AdminPropertyDetailsCardProps) {
   const { token } = useAuth();
   const [details, setDetails] = useState<AdminPropertyDetails | null>(() => {
     return loadAdminDetails(propertyId, initialDetails);
   });
+  const [publishedAt, setPublishedAt] = useState<string | null>(initialPublishedAt || null);
+  const [hasUnpublishedChanges, setHasUnpublishedChanges] = useState<boolean>(
+    Boolean(initialHasUnpublishedChanges)
+  );
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [savedNotification, setSavedNotification] = useState<string | null>(null);
 
@@ -52,6 +62,18 @@ export default function AdminPropertyDetailsCard({
     const loaded = loadAdminDetails(propertyId, initialDetails);
     setDetails(loaded);
   }, [propertyId, initialDetails]);
+
+  useEffect(() => {
+    if (initialPublishedAt !== undefined) {
+      setPublishedAt(initialPublishedAt);
+    }
+  }, [initialPublishedAt]);
+
+  useEffect(() => {
+    if (initialHasUnpublishedChanges !== undefined) {
+      setHasUnpublishedChanges(initialHasUnpublishedChanges);
+    }
+  }, [initialHasUnpublishedChanges]);
 
   // Listen to custom event for multi-tab or reactive sync
   useEffect(() => {
@@ -68,18 +90,25 @@ export default function AdminPropertyDetailsCard({
     return () => window.removeEventListener('trh-admin-details-changed', handleSync);
   }, [propertyId]);
 
-  const handleSave = async (updated: AdminPropertyDetails) => {
+  const handleSave = async (updated: AdminPropertyDetails, publishToSeller: boolean = false) => {
     setDetails(updated);
     if (onDetailsUpdated) {
-      onDetailsUpdated(updated);
+      onDetailsUpdated(updated, publishToSeller);
     }
 
     if (token) {
-      const res = await saveAdminPropertyDetailsApi(token, propertyId, updated);
+      const res = await saveAdminPropertyDetailsApi(token, propertyId, updated, publishToSeller);
       if (res.backendPersisted) {
-        setSavedNotification('Details saved to backend & synchronized.');
+        if (publishToSeller) {
+          setSavedNotification('Details saved & published to seller successfully.');
+          setPublishedAt(res.adminDetailsPublishedAt || new Date().toISOString());
+          setHasUnpublishedChanges(false);
+        } else {
+          setSavedNotification('Draft saved internally (not visible to seller).');
+          setHasUnpublishedChanges(true);
+        }
       } else {
-        setSavedNotification('Details saved locally in browser storage.');
+        setSavedNotification(publishToSeller ? 'Details published locally.' : 'Draft saved locally.');
       }
     } else {
       setSavedNotification('Details saved locally.');
@@ -105,10 +134,22 @@ export default function AdminPropertyDetailsCard({
             <div>
               <div className="flex items-center gap-2 flex-wrap">
                 <h3 className="text-sm font-bold text-slate-800">Admin Added Details</h3>
-                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
-                  <ShieldCheck className="w-3 h-3" />
-                  Curated Layer
-                </span>
+                {hasUnpublishedChanges ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                    <ShieldCheck className="w-3 h-3 text-amber-600" />
+                    Draft (Unpublished Changes)
+                  </span>
+                ) : publishedAt ? (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                    Published to Seller
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-slate-100 text-slate-600 border border-slate-200">
+                    <ShieldCheck className="w-3 h-3" />
+                    Staff Draft
+                  </span>
+                )}
                 {savedNotification && (
                   <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-emerald-600 text-white animate-in fade-in">
                     <CheckCircle2 className="w-3 h-3" />
@@ -451,6 +492,9 @@ export default function AdminPropertyDetailsCard({
         propertyId={propertyId}
         propertyTitle={propertyTitle}
         initialDetails={details}
+        publishedDetails={publishedDetails}
+        publishedAt={publishedAt}
+        hasUnpublishedChanges={hasUnpublishedChanges}
         isOpen={isEditorOpen}
         onClose={() => setIsEditorOpen(false)}
         onSave={handleSave}

@@ -31,9 +31,12 @@ interface AdminPropertyDetailsEditorProps {
   propertyId: string;
   propertyTitle: string;
   initialDetails?: AdminPropertyDetails | null;
+  publishedDetails?: AdminPropertyDetails | null;
+  publishedAt?: string | null;
+  hasUnpublishedChanges?: boolean;
   isOpen: boolean;
   onClose: () => void;
-  onSave: (details: AdminPropertyDetails) => Promise<void> | void;
+  onSave: (details: AdminPropertyDetails, publishToSeller?: boolean) => Promise<void> | void;
 }
 
 type TabKey = 'highlights' | 'amenities' | 'specs' | 'custom' | 'internal';
@@ -42,6 +45,9 @@ export default function AdminPropertyDetailsEditor({
   propertyId,
   propertyTitle,
   initialDetails,
+  publishedDetails,
+  publishedAt,
+  hasUnpublishedChanges: initialHasUnpublishedChanges,
   isOpen,
   onClose,
   onSave,
@@ -80,8 +86,10 @@ export default function AdminPropertyDetailsEditor({
   const [internalNotes, setInternalNotes] = useState('');
 
   const [isDirty, setIsDirty] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saveSuccess, setSaveSuccess] = useState(false);
+  const [isSavingDraft, setIsSavingDraft] = useState(false);
+  const [isPublishing, setIsPublishing] = useState(false);
+  const [saveDraftSuccess, setSaveDraftSuccess] = useState(false);
+  const [publishSuccess, setPublishSuccess] = useState(false);
 
   // Initialize or reset form from initialDetails
   const resetForm = React.useCallback(() => {
@@ -101,7 +109,8 @@ export default function AdminPropertyDetailsEditor({
     setCustomSections(d.customSections ? d.customSections.map((c) => ({ ...c })) : []);
     setInternalNotes(d.internalNotes || '');
     setIsDirty(false);
-    setSaveSuccess(false);
+    setSaveDraftSuccess(false);
+    setPublishSuccess(false);
   }, [initialDetails]);
 
   useEffect(() => {
@@ -114,7 +123,8 @@ export default function AdminPropertyDetailsEditor({
 
   const markDirty = () => {
     setIsDirty(true);
-    setSaveSuccess(false);
+    setSaveDraftSuccess(false);
+    setPublishSuccess(false);
   };
 
   // ── Highlights Helpers ──
@@ -224,36 +234,57 @@ export default function AdminPropertyDetailsEditor({
     markDirty();
   };
 
-  // ── Save Handler ──
-  const handleSave = async () => {
-    setIsSaving(true);
-    try {
-      const detailsToSave: AdminPropertyDetails = {
-        projectDescription: projectDescription.trim() || undefined,
-        highlights: highlights.length > 0 ? highlights : undefined,
-        amenities: amenities.length > 0 ? amenities : undefined,
-        locationAdvantages: locationAdvantages.length > 0 ? locationAdvantages : undefined,
-        nearbyLandmarks: nearbyLandmarks.length > 0 ? nearbyLandmarks : undefined,
-        additionalSpecifications:
-          additionalSpecifications.length > 0 ? additionalSpecifications : undefined,
-        specialFeatures: specialFeatures.length > 0 ? specialFeatures : undefined,
-        pricingNotes: pricingNotes.trim() || undefined,
-        siteVisitInstructions: siteVisitInstructions.trim() || undefined,
-        additionalNotes: additionalNotes.trim() || undefined,
-        customSections: customSections.length > 0 ? customSections : undefined,
-        internalNotes: internalNotes.trim() || undefined,
-        updatedAt: new Date().toISOString(),
-        updatedBy: 'Admin / Staff Reviewer',
-      };
+  const buildDetailsToSave = (): AdminPropertyDetails => ({
+    projectDescription: projectDescription.trim() || undefined,
+    highlights: highlights.length > 0 ? highlights : undefined,
+    amenities: amenities.length > 0 ? amenities : undefined,
+    locationAdvantages: locationAdvantages.length > 0 ? locationAdvantages : undefined,
+    nearbyLandmarks: nearbyLandmarks.length > 0 ? nearbyLandmarks : undefined,
+    additionalSpecifications:
+      additionalSpecifications.length > 0 ? additionalSpecifications : undefined,
+    specialFeatures: specialFeatures.length > 0 ? specialFeatures : undefined,
+    pricingNotes: pricingNotes.trim() || undefined,
+    siteVisitInstructions: siteVisitInstructions.trim() || undefined,
+    additionalNotes: additionalNotes.trim() || undefined,
+    customSections: customSections.length > 0 ? customSections : undefined,
+    internalNotes: internalNotes.trim() || undefined,
+    updatedAt: new Date().toISOString(),
+    updatedBy: 'Admin / Staff Reviewer',
+  });
 
-      await onSave(detailsToSave);
+  // ── Save Draft (Admin side only, not exposed to seller) ──
+  const handleSaveDraft = async () => {
+    setIsSavingDraft(true);
+    setSaveDraftSuccess(false);
+    setPublishSuccess(false);
+    try {
+      const detailsToSave = buildDetailsToSave();
+      await onSave(detailsToSave, false);
       setIsDirty(false);
-      setSaveSuccess(true);
-      setTimeout(() => setSaveSuccess(false), 3000);
+      setSaveDraftSuccess(true);
+      setTimeout(() => setSaveDraftSuccess(false), 4500);
     } catch (err) {
-      console.error('Failed to save admin property details:', err);
+      console.error('Failed to save admin draft details:', err);
     } finally {
-      setIsSaving(false);
+      setIsSavingDraft(false);
+    }
+  };
+
+  // ── Save Changes & Send to Seller ──
+  const handleSaveAndSend = async () => {
+    setIsPublishing(true);
+    setSaveDraftSuccess(false);
+    setPublishSuccess(false);
+    try {
+      const detailsToSave = buildDetailsToSave();
+      await onSave(detailsToSave, true);
+      setIsDirty(false);
+      setPublishSuccess(true);
+      setTimeout(() => setPublishSuccess(false), 5000);
+    } catch (err) {
+      console.error('Failed to save and publish admin property details:', err);
+    } finally {
+      setIsPublishing(false);
     }
   };
 
@@ -282,18 +313,33 @@ export default function AdminPropertyDetailsEditor({
                   Admin Property Details Editor
                 </h2>
                 {isDirty ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
                     <AlertCircle className="w-3 h-3" />
-                    Unsaved Changes
+                    Unsaved Edits
                   </span>
-                ) : saveSuccess ? (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
+                ) : publishSuccess ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-emerald-100 text-emerald-800 border border-emerald-200">
                     <CheckCircle2 className="w-3 h-3" />
-                    Saved Successfully
+                    Published to Seller
+                  </span>
+                ) : saveDraftSuccess ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-blue-100 text-blue-800 border border-blue-200">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Draft Saved (Internal)
+                  </span>
+                ) : initialHasUnpublishedChanges ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-semibold bg-amber-100 text-amber-800 border border-amber-200">
+                    <AlertCircle className="w-3 h-3" />
+                    Draft (Unpublished Changes)
+                  </span>
+                ) : publishedAt ? (
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200">
+                    <CheckCircle2 className="w-3 h-3" />
+                    Published {new Date(publishedAt).toLocaleDateString('en-IN')}
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[11px] font-medium bg-slate-200/70 text-slate-700">
-                    Curated Layer
+                  <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-medium bg-slate-200/70 text-slate-700">
+                    Draft Only (Not Sent to Seller)
                   </span>
                 )}
               </div>
@@ -312,6 +358,35 @@ export default function AdminPropertyDetailsEditor({
             <X className="w-5 h-5" />
           </button>
         </div>
+
+        {/* Feedback Banners */}
+        {saveDraftSuccess && (
+          <div className="mx-6 mt-4 p-3 rounded-xl bg-blue-50 border border-blue-200 text-blue-900 text-xs font-medium flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
+              <span>
+                Draft saved successfully. Changes remain internal and are <strong>not visible to the seller</strong> until published.
+              </span>
+            </div>
+            <button onClick={() => setSaveDraftSuccess(false)} className="text-blue-500 hover:text-blue-700">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
+
+        {publishSuccess && (
+          <div className="mx-6 mt-4 p-3 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-medium flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span>
+                Details saved and published to seller! The seller portal now reflects these updated details. Confidential internal notes remain private.
+              </span>
+            </div>
+            <button onClick={() => setPublishSuccess(false)} className="text-emerald-500 hover:text-emerald-700">
+              <X className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
 
         {/* Tab Navigation */}
         <div className="flex items-center gap-1 px-6 pt-3 border-b border-slate-200 bg-white overflow-x-auto text-xs font-semibold">
@@ -942,18 +1017,18 @@ export default function AdminPropertyDetailsEditor({
         </div>
 
         {/* Footer Actions */}
-        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
+        <div className="px-6 py-4 border-t border-slate-200 bg-slate-50 flex flex-col sm:flex-row items-center justify-between gap-3">
           <button
             type="button"
             onClick={resetForm}
-            disabled={!isDirty || isSaving}
+            disabled={!isDirty || isSavingDraft || isPublishing}
             className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-200/60 disabled:opacity-40 disabled:cursor-not-allowed transition-colors"
           >
             <RotateCcw className="w-3.5 h-3.5" />
             Reset to Original
           </button>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap justify-end w-full sm:w-auto">
             <button
               type="button"
               onClick={handleClose}
@@ -961,21 +1036,45 @@ export default function AdminPropertyDetailsEditor({
             >
               Cancel
             </button>
+
+            {/* Save Draft */}
             <button
               type="button"
-              onClick={handleSave}
-              disabled={isSaving}
-              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:bg-emerald-700/60 text-white text-xs font-bold shadow-sm transition-colors"
+              onClick={handleSaveDraft}
+              disabled={isSavingDraft || isPublishing}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 hover:text-slate-900 text-xs font-bold shadow-sm transition-colors disabled:opacity-50"
+              title="Save draft changes internally for staff only without updating seller portal"
             >
-              {isSaving ? (
+              {isSavingDraft ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Saving Details…
+                  Saving Draft…
                 </>
               ) : (
                 <>
                   <Save className="w-3.5 h-3.5" />
-                  Save Details
+                  Save Draft
+                </>
+              )}
+            </button>
+
+            {/* Save Changes & Send to Seller */}
+            <button
+              type="button"
+              onClick={handleSaveAndSend}
+              disabled={isSavingDraft || isPublishing}
+              className="inline-flex items-center gap-1.5 px-5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 disabled:bg-emerald-700/60 text-white text-xs font-bold shadow-sm transition-colors cursor-pointer"
+              title="Save changes and immediately publish them to the seller portal"
+            >
+              {isPublishing ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                  Publishing to Seller…
+                </>
+              ) : (
+                <>
+                  <Sparkles className="w-3.5 h-3.5" />
+                  Save Changes & Send to Seller
                 </>
               )}
             </button>

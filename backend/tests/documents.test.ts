@@ -183,7 +183,7 @@ describe('Documents & 13 Verification Gates', () => {
     assert.strictEqual(underReviewProp.verificationStatus.reviewStatus, 'UNDER_REVIEW');
     assert.strictEqual(underReviewProp.discrepancyNotes, undefined);
 
-    // 2. Admin verifies EC and rejects SALE_DEED with rejectionReason
+    // 2. Admin verifies EC and rejects SALE_DEED with rejectionReason (internal admin state only)
     await request(app)
       .patch(`/api/properties/${underReviewProp.id}/documents/EC/verify`)
       .set('Authorization', `Bearer ${adminToken}`)
@@ -197,7 +197,32 @@ describe('Documents & 13 Verification Gates', () => {
         rejectionReason: 'Illegible SRO seal on page 2',
       });
 
-    // 3. Seller refreshes /api/owners/me and sees updated Verified/Rejected status and rejectionReason
+    // 3. Before publish: Seller refreshes /api/owners/me and must NOT see unpublished verification changes
+    const prePublishProfileRes = await request(app)
+      .get('/api/owners/me')
+      .set('Authorization', `Bearer ${sellerToken}`);
+    assert.strictEqual(prePublishProfileRes.status, 200);
+    const prePublishProp = prePublishProfileRes.body.properties.find(
+      (p: any) => p.id === underReviewProp.id
+    );
+    assert.strictEqual(prePublishProp.verificationStatus.verifiedDocuments, 0);
+    assert.strictEqual(prePublishProp.verificationStatus.rejectedDocuments, 0);
+    assert.strictEqual(prePublishProp.verificationStatus.reviewStatus, 'UNDER_REVIEW');
+
+    // 4. Authorization check: Seller cannot publish verification updates
+    const unauthorizedPublish = await request(app)
+      .post(`/api/properties/${underReviewProp.id}/verification/publish`)
+      .set('Authorization', `Bearer ${sellerToken}`);
+    assert.strictEqual(unauthorizedPublish.status, 403);
+
+    // 5. Admin sends verification update to seller (Publish)
+    const publishRes = await request(app)
+      .post(`/api/properties/${underReviewProp.id}/verification/publish`)
+      .set('Authorization', `Bearer ${adminToken}`);
+    assert.strictEqual(publishRes.status, 200);
+    assert.ok(publishRes.body.publishedVerification);
+
+    // 6. After publish: Seller refreshes /api/owners/me and now sees updated Verified/Rejected status and rejectionReason
     const refreshedProfileRes = await request(app)
       .get('/api/owners/me')
       .set('Authorization', `Bearer ${sellerToken}`);

@@ -93,11 +93,30 @@ export class OwnersService {
           docMap.set(d.documentType, d);
         }
 
+        const pubMap = p.publishedVerification?.documents;
+
         const documentsChecklist = ALL_13_DOCS.map((docType) => {
           const doc = docMap.get(docType);
           const hasFile = Boolean(doc?.fileUrl && doc.fileUrl.trim() !== '');
-          const rawStatus = doc?.status || 'PENDING';
-          const effectiveStatus = rawStatus === 'PENDING' && hasFile ? 'UPLOADED' : rawStatus;
+          const pubDoc = pubMap ? pubMap[docType] : undefined;
+
+          // If there is published verification data for this document, use it
+          // Otherwise, seller sees UPLOADED (if file present) or PENDING
+          let effectiveStatus: 'PENDING' | 'UPLOADED' | 'VERIFIED' | 'REJECTED';
+          let rejectionReason: string | undefined = undefined;
+          let verifiedAt: string | undefined = undefined;
+
+          if (pubDoc) {
+            effectiveStatus = pubDoc.status === 'PENDING' && hasFile ? 'UPLOADED' : pubDoc.status;
+            if (effectiveStatus === 'REJECTED') {
+              rejectionReason = pubDoc.rejectionReason;
+            } else if (effectiveStatus === 'VERIFIED') {
+              verifiedAt = pubDoc.verifiedAt;
+            }
+          } else {
+            effectiveStatus = hasFile ? 'UPLOADED' : 'PENDING';
+          }
+
           const isVerified = effectiveStatus === 'VERIFIED';
           const isRejected = effectiveStatus === 'REJECTED';
 
@@ -106,8 +125,8 @@ export class OwnersService {
             status: effectiveStatus,
             isVerified,
             hasFile,
-            rejectionReason: isRejected && doc?.rejectionReason ? doc.rejectionReason : undefined,
-            verifiedAt: isVerified ? doc?.verifiedAt : undefined,
+            rejectionReason,
+            verifiedAt,
             updatedAt: doc?.updatedAt,
           };
         });
@@ -121,12 +140,16 @@ export class OwnersService {
         const mandatory = MANDATORY_DOCS[p.type] || [];
         const allMandatoryVerified =
           mandatory.length > 0 &&
-          mandatory.every((reqType) => docMap.get(reqType)?.status === 'VERIFIED');
+          mandatory.every((reqType) => {
+            const item = documentsChecklist.find((d) => d.documentType === reqType);
+            return item?.status === 'VERIFIED';
+          });
+
         const isFullyVerified =
           rejectedDocuments === 0 &&
           (allMandatoryVerified ||
             verifiedDocuments >= 13 ||
-            p.status === 'VERIFIED' ||
+            (p.status === 'VERIFIED' && p.verificationPublishedAt !== undefined) ||
             p.status === 'LIVE');
 
         const reviewStatus: 'UNDER_REVIEW' | 'VERIFIED' | 'REJECTED' =
@@ -136,22 +159,22 @@ export class OwnersService {
             ? 'VERIFIED'
             : 'UNDER_REVIEW';
 
-        // Strip internal staff notes (discrepancyNotes & adminDetails.internalNotes) so confidential staff notes are never exposed to seller
+        // Strip internal staff notes (discrepancyNotes & adminDetails) so confidential staff notes and unpublished drafts are never exposed to seller
         const {
           discrepancyNotes: _discrepancyNotes,
-          adminDetails: rawAdminDetails,
+          adminDetails: _rawAdminDetails,
           ...sellerSafeProperty
         } = p;
 
         let safeAdminDetails: BuyerFacingAdminDetails | undefined = undefined;
-        if (rawAdminDetails && typeof rawAdminDetails === 'object') {
-          const { internalNotes: _internalNotes, ...restAdminDetails } = rawAdminDetails;
+        if (p.publishedAdminDetails && typeof p.publishedAdminDetails === 'object') {
+          const { internalNotes: _internalNotes, ...restAdminDetails } = p.publishedAdminDetails as any;
           safeAdminDetails = restAdminDetails;
         }
 
         return {
           ...sellerSafeProperty,
-          ...(safeAdminDetails !== undefined ? { adminDetails: safeAdminDetails } : {}),
+          adminDetails: safeAdminDetails,
           verificationStatus: {
             totalDocuments: 13,
             verifiedDocuments,

@@ -380,7 +380,8 @@ export class PropertiesService {
   async updateAdminDetails(
     id: string,
     adminDetails: AdminPropertyDetails,
-    updatedBy?: string
+    updatedBy?: string,
+    publishToSeller?: boolean
   ): Promise<Property> {
     const property = await db.findPropertyById(id);
     if (!property) {
@@ -432,11 +433,64 @@ export class PropertiesService {
       updatedBy: updatedBy || adminDetails.updatedBy,
     };
 
-    const updated = await db.updateProperty(id, { adminDetails: sanitizedDetails });
+    const updates: Partial<Property> = {
+      adminDetails: sanitizedDetails,
+    };
+
+    if (publishToSeller) {
+      const { internalNotes: _internalNotes, ...safeForSeller } = sanitizedDetails;
+      updates.publishedAdminDetails = safeForSeller;
+      updates.adminDetailsPublishedAt = new Date().toISOString();
+    }
+
+    const updated = await db.updateProperty(id, updates);
     if (!updated) {
       throw new Error(`Property ${id} not found`);
     }
     return updated;
+  }
+
+  /**
+   * Explicitly publish current admin details to seller (stripping internal notes)
+   */
+  async publishAdminDetails(id: string, publishedBy?: string): Promise<Property> {
+    const property = await db.findPropertyById(id);
+    if (!property) {
+      throw new Error(`Property ${id} not found`);
+    }
+
+    const current = property.adminDetails || {};
+    const { internalNotes: _internalNotes, ...safeForSeller } = current;
+    const publishedAt = new Date().toISOString();
+
+    const updated = await db.updateProperty(id, {
+      publishedAdminDetails: {
+        ...safeForSeller,
+        updatedAt: publishedAt,
+        updatedBy: publishedBy || current.updatedBy,
+      },
+      adminDetailsPublishedAt: publishedAt,
+    });
+
+    if (!updated) {
+      throw new Error(`Property ${id} not found`);
+    }
+    return updated;
+  }
+
+  checkUnpublishedAdminDetailsChanges(property: Property): boolean {
+    const draft = property.adminDetails;
+    const published = property.publishedAdminDetails;
+    if (!draft) return false;
+    if (!published) {
+      const { internalNotes: _i, updatedAt: _u, updatedBy: _b, ...draftContent } = draft;
+      return Object.values(draftContent).some(
+        (v) => v !== undefined && (Array.isArray(v) ? v.length > 0 : String(v).trim() !== '')
+      );
+    }
+    const { internalNotes: _i1, updatedAt: _u1, updatedBy: _b1, ...draftContent } = draft;
+    const { updatedAt: _u2, updatedBy: _b2, ...pubContent } = published as any;
+    return JSON.stringify(draftContent) !== JSON.stringify(pubContent);
   }
 
   /**
