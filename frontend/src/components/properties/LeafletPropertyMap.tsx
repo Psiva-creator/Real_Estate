@@ -28,6 +28,8 @@ import {
   Target,
   Crosshair,
   Square,
+  Search,
+  LocateFixed,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { MockProperty } from '@/lib/mockData';
@@ -37,6 +39,7 @@ import {
   ORR_EXITS,
   TELANGANA_CORRIDORS,
   CorridorInfo,
+  lookupTelanganaLocation,
 } from '@/lib/telanganaMapData';
 import { calculatePolygonArea, PolygonAreaResult } from '@/lib/polygonArea';
 
