@@ -782,20 +782,35 @@ export const TELANGANA_MANDALS_GEO: LocalityCoord[] = [
   },
 ];
 
+export interface GrowthHub {
+  id: string;
+  labelEn: string;
+  labelTe: string;
+  village: string;
+  villageTe: string;
+  mandal: string;
+  mandalTe: string;
+  district: string;
+  districtTe: string;
+  lat: number;
+  lng: number;
+  distanceToOrrKm: number;
+}
+
 // Curated Top 12 Telangana High-Velocity Investment Hubs for Quick Selection
-export const TOP_TELANGANA_GROWTH_HUBS = [
-  { id: 'kokapet', labelEn: 'Kokapet (Exit 1)', labelTe: 'కోకాపేట్', village: 'Kokapet', mandal: 'Gandipet', district: 'Rangareddy', lat: 17.4042, lng: 78.3308 },
-  { id: 'tellapur', labelEn: 'Tellapur (Exit 2)', labelTe: 'తెల్లాపూర్', village: 'Tellapur', mandal: 'Ramachandrapuram', district: 'Sangareddy', lat: 17.4728, lng: 78.2491 },
-  { id: 'mokila', labelEn: 'Mokila', labelTe: 'మోకిల', village: 'Mokila', mandal: 'Shankarpally', district: 'Rangareddy', lat: 17.4526, lng: 78.1342 },
-  { id: 'shamshabad', labelEn: 'Shamshabad (Exit 16)', labelTe: 'శంషాబాద్', village: 'Shamshabad', mandal: 'Shamshabad', district: 'Rangareddy', lat: 17.2403, lng: 78.4294 },
-  { id: 'maheshwaram', labelEn: 'Maheshwaram', labelTe: 'మహేశ్వరం', village: 'Maheshwaram', mandal: 'Maheshwaram', district: 'Rangareddy', lat: 17.1350, lng: 78.4320 },
-  { id: 'patancheru', labelEn: 'Patancheru (Exit 3)', labelTe: 'పటాన్‌చెరు', village: 'Patancheru', mandal: 'Patancheru', district: 'Sangareddy', lat: 17.5312, lng: 78.2612 },
-  { id: 'adibatla', labelEn: 'Adibatla (Exit 19)', labelTe: 'ఆదిభట్ల', village: 'Adibatla', mandal: 'Ibrahimpatnam', district: 'Rangareddy', lat: 17.2341, lng: 78.5398 },
-  { id: 'ghatkesar', labelEn: 'Ghatkesar (Exit 9)', labelTe: 'ఘట్‌కేసర్', village: 'Ghatkesar', mandal: 'Ghatkesar', district: 'Medchal-Malkajgiri', lat: 17.4563, lng: 78.6835 },
-  { id: 'medchal', labelEn: 'Medchal (Exit 6)', labelTe: 'మేడ్చల్', village: 'Medchal', mandal: 'Medchal', district: 'Medchal-Malkajgiri', lat: 17.6163, lng: 78.4907 },
-  { id: 'shadnagar', labelEn: 'Shadnagar (NH-44)', labelTe: 'షాద్‌నగర్', village: 'Shadnagar', mandal: 'Farooqnagar', district: 'Rangareddy', lat: 17.0722, lng: 78.2089 },
-  { id: 'kothur', labelEn: 'Kothur', labelTe: 'కొత్తూరు', village: 'Kothur', mandal: 'Kothur', district: 'Rangareddy', lat: 17.1459, lng: 78.2878 },
-  { id: 'rajendranagar', labelEn: 'Rajendranagar (Exit 17)', labelTe: 'రాజేంద్రనగర్', village: 'Rajendranagar', mandal: 'Rajendranagar', district: 'Rangareddy', lat: 17.3195, lng: 78.3972 },
+export const TOP_TELANGANA_GROWTH_HUBS: GrowthHub[] = [
+  { id: 'kokapet', labelEn: 'Kokapet (Exit 1)', labelTe: 'కోకాపేట్', village: 'Kokapet', villageTe: 'కోకాపేట్', mandal: 'Gandipet', mandalTe: 'గండిపేట్', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.4042, lng: 78.3308, distanceToOrrKm: 0.0 },
+  { id: 'tellapur', labelEn: 'Tellapur (Exit 2)', labelTe: 'తెల్లాపూర్', village: 'Tellapur', villageTe: 'తెల్లాపూర్', mandal: 'Ramachandrapuram', mandalTe: 'రామచంద్రాపురం', district: 'Sangareddy', districtTe: 'సంగారెడ్డి', lat: 17.4728, lng: 78.2491, distanceToOrrKm: 2.1 },
+  { id: 'mokila', labelEn: 'Mokila', labelTe: 'మోకిల', village: 'Mokila', villageTe: 'మోకిల', mandal: 'Shankarpally', mandalTe: 'శంకర్‌పల్లి', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.4526, lng: 78.1342, distanceToOrrKm: 13.3 },
+  { id: 'shamshabad', labelEn: 'Shamshabad (Exit 16)', labelTe: 'శంషాబాద్', village: 'Shamshabad', villageTe: 'శంషాబాద్', mandal: 'Shamshabad', mandalTe: 'శంషాబాద్', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.2403, lng: 78.4294, distanceToOrrKm: 1.2 },
+  { id: 'maheshwaram', labelEn: 'Maheshwaram', labelTe: 'మహేశ్వరం', village: 'Maheshwaram', villageTe: 'మహేశ్వరం', mandal: 'Maheshwaram', mandalTe: 'మహేశ్వరం', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.1350, lng: 78.4320, distanceToOrrKm: 12.8 },
+  { id: 'patancheru', labelEn: 'Patancheru (Exit 3)', labelTe: 'పటాన్‌చెరు', village: 'Patancheru', villageTe: 'పటాన్‌చెరు', mandal: 'Patancheru', mandalTe: 'పటాన్‌చెరు', district: 'Sangareddy', districtTe: 'సంగారెడ్డి', lat: 17.5312, lng: 78.2612, distanceToOrrKm: 0.5 },
+  { id: 'adibatla', labelEn: 'Adibatla (Exit 19)', labelTe: 'ఆదిభట్ల', village: 'Adibatla', villageTe: 'ఆదిభట్ల', mandal: 'Ibrahimpatnam', mandalTe: 'ఇబ్రహీంపట్నం', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.2341, lng: 78.5398, distanceToOrrKm: 1.8 },
+  { id: 'ghatkesar', labelEn: 'Ghatkesar (Exit 9)', labelTe: 'ఘట్‌కేసర్', village: 'Ghatkesar', villageTe: 'ఘట్‌కేసర్', mandal: 'Ghatkesar', mandalTe: 'ఘట్‌కేసర్', district: 'Medchal-Malkajgiri', districtTe: 'మేడ్చల్-మల్కాజ్‌గిరి', lat: 17.4563, lng: 78.6835, distanceToOrrKm: 0.0 },
+  { id: 'medchal', labelEn: 'Medchal (Exit 6)', labelTe: 'మేడ్చల్', village: 'Medchal', villageTe: 'మేడ్చల్', mandal: 'Medchal', mandalTe: 'మేడ్చల్', district: 'Medchal-Malkajgiri', districtTe: 'మేడ్చల్-మల్కాజ్‌గిరి', lat: 17.6163, lng: 78.4907, distanceToOrrKm: 0.8 },
+  { id: 'shadnagar', labelEn: 'Shadnagar (NH-44)', labelTe: 'షాద్‌నగర్', village: 'Shadnagar', villageTe: 'షాద్‌నగర్', mandal: 'Farooqnagar', mandalTe: 'ఫరూక్‌నగర్', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.0722, lng: 78.2089, distanceToOrrKm: 30.0 },
+  { id: 'kothur', labelEn: 'Kothur', labelTe: 'కొత్తూరు', village: 'Kothur', villageTe: 'కొత్తూరు', mandal: 'Kothur', mandalTe: 'కొత్తూరు', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.1459, lng: 78.2878, distanceToOrrKm: 21.4 },
+  { id: 'rajendranagar', labelEn: 'Rajendranagar (Exit 17)', labelTe: 'రాజేంద్రనగర్', village: 'Rajendranagar', villageTe: 'రాజేంద్రనగర్', mandal: 'Rajendranagar', mandalTe: 'రాజేంద్రనగర్', district: 'Rangareddy', districtTe: 'రంగారెడ్డి', lat: 17.3195, lng: 78.3972, distanceToOrrKm: 1.5 },
 ];
 
 /**
