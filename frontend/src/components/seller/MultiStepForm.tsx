@@ -28,6 +28,7 @@ import { formatINR } from '@/lib/formatters';
 import { createProperty, CreatePropertyDTO } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import LeafletPropertyMap from '@/components/properties/LeafletPropertyMap';
+import { lookupTelanganaLocation } from '@/lib/telanganaMapData';
 
 interface MultiStepFormProps {
   locale: Locale;
@@ -104,16 +105,19 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
   // Dynamically resolve map center based on seller location input
   const resolvedMapCenter = useMemo((): [number, number] => {
-    const loc = `${formData.mandal} ${formData.district} ${formData.village}`.toLowerCase();
-    if (loc.includes('kokapet') || loc.includes('gandipet')) return [17.4042, 78.3308];
-    if (loc.includes('shankarpally') || loc.includes('mokila')) return [17.4526, 78.1342];
-    if (loc.includes('shamshabad') || loc.includes('mamidipally')) return [17.2403, 78.4294];
-    if (loc.includes('kollur') || loc.includes('tellapur')) return [17.4764, 78.2570];
-    if (loc.includes('patancheru') || loc.includes('indresham')) return [17.5312, 78.2612];
-    if (loc.includes('medchal') || loc.includes('kandlakoya')) return [17.6163, 78.4907];
-    if (loc.includes('yadagirigutta') || loc.includes('raigir')) return [17.5872, 78.9482];
-    if (loc.includes('maheshwaram') || loc.includes('mansanpally')) return [17.1350, 78.4320];
-    if (loc.includes('shadnagar') || loc.includes('kothur')) return [17.0722, 78.2089];
+    const loc = `${formData.village} ${formData.mandal} ${formData.district}`.toLowerCase().trim();
+    if (loc) {
+      const match = lookupTelanganaLocation(loc);
+      if (match) return [match.lat, match.lng];
+      if (formData.mandal) {
+        const mandalMatch = lookupTelanganaLocation(formData.mandal);
+        if (mandalMatch) return [mandalMatch.lat, mandalMatch.lng];
+      }
+      if (formData.district) {
+        const distMatch = lookupTelanganaLocation(formData.district);
+        if (distMatch) return [distMatch.lat, distMatch.lng];
+      }
+    }
     return [17.4065, 78.4772];
   }, [formData.mandal, formData.district, formData.village]);
 
