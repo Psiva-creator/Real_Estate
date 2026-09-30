@@ -206,7 +206,21 @@ export default function LeafletPropertyMap({
 
     async function initLeaflet() {
       if (typeof window === 'undefined' || !mapContainerRef.current) return;
-      if (mapInstanceRef.current) return;
+
+      // Clean up previous instance if still hanging around
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.remove();
+        } catch {
+          // ignore
+        }
+        mapInstanceRef.current = null;
+      }
+
+      // Clear any lingering leaflet DOM ID on container
+      if (mapContainerRef.current && (mapContainerRef.current as any)._leaflet_id) {
+        delete (mapContainerRef.current as any)._leaflet_id;
+      }
 
       const L = (await import('leaflet')).default;
       if (isCancelled || !mapContainerRef.current) return;
@@ -264,6 +278,7 @@ export default function LeafletPropertyMap({
       // Default tile layer
       const initialTileLayer = getTileLayer(L, mapMode).addTo(map);
       tileLayerRef.current = initialTileLayer;
+      currentMapModeRef.current = mapMode;
 
       // Layer groups
       const orrGroup = L.layerGroup();
