@@ -17,59 +17,31 @@ async function testMapSync() {
 
     // Step 1: Select Property Type
     console.log('📋 Step 1: Selecting Property Type...');
-    await page.waitForSelector('button[type="button"]', { timeout: 10000 });
-    // Click on Agricultural Land or Plot
-    const buttons = await page.$$('button');
-    let agriculturalBtn = null;
-    for (const btn of buttons) {
-      const text = await page.evaluate(el => el.innerText, btn);
-      if (text && text.includes('Agricultural Land')) {
-        agriculturalBtn = btn;
+    await page.waitForSelector('#form-continue-button', { timeout: 10000 });
+    // Click the LAND card
+    const allButtons = await page.$$('button');
+    for (const b of allButtons) {
+      const text = await page.evaluate(el => el.innerText, b);
+      if (text && (text.includes('Land') || text.includes('భూమి'))) {
+        await b.click();
+        console.log('Selected LAND card');
         break;
       }
     }
-    if (agriculturalBtn) {
-      await agriculturalBtn.click();
-    } else {
-      console.log('Clicking first card option');
-      const firstCard = await page.$('.cursor-pointer');
-      if (firstCard) await firstCard.click();
-    }
-
-    // Click Next
-    console.log('➡️ Clicking Next to Step 2...');
-    let nextBtn = await page.waitForSelector('button:has-text("Next"), button:has-text("తర్వాత")', { timeout: 5000 }).catch(async () => {
-      const allBtns = await page.$$('button');
-      for (const b of allBtns) {
-        const t = await page.evaluate(el => el.innerText, b);
-        if (t && (t.includes('Next') || t.includes('Continue'))) return b;
-      }
-      return null;
-    });
-    if (nextBtn) await nextBtn.click();
+    await new Promise(r => setTimeout(r, 500));
+    await page.click('#form-continue-button');
     await new Promise(r => setTimeout(r, 1000));
 
     // Step 2: Basic Info
     console.log('📝 Step 2: Filling Title & Description...');
-    const titleInput = await page.$('input[placeholder*="title" i], input[placeholder*="25 Acres" i], input[type="text"]');
-    if (titleInput) {
-      await titleInput.type('Prime Commercial Land Parcel Near ORR');
-    }
-    const descTextarea = await page.$('textarea');
-    if (descTextarea) {
-      await descTextarea.type('Exceptional clear title agricultural and villa plot land parcel with direct access road.');
-    }
+    const titleInput = await page.waitForSelector('input[type="text"]', { timeout: 5000 });
+    await titleInput.type('Prime Commercial Land Parcel Near ORR');
 
-    // Click Next to Step 3
-    console.log('➡️ Clicking Next to Step 3 (Location)...');
-    const allBtns2 = await page.$$('button');
-    for (const b of allBtns2) {
-      const t = await page.evaluate(el => el.innerText, b);
-      if (t && (t.includes('Next') || t.includes('Continue'))) {
-        await b.click();
-        break;
-      }
-    }
+    const descInput = await page.waitForSelector('textarea', { timeout: 5000 });
+    await descInput.type('Exceptional clear title agricultural and villa plot land parcel with direct access road and water connection.');
+
+    await new Promise(r => setTimeout(r, 500));
+    await page.click('#form-continue-button');
     await new Promise(r => setTimeout(r, 1500));
 
     // Step 3: Location & Map Sync
