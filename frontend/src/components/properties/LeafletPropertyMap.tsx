@@ -391,22 +391,28 @@ export default function LeafletPropertyMap({
       }
 
       // Invalidate size to ensure proper tile projection after mount
-      setTimeout(() => {
+      const t1 = setTimeout(() => {
         if (!isCancelled && mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
+          mapInstanceRef.current.invalidateSize(false);
         }
-      }, 150);
+      }, 100);
 
-      setTimeout(() => {
+      const t2 = setTimeout(() => {
         if (!isCancelled && mapInstanceRef.current) {
-          mapInstanceRef.current.invalidateSize();
+          mapInstanceRef.current.invalidateSize(false);
         }
-      }, 500);
+      }, 350);
+
+      const t3 = setTimeout(() => {
+        if (!isCancelled && mapInstanceRef.current) {
+          mapInstanceRef.current.invalidateSize(false);
+        }
+      }, 700);
 
       if (typeof ResizeObserver !== 'undefined' && mapContainerRef.current) {
         resizeObserver = new ResizeObserver(() => {
           if (mapInstanceRef.current) {
-            mapInstanceRef.current.invalidateSize();
+            mapInstanceRef.current.invalidateSize(false);
           }
         });
         resizeObserver.observe(mapContainerRef.current);
@@ -423,7 +429,11 @@ export default function LeafletPropertyMap({
         resizeObserver.disconnect();
       }
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove();
+        try {
+          mapInstanceRef.current.remove();
+        } catch {
+          // ignore
+        }
         mapInstanceRef.current = null;
       }
       setIsMapReady(false);
@@ -431,67 +441,93 @@ export default function LeafletPropertyMap({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singlePropertyMode, boundaryMode]);
 
-  // Handle center coordinate changes dynamically in boundary mode and render reference marker
+  // Handle center coordinate changes dynamically in boundary mode without animation freeze
   useEffect(() => {
     if (!boundaryMode || !isMapReady || !mapInstanceRef.current || centerLat == null || centerLng == null || isNaN(centerLat) || isNaN(centerLng)) return;
-    const targetCoords: [number, number] = [centerLat, centerLng];
 
-    if (centerMarkerGroupRef.current) {
-      centerMarkerGroupRef.current.clearLayers();
-      import('leaflet').then((LModule) => {
-        const L = LModule.default;
-        if (!centerMarkerGroupRef.current) return;
-        const centerIcon = L.divIcon({
-          className: 'custom-center-marker pointer-events-none',
-          html: `
-            <div style="
-              background: #201512;
-              color: #FAF8F3;
-              border: 1.5px solid #C79A6B;
-              border-radius: 9999px;
-              padding: 4px 10px;
-              font-size: 11px;
-              font-weight: 700;
-              box-shadow: 0 4px 14px rgba(0,0,0,0.45);
-              display: inline-flex;
-              align-items: center;
-              gap: 5px;
-              white-space: nowrap;
-              pointer-events: none;
-            ">
-              <span style="color: #C79A6B; font-size: 13px;">📍</span>
-              <span>${locationName || (isTe ? 'ప్రాంతం కేంద్రం' : 'Locality Center')}</span>
-            </div>
-          `,
-          iconSize: [140, 28],
-          iconAnchor: [70, 14],
-        });
-        const cMarker = L.marker(targetCoords, {
-          icon: centerIcon,
-          interactive: false,
-          title: locationName || 'Locality Center',
-        });
-        centerMarkerGroupRef.current.addLayer(cMarker);
-      });
-    }
+    const coordKey = `${centerLat.toFixed(4)},${centerLng.toFixed(4)}`;
+    if (lastMovedCenterRef.current === coordKey) return;
+    lastMovedCenterRef.current = coordKey;
+
     if (polygonCoordsRef.current.length === 0) {
-      mapInstanceRef.current.setView(targetCoords, 16, { animate: true });
+      const map = mapInstanceRef.current;
+      const zoom = map.getZoom() || 16;
+      map.setView([centerLat, centerLng], Math.max(zoom, 15), { animate: false });
+      map.invalidateSize(false);
     }
-  }, [boundaryMode, centerLat, centerLng, isMapReady, locationName, isTe]);
+  }, [boundaryMode, centerLat, centerLng, isMapReady]);
 
-  // Handle Layer Mode Switching
+  // Update center reference marker badge when location name or coordinates change
   useEffect(() => {
-    if (!isMapReady || !mapInstanceRef.current) return;
+    if (!boundaryMode || !isMapReady || !centerMarkerGroupRef.current || centerLat == null || centerLng == null || isNaN(centerLat) || isNaN(centerLng)) return;
+
+    const targetCoords: [number, number] = [centerLat, centerLng];
+    const markerGroup = centerMarkerGroupRef.current;
+    markerGroup.clearLayers();
 
     import('leaflet').then((LModule) => {
       const L = LModule.default;
+      if (!centerMarkerGroupRef.current) return;
+      const centerIcon = L.divIcon({
+        className: 'custom-center-marker pointer-events-none',
+        html: `
+          <div style="
+            background: #201512;
+            color: #FAF8F3;
+            border: 1.5px solid #C79A6B;
+            border-radius: 9999px;
+            padding: 4px 10px;
+            font-size: 11px;
+            font-weight: 700;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+            pointer-events: none;
+          ">
+            <span style="color: #C79A6B; font-size: 13px;">📍</span>
+            <span>${locationName || (isTe ? 'ప్రాంతం కేంద్రం' : 'Locality Center')}</span>
+          </div>
+        `,
+        iconSize: [140, 28],
+        iconAnchor: [70, 14],
+      });
+      const cMarker = L.marker(targetCoords, {
+        icon: centerIcon,
+        interactive: false,
+        title: locationName || 'Locality Center',
+      });
+      markerGroup.addLayer(cMarker);
+    });
+  }, [boundaryMode, centerLat, centerLng, isMapReady, locationName, isTe]);
+
+  // Handle Layer Mode Switching (Satellite / Street / Imagery)
+  useEffect(() => {
+    if (!isMapReady || !mapInstanceRef.current) return;
+    if (currentMapModeRef.current === mapMode && tileLayerRef.current) return;
+    currentMapModeRef.current = mapMode;
+
+    import('leaflet').then((LModule) => {
+      const L = LModule.default;
+      const map = mapInstanceRef.current;
+      if (!map) return;
+
       if (tileLayerRef.current) {
-        mapInstanceRef.current.removeLayer(tileLayerRef.current);
+        try {
+          map.removeLayer(tileLayerRef.current);
+        } catch {
+          // ignore
+        }
       }
 
       const newLayer = getTileLayer(L, mapMode);
-      newLayer.addTo(mapInstanceRef.current);
+      newLayer.addTo(map);
+      newLayer.bringToBack();
       tileLayerRef.current = newLayer;
+
+      // Force instant resize and tile recalculation
+      map.invalidateSize(false);
     });
   }, [mapMode, isMapReady]);
 
