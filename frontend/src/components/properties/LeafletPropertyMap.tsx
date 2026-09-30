@@ -1022,6 +1022,30 @@ export default function LeafletPropertyMap({
                 </span>
               </button>
 
+              <button
+                type="button"
+                id="map-add-center-pin-btn"
+                onClick={handleAddPointAtCenter}
+                className="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#2E1E18] hover:bg-[#3A241C] text-[#E2CFB6] border border-[#3A241C] flex items-center gap-1.5 transition-all"
+                title={isTe ? 'ప్రస్తుత మ్యాప్ కేంద్రంలో బిందువును చేర్చండి' : 'Drop corner pin at current map center'}
+              >
+                <Target className="w-3.5 h-3.5 text-[#C79A6B]" />
+                <span>{isTe ? 'కేంద్రంలో బిందువు చేర్చు' : 'Add Center Pin'}</span>
+              </button>
+
+              {polygonCoords.length === 0 && (
+                <button
+                  type="button"
+                  id="map-quick-preset-btn"
+                  onClick={handleQuickPlotPreset}
+                  className="px-2.5 py-1.5 rounded-xl text-xs font-medium bg-[#2E1E18] hover:bg-[#3A241C] text-[#C79A6B] border border-[#C79A6B]/40 flex items-center gap-1.5 transition-all"
+                  title={isTe ? '4 మూలల ప్లాట్ ఆకారాన్ని తక్షణమే అమర్చండి' : 'Auto-place 4-corner plot boundary'}
+                >
+                  <Square className="w-3.5 h-3.5" />
+                  <span>{isTe ? '4-మూలల ప్లాట్ ప్రీసెట్' : 'Quick 4-Corner Plot'}</span>
+                </button>
+              )}
+
               {isDrawingMode && polygonCoords.length >= 3 && (
                 <button
                   type="button"
@@ -1097,13 +1121,29 @@ export default function LeafletPropertyMap({
       </div>
 
       {/* Map Presentation Surface */}
-      <div className={`relative w-full ${boundaryMode ? 'h-[360px] sm:h-[440px]' : 'h-[380px] sm:h-[480px] md:h-[560px]'} bg-[#141210]`}>
-        <div ref={mapContainerRef} className="w-full h-full z-0" />
+      <div
+        className={`relative w-full ${
+          boundaryMode ? 'h-[360px] sm:h-[440px]' : 'h-[380px] sm:h-[480px] md:h-[560px]'
+        } bg-[#141210] ${boundaryMode && isDrawingMode ? 'cursor-crosshair' : ''}`}
+      >
+        <div
+          ref={mapContainerRef}
+          className={`w-full h-full z-0 ${boundaryMode && isDrawingMode ? 'cursor-crosshair' : ''}`}
+        />
+
+        {/* Aiming Reticle (Visible in boundary drawing mode) */}
+        {boundaryMode && isDrawingMode && (
+          <div className="absolute inset-0 pointer-events-none flex items-center justify-center z-[300] opacity-35">
+            <div className="w-7 h-7 rounded-full border border-[#C79A6B] flex items-center justify-center">
+              <div className="w-1.5 h-1.5 rounded-full bg-[#C79A6B]" />
+            </div>
+          </div>
+        )}
 
         {/* Boundary Drawing Area HUD (Real-time live calculated metrics) */}
         {boundaryMode && (
-          <div id="map-parcel-area-hud" className="absolute top-3 left-3 right-3 sm:right-auto z-[400] max-w-sm">
-            <div className="bg-[#201512]/95 backdrop-blur-md text-[#F5F0E8] p-3.5 sm:p-4 rounded-2xl border border-[#E2CFB6]/30 shadow-[0_16px_40px_rgba(0,0,0,0.5)] space-y-2.5">
+          <div id="map-parcel-area-hud" className="absolute top-3 left-3 right-3 sm:right-auto z-[400] max-w-sm pointer-events-none">
+            <div className="bg-[#201512]/95 backdrop-blur-md text-[#F5F0E8] p-3.5 sm:p-4 rounded-2xl border border-[#E2CFB6]/30 shadow-[0_16px_40px_rgba(0,0,0,0.5)] space-y-2.5 pointer-events-auto">
               <div className="flex items-center justify-between gap-2 border-b border-[#3A241C] pb-2">
                 <span className="text-[10px] uppercase font-bold tracking-wider text-[#C79A6B] flex items-center gap-1.5">
                   <ShieldCheck className="w-3.5 h-3.5 text-[#C79A6B]" />
