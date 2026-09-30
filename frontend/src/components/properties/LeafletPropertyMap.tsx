@@ -250,7 +250,7 @@ export default function LeafletPropertyMap({
         markerZoomAnimation: true,
         tap: false,
         trackResize: true,
-      });
+      } as any);
 
       // Add Zoom control top-right
       L.control.zoom({ position: 'topright' }).addTo(map);
