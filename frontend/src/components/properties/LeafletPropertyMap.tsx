@@ -485,7 +485,7 @@ export default function LeafletPropertyMap({
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [singlePropertyMode, boundaryMode]);
 
-  // Handle center coordinate changes dynamically in boundary mode without animation freeze
+  // Handle center coordinate changes dynamically: fly map to open nearest place entered in above section!
   useEffect(() => {
     if (!boundaryMode || !isMapReady || !mapInstanceRef.current || centerLat == null || centerLng == null || isNaN(centerLat) || isNaN(centerLng)) return;
 
@@ -493,12 +493,9 @@ export default function LeafletPropertyMap({
     if (lastMovedCenterRef.current === coordKey) return;
     lastMovedCenterRef.current = coordKey;
 
-    if (polygonCoordsRef.current.length === 0) {
-      const map = mapInstanceRef.current;
-      const zoom = map.getZoom() || 16;
-      map.setView([centerLat, centerLng], Math.max(zoom, 15), { animate: false });
-      map.invalidateSize(false);
-    }
+    const map = mapInstanceRef.current;
+    map.flyTo([centerLat, centerLng], 16, { duration: 1.2 });
+    map.invalidateSize(false);
   }, [boundaryMode, centerLat, centerLng, isMapReady]);
 
   // Update center reference marker badge when location name or coordinates change
@@ -1042,9 +1039,33 @@ export default function LeafletPropertyMap({
 
   const handleApplyArea = () => {
     if (onApplyAreaToForm && areaResult.acres > 0) {
-      onApplyAreaToForm(areaResult.acres, areaResult.sqYards);
+      const locPayload: DetectedLocalityPayload | undefined = detectedLocality
+        ? {
+            district: detectedLocality.locality.district,
+            mandal: detectedLocality.locality.mandal,
+            village: detectedLocality.locality.village,
+            distanceFromOrrKm: detectedLocality.distanceToOrrKm,
+            localityName: isTe ? detectedLocality.locality.nameTe : detectedLocality.locality.nameEn,
+          }
+        : undefined;
+
+      onApplyAreaToForm(areaResult.acres, areaResult.sqYards, locPayload);
       setAppliedAreaFeedback(true);
       setTimeout(() => setAppliedAreaFeedback(false), 2500);
+    }
+  };
+
+  const handleSyncDetectedLocationOnly = () => {
+    if (onLocationDetected && detectedLocality) {
+      onLocationDetected({
+        district: detectedLocality.locality.district,
+        mandal: detectedLocality.locality.mandal,
+        village: detectedLocality.locality.village,
+        distanceFromOrrKm: detectedLocality.distanceToOrrKm,
+        localityName: isTe ? detectedLocality.locality.nameTe : detectedLocality.locality.nameEn,
+      });
+      setAppliedLocationFeedback(true);
+      setTimeout(() => setAppliedLocationFeedback(false), 2500);
     }
   };
 
