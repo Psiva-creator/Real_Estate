@@ -40,14 +40,16 @@ async function run() {
         input.value = 'Premium Commercial Plot Kokapet';
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
-      if (ph.includes('price')) {
-        input.value = '25000000';
-        input.dispatchEvent(new Event('input', { bubbles: true }));
-      }
       if (ph.includes('zone')) {
         input.value = 'Commercial Zone';
         input.dispatchEvent(new Event('input', { bubbles: true }));
       }
+    });
+
+    const textareas = Array.from(document.querySelectorAll('textarea'));
+    textareas.forEach(ta => {
+      ta.value = 'Clear title 2000 sq yards plot suitable for immediate commercial or high-rise development with road access.';
+      ta.dispatchEvent(new Event('input', { bubbles: true }));
     });
   });
 
