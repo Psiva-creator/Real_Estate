@@ -108,23 +108,41 @@ async function testGoogleLogin() {
     await new Promise(r => setTimeout(r, 1000));
 
     console.log('✍️ Typing custom Gmail address...');
-    const emailInput = await page.$('input[placeholder="yourname@gmail.com"]');
-    if (!emailInput) {
-      throw new Error('❌ Custom Gmail input not found in modal!');
-    }
-    await emailInput.type('siva.krishna.investor@gmail.com');
-
-    const nameInput = await page.$('input[placeholder*="Siva" i], input[placeholder*="పేరు" i]');
-    if (nameInput) {
-      await nameInput.type('Siva Krishna');
-    }
-
-    // Click "Continue with this Gmail"
     await page.evaluate(() => {
+      const emailEl = document.querySelector('input[placeholder="yourname@gmail.com"]');
+      if (emailEl) {
+        const proto = Object.getPrototypeOf(emailEl);
+        const setVal = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+        if (setVal) {
+          setVal.call(emailEl, 'siva.krishna.investor@gmail.com');
+          emailEl.dispatchEvent(new Event('input', { bubbles: true }));
+          emailEl.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+      const nameEl = document.querySelector('input[placeholder*="Siva" i], input[placeholder*="పేరు" i]');
+      if (nameEl) {
+        const proto = Object.getPrototypeOf(nameEl);
+        const setVal = Object.getOwnPropertyDescriptor(proto, 'value')?.set;
+        if (setVal) {
+          setVal.call(nameEl, 'Siva Krishna');
+          nameEl.dispatchEvent(new Event('input', { bubbles: true }));
+          nameEl.dispatchEvent(new Event('change', { bubbles: true }));
+        }
+      }
+    });
+
+    await new Promise(r => setTimeout(r, 500));
+
+    // Check button state and click
+    const btnInfo = await page.evaluate(() => {
       const btns = Array.from(document.querySelectorAll('button'));
       const b = btns.find(btn => btn.innerText.includes('Continue with this Gmail') || btn.innerText.includes('Gmail తో కొనసాగించండి'));
-      if (b) b.click();
+      if (!b) return { found: false };
+      const disabled = b.disabled;
+      if (!disabled) b.click();
+      return { found: true, disabled, text: b.innerText };
     });
+    console.log('🔘 Button Info:', btnInfo);
     console.log('✅ Clicked "Continue with this Gmail". Waiting for authentication...');
     await new Promise(r => setTimeout(r, 2000));
 
