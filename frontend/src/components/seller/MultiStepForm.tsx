@@ -31,7 +31,11 @@ import { formatINR } from '@/lib/formatters';
 import { createProperty, CreatePropertyDTO, uploadPropertyDocument, uploadImageApi } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import LeafletPropertyMap from '@/components/properties/LeafletPropertyMap';
-import { lookupTelanganaLocation } from '@/lib/telanganaMapData';
+import {
+  lookupTelanganaLocation,
+  calculateDistanceToOrrKm,
+  TOP_TELANGANA_GROWTH_HUBS,
+} from '@/lib/telanganaMapData';
 
 interface MultiStepFormProps {
   locale: Locale;
