@@ -162,9 +162,7 @@ export default function LeafletPropertyMap({
   // Helper to create tile layer based on mode (Zero watermarks, high performance)
   const getTileLayer = (L: any, mode: MapLayerMode) => {
     const tilePerfOptions = {
-      updateWhenZooming: false,
-      updateWhenIdle: true,
-      keepBuffer: 6,
+      keepBuffer: 4,
       maxNativeZoom: 19,
     };
 
@@ -185,12 +183,15 @@ export default function LeafletPropertyMap({
         }
       );
     } else {
-      // Clean OpenStreetMap Street Tiles
-      return L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        ...tilePerfOptions,
-        maxZoom: 19,
-        subdomains: ['a', 'b', 'c'],
-      });
+      // High-Reliability CartoDB Voyager Street Map (Zero rate-limit, high speed, crisp vectors)
+      return L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png',
+        {
+          ...tilePerfOptions,
+          maxZoom: 20,
+          subdomains: ['a', 'b', 'c', 'd'],
+        }
+      );
     }
   };
 
