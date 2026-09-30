@@ -110,8 +110,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
     }
   };
 
-  // Dynamically resolve map center based on seller location input
+  // Manual map center override when user selects a corridor chip or clicks "Open on Map"
+  const [manualCenterCoords, setManualCenterCoords] = useState<[number, number] | null>(null);
+
+  // Dynamically resolve map center based on seller location input or manual override
   const resolvedMapCenter = useMemo((): [number, number] => {
+    if (manualCenterCoords) return manualCenterCoords;
     const loc = `${formData.village} ${formData.mandal} ${formData.district}`.toLowerCase().trim();
     if (loc) {
       const match = lookupTelanganaLocation(loc);
@@ -126,7 +130,94 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       }
     }
     return [17.4065, 78.4772];
-  }, [formData.mandal, formData.district, formData.village]);
+  }, [manualCenterCoords, formData.mandal, formData.district, formData.village]);
+
+  // Handle user selecting a high-velocity growth hub
+  const handleSelectGrowthHub = (hub: (typeof TOP_TELANGANA_GROWTH_HUBS)[number]) => {
+    setFormData((prev) => ({
+      ...prev,
+      district: isTe ? hub.districtTe : hub.district,
+      mandal: isTe ? hub.mandalTe : hub.mandal,
+      village: isTe ? hub.villageTe : hub.village,
+      distanceFromOrrKm: String(hub.distanceToOrrKm),
+    }));
+    // Clear validation errors for these fields if any were present
+    setErrors((prev) => {
+      const next = { ...prev };
+      delete next.district;
+      delete next.mandal;
+      delete next.village;
+      delete next.distanceFromOrrKm;
+      return next;
+    });
+    setManualCenterCoords([hub.lat, hub.lng]);
+  };
+
+  // Handle location input change with auto-detection of ORR distance and coordinate center
+  const handleLocationInputChange = (field: 'district' | 'mandal' | 'village', value: string) => {
+    updateField(field, value);
+    setManualCenterCoords(null);
+    const combined =
+      field === 'village'
+        ? `${value} ${formData.mandal} ${formData.district}`.trim()
+        : field === 'mandal'
+        ? `${formData.village} ${value} ${formData.district}`.trim()
+        : `${formData.village} ${formData.mandal} ${value}`.trim();
+
+    if (combined.length >= 3) {
+      const matched = lookupTelanganaLocation(combined);
+      if (matched) {
+        const orrDist = calculateDistanceToOrrKm(matched.lat, matched.lng);
+        if (!formData.distanceFromOrrKm || formData.distanceFromOrrKm === '0') {
+          updateField('distanceFromOrrKm', String(orrDist));
+        }
+      }
+    }
+  };
+
+  // Explicit Jump / Open on Map handler
+  const handleJumpMapToEnteredLocation = () => {
+    const loc = `${formData.village} ${formData.mandal} ${formData.district}`.toLowerCase().trim();
+    if (loc) {
+      const match = lookupTelanganaLocation(loc);
+      if (match) {
+        setManualCenterCoords([match.lat, match.lng]);
+        const orrDist = calculateDistanceToOrrKm(match.lat, match.lng);
+        if (!formData.distanceFromOrrKm || formData.distanceFromOrrKm === '0') {
+          updateField('distanceFromOrrKm', String(orrDist));
+        }
+        return;
+      }
+      if (formData.mandal) {
+        const mandalMatch = lookupTelanganaLocation(formData.mandal);
+        if (mandalMatch) {
+          setManualCenterCoords([mandalMatch.lat, mandalMatch.lng]);
+          return;
+        }
+      }
+      if (formData.district) {
+        const distMatch = lookupTelanganaLocation(formData.district);
+        if (distMatch) {
+          setManualCenterCoords([distMatch.lat, distMatch.lng]);
+          return;
+        }
+      }
+    }
+  };
+
+  // When plot corners or center is detected on map, auto-fill empty form fields
+  const handleLocationDetectedFromMap = (loc: DetectedLocalityPayload) => {
+    setFormData((prev) => ({
+      ...prev,
+      district: prev.district || (isTe && loc.localityName ? loc.localityName : loc.district),
+      mandal: prev.mandal || loc.mandal,
+      village: prev.village || loc.village,
+      distanceFromOrrKm:
+        !prev.distanceFromOrrKm || prev.distanceFromOrrKm === '0'
+          ? String(loc.distanceFromOrrKm)
+          : prev.distanceFromOrrKm,
+    }));
+  };
 
   // Step Validation logic
   const validateCurrentStep = (): boolean => {
