@@ -165,4 +165,64 @@ describe('Auth & RBAC Module', () => {
     assert.strictEqual(res.status, 401);
     assert.strictEqual(res.body.error, 'Invalid credentials');
   });
+
+  test('POST /api/auth/google should authenticate existing user with Gmail email', async () => {
+    const res = await request(app)
+      .post('/api/auth/google')
+      .send({
+        email: 'kvrao.hyderabad@gmail.com',
+        name: 'K.V. Rao',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.email, 'kvrao.hyderabad@gmail.com');
+    assert.strictEqual(res.body.user.role, 'SELLER');
+    assert.strictEqual(res.body.isNewUser, false);
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/google should register new user and owner entity if not existing', async () => {
+    const uniqueEmail = `new.investor.${Date.now()}@gmail.com`;
+    const res = await request(app)
+      .post('/api/auth/google')
+      .send({
+        email: uniqueEmail,
+        name: 'Venkata Ramana',
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.email, uniqueEmail);
+    assert.strictEqual(res.body.user.role, 'SELLER');
+    assert.strictEqual(res.body.isNewUser, true);
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/google should authenticate via Google JWT credential', async () => {
+    const payload = {
+      email: 'direct.google.user@gmail.com',
+      name: 'Google User',
+      picture: 'https://lh3.googleusercontent.com/a/default',
+    };
+    // Mock 3-part JWT header.payload.signature
+    const mockToken = `eyJhbGciOiJSUzI1NiJ9.${Buffer.from(JSON.stringify(payload)).toString('base64')}.mock_sig`;
+
+    const res = await request(app)
+      .post('/api/auth/google')
+      .send({
+        credential: mockToken,
+      });
+
+    assert.strictEqual(res.status, 200);
+    assert.strictEqual(res.body.user.email, 'direct.google.user@gmail.com');
+    assert.ok(res.body.token);
+  });
+
+  test('POST /api/auth/google should reject request with no email or credential', async () => {
+    const res = await request(app)
+      .post('/api/auth/google')
+      .send({});
+
+    assert.strictEqual(res.status, 400);
+    assert.ok(res.body.error);
+  });
 });
