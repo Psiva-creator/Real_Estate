@@ -627,8 +627,13 @@ export default function DashboardEnquiriesPage() {
                         ) : (
                           <MessageSquare className="w-3 h-3" />
                         )}
-                        <span>{lead.enquiryType}</span>
+                        <span>{lead.enquiryType.replace('_', ' ')}</span>
                       </span>
+                      {lead.notes && lead.notes.includes('Booked slot timing:') && (
+                        <span className="block mt-1 font-mono text-[10px] text-emerald-800 font-semibold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200 w-fit">
+                          🕒 {lead.notes.split('Booked slot timing:')[1]?.split('\n')[0]?.trim()}
+                        </span>
+                      )}
                     </td>
 
                     {/* Assigned Agent */}
