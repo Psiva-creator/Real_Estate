@@ -477,13 +477,10 @@ export default function LeafletPropertyMap({
   // ─── Interactive Plot Boundary Drawing & Vertex Editing ─────────────────────
 
   // Synchronize Leaflet map click listener for adding polygon vertices
-  useEffect(() => {
-    if (!boundaryMode || !isMapReady || !mapInstanceRef.current) return;
-
-    const map = mapInstanceRef.current;
-
-    const handleMapClick = (e: any) => {
-      if (!isDrawingMode) return;
+  const handleMapClick = useCallback(
+    (e: any) => {
+      if (!isDrawingModeRef.current) return;
+      if (!e || !e.latlng) return;
       const newPoint: [number, number] = [
         Number(e.latlng.lat.toFixed(6)),
         Number(e.latlng.lng.toFixed(6)),
@@ -494,14 +491,20 @@ export default function LeafletPropertyMap({
         triggerPolygonChange(next);
         return next;
       });
-    };
+    },
+    [triggerPolygonChange]
+  );
 
+  useEffect(() => {
+    if (!boundaryMode || !isMapReady || !mapInstanceRef.current) return;
+
+    const map = mapInstanceRef.current;
     map.on('click', handleMapClick);
 
     return () => {
       map.off('click', handleMapClick);
     };
-  }, [boundaryMode, isMapReady, isDrawingMode, triggerPolygonChange]);
+  }, [boundaryMode, isMapReady, handleMapClick]);
 
   // Render Polygon, Vertex Drag Handles, and Midpoint Adders
   useEffect(() => {
@@ -535,6 +538,13 @@ export default function LeafletPropertyMap({
           dashArray: isDrawingMode ? '6, 6' : undefined,
         });
 
+        // Allow clicking on polygon to continue adding points if in drawing mode
+        polygon.on('click', (e: any) => {
+          if (isDrawingModeRef.current) {
+            handleMapClick(e);
+          }
+        });
+
         const tooltipText = isTe
           ? `<strong>విస్తీర్ణం:</strong> ${areaResult.formattedAcres} (${areaResult.formattedSqYards})`
           : `<strong>Parcel Area:</strong> ${areaResult.formattedAcres} (${areaResult.formattedSqYards})`;
@@ -550,6 +560,11 @@ export default function LeafletPropertyMap({
           color: '#10B981',
           weight: 3,
           dashArray: '6, 6',
+        });
+        line.on('click', (e: any) => {
+          if (isDrawingModeRef.current) {
+            handleMapClick(e);
+          }
         });
         boundaryGroup.addLayer(line);
       }
