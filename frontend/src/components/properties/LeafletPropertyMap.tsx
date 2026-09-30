@@ -1502,6 +1502,39 @@ export default function LeafletPropertyMap({
                     </span>
                   </div>
 
+                  {/* Nearest Locality & 158km ORR Distance */}
+                  {detectedLocality && (
+                    <div className="pt-2 border-t border-[#3A241C] space-y-1.5">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-[#C79A6B] font-semibold flex items-center gap-1">
+                          <MapPin className="w-3.5 h-3.5 text-[#C79A6B]" />
+                          <span>{isTe ? 'సమీప ప్రాంతం:' : 'Nearest Place:'}</span>
+                        </span>
+                        <span className="text-[10px] font-mono text-[#FAF8F3] bg-[#2E1E18] px-2 py-0.5 rounded-full border border-[#3A241C]">
+                          {detectedLocality.distanceToOrrKm} km {isTe ? 'ఓఆర్ఆర్ నుండి' : 'to 158km ORR'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-between gap-1.5 text-[11px] text-[#FAF8F3]">
+                        <span className="font-medium truncate">
+                          {isTe ? detectedLocality.locality.villageTe : detectedLocality.locality.village}, {isTe ? detectedLocality.locality.mandalTe : detectedLocality.locality.mandal} ({isTe ? detectedLocality.locality.districtTe : detectedLocality.locality.district})
+                        </span>
+                        {onLocationDetected && (
+                          <button
+                            type="button"
+                            id="map-sync-location-btn"
+                            onClick={handleSyncDetectedLocationOnly}
+                            className="shrink-0 px-2 py-0.5 rounded-lg bg-[#C79A6B]/20 hover:bg-[#C79A6B] text-[#C79A6B] hover:text-[#201512] font-semibold text-[10px] transition-all cursor-pointer"
+                            title={isTe ? 'పైన ఉన్న ఫారమ్‌లో వివరాలు నింపండి' : 'Auto-fill location in form above'}
+                          >
+                            {appliedLocationFeedback
+                              ? isTe ? '✓ నింపబడింది' : '✓ Synced'
+                              : isTe ? 'ఫారమ్‌కు నింపు' : 'Fill Form'}
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {onApplyAreaToForm && (
                     <button
                       type="button"
@@ -1512,12 +1545,12 @@ export default function LeafletPropertyMap({
                       {appliedAreaFeedback ? (
                         <>
                           <CheckCircle2 className="w-3.5 h-3.5 text-[#201512]" />
-                          <span>{isTe ? 'ఫారమ్‌లోకి జోడించబడింది!' : 'Synced to Form Details!'}</span>
+                          <span>{isTe ? 'విస్తీర్ణం & స్థానం ఫారమ్‌లోకి చేర్చబడ్డాయి!' : 'Area & Location Synced to Form!'}</span>
                         </>
                       ) : (
                         <>
                           <Sparkles className="w-3.5 h-3.5 text-[#201512]" />
-                          <span>{isTe ? 'ఈ విస్తీర్ణాన్ని ఫారమ్‌లో వాడండి' : 'Apply Area to Listing Details'}</span>
+                          <span>{isTe ? 'ఈ విస్తీర్ణం & స్థానాన్ని ఫారమ్‌లో వాడండి' : 'Apply Area & Location to Form'}</span>
                         </>
                       )}
                     </button>
