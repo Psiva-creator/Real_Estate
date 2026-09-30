@@ -134,6 +134,7 @@ interface BackendLocation {
   village: string;
   mandal: string;
   district: string;
+  pincode?: string;
   latitude?: number;
   longitude?: number;
   distanceFromOrrKm?: number;
@@ -1445,6 +1446,7 @@ export interface InternalPropertyDetail {
   titleEn: string;
   titleTe?: string;
   descriptionEn: string;
+  descriptionTe?: string;
   location: BackendLocation;
   land?: BackendLandDetails;
   flat?: BackendFlatDetails;
