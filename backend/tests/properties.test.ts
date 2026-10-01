@@ -99,7 +99,7 @@ describe('Properties Module & Seller Privacy Gate', () => {
       });
 
     assert.strictEqual(res.status, 201);
-    assert.strictEqual(res.body.property.status, 'DRAFT');
+    assert.strictEqual(res.body.property.status, 'UNDER_REVIEW');
     assert.strictEqual(res.body.property.location.tier, 'TIER_2');
     assert.ok(res.body.property.location.distanceFromOrrKm > 0);
   });
@@ -189,7 +189,7 @@ describe('Properties Module & Seller Privacy Gate', () => {
 
     assert.strictEqual(res.status, 201);
     assert.strictEqual(res.body.property.type, 'VILLA');
-    assert.strictEqual(res.body.property.status, 'DRAFT');
+    assert.strictEqual(res.body.property.status, 'UNDER_REVIEW');
     assert.strictEqual(res.body.property.villa.plotAreaSqYards, 350);
     assert.strictEqual(res.body.property.villa.builtUpAreaSqFt, 4200);
     assert.strictEqual(res.body.property.villa.configuration, '4 BHK');
@@ -561,5 +561,283 @@ describe('Properties Module & Seller Privacy Gate', () => {
     assert.strictEqual(sellerBMeRes.status, 200);
     const leakedProp = sellerBMeRes.body.properties.find((p: any) => p.id === propertyId);
     assert.strictEqual(leakedProp, undefined, 'Another seller must never see Seller A property');
+  });
+
+  describe('Property Status Transitions & Publishing State Machine', () => {
+    test('Seller submission enters UNDER_REVIEW, whereas DRAFT is reserved for explicit draft creation', async () => {
+      const { db } = await import('../src/db/database.js');
+      const sellerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Workflow Seller 1',
+          phone: '+919988112233',
+          password: 'Password123!',
+          role: 'SELLER',
+        });
+      const sellerToken = sellerRes.body.token;
+
+      // 1. Seller submission (without explicit status) enters UNDER_REVIEW
+      const submitRes = await request(app)
+        .post('/api/properties')
+        .set('Authorization', `Bearer ${sellerToken}`)
+        .send({
+          type: 'LAND',
+          titleEn: 'Submitted Land for Review',
+          descriptionEn: 'Completed submission ready for team review',
+          location: { district: 'Rangareddy', mandal: 'Gandipet', village: 'Kokapet' },
+          land: { totalAcres: 3.5, surveyNumbers: ['220/1'] },
+          pricing: { totalPrice: 35000000 },
+          mainImage: 'https://example.com/land1.jpg',
+        });
+      assert.strictEqual(submitRes.status, 201);
+      assert.strictEqual(submitRes.body.property.status, 'UNDER_REVIEW');
+
+      // 2. Explicit draft creation enters DRAFT
+      const draftRes = await request(app)
+        .post('/api/properties')
+        .set('Authorization', `Bearer ${sellerToken}`)
+        .send({
+          type: 'LAND',
+          status: 'DRAFT',
+          titleEn: 'Internal Incomplete Draft',
+          descriptionEn: 'Work in progress listing draft',
+          location: { district: 'Rangareddy', mandal: 'Gandipet', village: 'Kokapet' },
+          land: { totalAcres: 1.0, surveyNumbers: ['220/2'] },
+          pricing: { totalPrice: 10000000 },
+          mainImage: 'https://example.com/draft.jpg',
+        });
+      assert.strictEqual(draftRes.status, 201);
+      assert.strictEqual(draftRes.body.property.status, 'DRAFT');
+    });
+
+    test('DRAFT property cannot be published directly to LIVE (State Machine Gate)', async () => {
+      const sellerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Draft Gate Seller',
+          phone: '+919988112234',
+          password: 'Password123!',
+          role: 'SELLER',
+        });
+      const sellerToken = sellerRes.body.token;
+
+      const createRes = await request(app)
+        .post('/api/properties')
+        .set('Authorization', `Bearer ${sellerToken}`)
+        .send({
+          type: 'LAND',
+          status: 'DRAFT',
+          titleEn: 'Unpublished Draft Listing',
+          descriptionEn: 'Should not jump from DRAFT to LIVE',
+          location: { district: 'Rangareddy', mandal: 'Gandipet', village: 'Kokapet' },
+          land: { totalAcres: 2.0, surveyNumbers: ['301/A'] },
+          pricing: { totalPrice: 20000000 },
+          mainImage: 'https://example.com/gate_draft.jpg',
+        });
+      const propertyId = createRes.body.property.id;
+
+      // Admin login
+      const adminLogin = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@telanganarealty.in', password: 'Admin@1234' });
+      const adminToken = adminLogin.body.token;
+
+      // Attempt DRAFT -> LIVE directly
+      const patchRes = await request(app)
+        .patch(`/api/properties/${propertyId}/status`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'LIVE' });
+
+      assert.strictEqual(patchRes.status, 400);
+      assert.ok(
+        patchRes.body.error.includes(
+          'Invalid status transition: Cannot change status from DRAFT to LIVE. Allowed next states: UNDER_REVIEW, OFF_MARKET'
+        )
+      );
+
+      // Verify property is still DRAFT
+      const detailRes = await request(app)
+        .get(`/api/admin/properties/${propertyId}`)
+        .set('Authorization', `Bearer ${adminToken}`);
+      assert.strictEqual(detailRes.body.property.status, 'DRAFT');
+    });
+
+    test('DRAFT property can be transitioned to UNDER_REVIEW by ADMIN', async () => {
+      const sellerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Move Review Seller',
+          phone: '+919988112235',
+          password: 'Password123!',
+          role: 'SELLER',
+        });
+      const sellerToken = sellerRes.body.token;
+
+      const createRes = await request(app)
+        .post('/api/properties')
+        .set('Authorization', `Bearer ${sellerToken}`)
+        .send({
+          type: 'LAND',
+          status: 'DRAFT',
+          titleEn: 'Draft Moving To Review',
+          descriptionEn: 'Testing DRAFT -> UNDER_REVIEW transition',
+          location: { district: 'Rangareddy', mandal: 'Gandipet', village: 'Kokapet' },
+          land: { totalAcres: 2.0, surveyNumbers: ['302/B'] },
+          pricing: { totalPrice: 25000000 },
+          mainImage: 'https://example.com/draft2.jpg',
+        });
+      const propertyId = createRes.body.property.id;
+
+      const adminLogin = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@telanganarealty.in', password: 'Admin@1234' });
+      const adminToken = adminLogin.body.token;
+
+      // Move DRAFT -> UNDER_REVIEW
+      const patchRes = await request(app)
+        .patch(`/api/properties/${propertyId}/status`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'UNDER_REVIEW' });
+
+      assert.strictEqual(patchRes.status, 200);
+      assert.strictEqual(patchRes.body.property.status, 'UNDER_REVIEW');
+    });
+
+    test('UNDER_REVIEW listing cannot be published to LIVE when mandatory verification documents are pending', async () => {
+      const sellerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Review Unverified Seller',
+          phone: '+919988112236',
+          password: 'Password123!',
+          role: 'SELLER',
+        });
+      const sellerToken = sellerRes.body.token;
+
+      const createRes = await request(app)
+        .post('/api/properties')
+        .set('Authorization', `Bearer ${sellerToken}`)
+        .send({
+          type: 'LAND',
+          titleEn: 'Unverified Review Property',
+          descriptionEn: 'UNDER_REVIEW but docs are pending',
+          location: { district: 'Rangareddy', mandal: 'Gandipet', village: 'Kokapet' },
+          land: { totalAcres: 3.0, surveyNumbers: ['401/C'] },
+          pricing: { totalPrice: 30000000 },
+          mainImage: 'https://example.com/under_review.jpg',
+        });
+      const propertyId = createRes.body.property.id;
+      assert.strictEqual(createRes.body.property.status, 'UNDER_REVIEW');
+
+      const adminLogin = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@telanganarealty.in', password: 'Admin@1234' });
+      const adminToken = adminLogin.body.token;
+
+      // Attempt to publish to LIVE while mandatory docs are pending
+      const publishRes = await request(app)
+        .patch(`/api/properties/${propertyId}/status`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'LIVE' });
+
+      assert.strictEqual(publishRes.status, 400);
+      assert.ok(publishRes.body.error.includes('mandatory verification documents are pending or unverified'));
+    });
+
+    test('UNDER_REVIEW listing can transition to LIVE when eligible and all mandatory documents are VERIFIED', async () => {
+      const { db } = await import('../src/db/database.js');
+      const sellerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Fully Verified Seller',
+          phone: '+919988112237',
+          password: 'Password123!',
+          role: 'SELLER',
+        });
+      const sellerToken = sellerRes.body.token;
+
+      const createRes = await request(app)
+        .post('/api/properties')
+        .set('Authorization', `Bearer ${sellerToken}`)
+        .send({
+          type: 'FLAT',
+          titleEn: 'Fully Verified Flat Listing',
+          descriptionEn: 'All mandatory docs verified',
+          location: { district: 'Hyderabad', mandal: 'Shaikpet', village: 'Jubilee Hills' },
+          flat: { sqft: 2200, bedrooms: 3, floor: 5, totalFloors: 10, possessionStatus: 'READY_TO_MOVE' },
+          pricing: { totalPrice: 22000000 },
+          mainImage: 'https://example.com/flat.jpg',
+        });
+      const propertyId = createRes.body.property.id;
+      assert.strictEqual(createRes.body.property.status, 'UNDER_REVIEW');
+
+      // Verify all mandatory documents for FLAT
+      const flatMandatory = ['SALE_DEED', 'EC', 'LINK_DOCUMENTS', 'HMDA_DTCP_APPROVAL', 'TAX_RECEIPT', 'SALE_AGREEMENT'];
+      for (const docType of flatMandatory) {
+        await db.upsertDocument({
+          propertyId,
+          documentType: docType as any,
+          fileUrl: `https://storage.telanganarealty.in/${docType}.pdf`,
+          status: 'VERIFIED',
+          verifiedBy: 'admin-001',
+          verifiedAt: new Date().toISOString(),
+        });
+      }
+
+      const adminLogin = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@telanganarealty.in', password: 'Admin@1234' });
+      const adminToken = adminLogin.body.token;
+
+      // Now publish to LIVE
+      const publishRes = await request(app)
+        .patch(`/api/properties/${propertyId}/status`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'LIVE' });
+
+      assert.strictEqual(publishRes.status, 200);
+      assert.strictEqual(publishRes.body.property.status, 'LIVE');
+    });
+
+    test('Backend rejects invalid status transitions (e.g. DRAFT -> SOLD)', async () => {
+      const sellerRes = await request(app)
+        .post('/api/auth/register')
+        .send({
+          name: 'Invalid Transition Seller',
+          phone: '+919988112238',
+          password: 'Password123!',
+          role: 'SELLER',
+        });
+      const sellerToken = sellerRes.body.token;
+
+      const createRes = await request(app)
+        .post('/api/properties')
+        .set('Authorization', `Bearer ${sellerToken}`)
+        .send({
+          type: 'LAND',
+          status: 'DRAFT',
+          titleEn: 'Draft for Invalid Transition',
+          descriptionEn: 'Testing illegal jump',
+          location: { district: 'Rangareddy', mandal: 'Gandipet', village: 'Kokapet' },
+          land: { totalAcres: 1.0, surveyNumbers: ['500/A'] },
+          pricing: { totalPrice: 10000000 },
+          mainImage: 'https://example.com/invalid.jpg',
+        });
+      const propertyId = createRes.body.property.id;
+
+      const adminLogin = await request(app)
+        .post('/api/auth/login')
+        .send({ email: 'admin@telanganarealty.in', password: 'Admin@1234' });
+      const adminToken = adminLogin.body.token;
+
+      // Attempt illegal transition: DRAFT -> SOLD
+      const invalidRes = await request(app)
+        .patch(`/api/properties/${propertyId}/status`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .send({ status: 'SOLD' });
+
+      assert.strictEqual(invalidRes.status, 400);
+      assert.ok(invalidRes.body.error.includes('Invalid status transition'));
+    });
   });
 });

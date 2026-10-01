@@ -58,6 +58,7 @@ export interface CreatePropertyDTO {
     aadharNumber?: string;
   };
   type: PropertyType;
+  status?: PropertyStatus;
   titleEn: string;
   titleTe?: string;
   descriptionEn: string;
@@ -1467,6 +1468,8 @@ export interface InternalPropertyDetail {
     totalDocuments: number;
     verifiedDocuments: number;
     isFullyVerified: boolean;
+    canGoLive?: boolean;
+    missingDocs?: string[];
     documentsChecklist?: Array<{
       documentType: string;
       status: string;

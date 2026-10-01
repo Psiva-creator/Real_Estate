@@ -151,7 +151,7 @@ export class PropertiesController {
       });
 
       return res.status(201).json({
-        message: 'Property listing draft submitted successfully. Please upload the 13 verification documents.',
+        message: 'Property listing submitted for review successfully. Please upload the 13 verification documents.',
         property,
       });
     } catch (err) {
@@ -199,10 +199,13 @@ export class PropertiesController {
       const owner = await db.findOwnerById(property.sellerId);
       const documents = await db.findDocumentsByPropertyId(property.id);
       const verifiedDocs = documents.filter((d) => d.status === 'VERIFIED').length;
+      const goLiveEligibility = await documentsService.validateForGoLive(property.id);
       const verificationStatus = {
         totalDocuments: 13,
         verifiedDocuments: verifiedDocs,
         isFullyVerified: verifiedDocs >= 13 || property.status === 'VERIFIED' || property.status === 'LIVE',
+        canGoLive: goLiveEligibility.canGoLive,
+        missingDocs: goLiveEligibility.missingDocs,
       };
 
       const hasUnpublishedVerificationChanges = await documentsService.checkUnpublishedVerificationChanges(property.id);

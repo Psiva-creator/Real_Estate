@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import {
   ArrowLeft,
+  ArrowRight,
   Building2,
   MapPin,
   AlertCircle,
@@ -172,8 +173,44 @@ export default function PropertyInternalReviewPage() {
     );
   }
 
+  // ─── Render ────────────────────────────────────────────────────────────
+  const verified = property.verificationStatus?.verifiedDocuments ?? 0;
+  const total = property.verificationStatus?.totalDocuments ?? 13;
+
+  const isDraft = property.status === 'DRAFT';
+  const isLive = property.status === 'LIVE';
+
+  // Check if listing meets verification criteria to go live
+  const isEligibleForLive =
+    !isDraft &&
+    (property.status === 'VERIFIED' ||
+      property.verificationStatus?.canGoLive === true ||
+      Boolean(property.verificationStatus?.isFullyVerified) ||
+      (verified >= total && total > 0));
+
+  let publishDisabledReason = '';
+  if (isDraft) {
+    publishDisabledReason = 'Cannot publish: Property is in DRAFT status. Move to Under Review and complete verification before publishing.';
+  } else if (!isEligibleForLive) {
+    publishDisabledReason = `Cannot publish: Mandatory verification documents are pending review (${verified}/${total} verified). Verify all mandatory documents first.`;
+  }
+
   const handleUpdateStatus = async (newStatus: string) => {
     if (!token || !property) return;
+    if (property.status === 'DRAFT' && newStatus === 'LIVE') {
+      setStatusMessage({
+        type: 'error',
+        text: 'Cannot publish directly from DRAFT. Move property to Under Review first.',
+      });
+      return;
+    }
+    if (newStatus === 'LIVE' && !isEligibleForLive) {
+      setStatusMessage({
+        type: 'error',
+        text: publishDisabledReason || 'Cannot publish listing: Mandatory verification documents are pending review.',
+      });
+      return;
+    }
     setIsPublishingStatus(true);
     setStatusMessage(null);
     try {
@@ -195,10 +232,6 @@ export default function PropertyInternalReviewPage() {
       setIsPublishingStatus(false);
     }
   };
-
-  // ─── Render ────────────────────────────────────────────────────────────
-  const verified = property.verificationStatus?.verifiedDocuments ?? 0;
-  const total = property.verificationStatus?.totalDocuments ?? 13;
 
   return (
     <div className="space-y-6">
@@ -224,7 +257,7 @@ export default function PropertyInternalReviewPage() {
         </div>
         {/* Actions & Doc count */}
         <div className="shrink-0 flex items-center gap-2 flex-wrap">
-          {property.status === 'LIVE' ? (
+          {isLive ? (
             <div className="flex items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-300 text-xs font-bold shadow-xs">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -239,7 +272,33 @@ export default function PropertyInternalReviewPage() {
                 Unpublish
               </button>
             </div>
-          ) : (
+          ) : isDraft ? (
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                disabled={isPublishingStatus}
+                onClick={() => handleUpdateStatus('UNDER_REVIEW')}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+                title="Move this draft property to Under Review to begin document verification and enable publishing"
+              >
+                {isPublishingStatus ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <ArrowRight className="w-3.5 h-3.5" />
+                )}
+                <span>Move to Under Review</span>
+              </button>
+              <button
+                type="button"
+                disabled={true}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold shadow-xs cursor-not-allowed opacity-60"
+                title={publishDisabledReason}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Publish to Public Website</span>
+              </button>
+            </div>
+          ) : isEligibleForLive ? (
             <button
               type="button"
               disabled={isPublishingStatus}
@@ -252,6 +311,16 @@ export default function PropertyInternalReviewPage() {
               ) : (
                 <Globe className="w-3.5 h-3.5" />
               )}
+              <span>Publish to Public Website</span>
+            </button>
+          ) : (
+            <button
+              type="button"
+              disabled={true}
+              className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-slate-100 text-slate-400 border border-slate-200 text-xs font-bold shadow-xs cursor-not-allowed opacity-60"
+              title={publishDisabledReason}
+            >
+              <Globe className="w-3.5 h-3.5" />
               <span>Publish to Public Website</span>
             </button>
           )}
@@ -307,6 +376,35 @@ export default function PropertyInternalReviewPage() {
             className="text-slate-400 hover:text-slate-600 text-xs font-semibold"
           >
             Dismiss
+          </button>
+        </div>
+      )}
+
+      {/* DRAFT Status Notice Banner */}
+      {isDraft && (
+        <div className="p-4 rounded-xl border border-amber-200 bg-amber-50/90 text-amber-950 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-start gap-2.5">
+            <AlertCircle className="w-4 h-4 text-amber-600 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold text-amber-900">This property is currently in DRAFT status.</p>
+              <p className="text-amber-800 mt-0.5">
+                Draft listings cannot be published directly to the public website. Move the listing to{' '}
+                <span className="font-semibold">Under Review</span> to begin the legal verification process and enable publishing.
+              </p>
+            </div>
+          </div>
+          <button
+            type="button"
+            disabled={isPublishingStatus}
+            onClick={() => handleUpdateStatus('UNDER_REVIEW')}
+            className="shrink-0 inline-flex items-center justify-center gap-1.5 px-3.5 py-2 rounded-lg bg-amber-700 hover:bg-amber-800 text-white text-xs font-bold shadow-xs transition-colors cursor-pointer disabled:opacity-50"
+          >
+            {isPublishingStatus ? (
+              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+            ) : (
+              <ArrowRight className="w-3.5 h-3.5" />
+            )}
+            <span>Move to Under Review</span>
           </button>
         </div>
       )}

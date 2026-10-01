@@ -76,12 +76,32 @@ export default function EditPropertyModal({
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
 
+  const isDraft = property.status === 'DRAFT';
+  const isEligibleForLive =
+    !isDraft &&
+    (property.status === 'VERIFIED' ||
+      property.verificationStatus?.canGoLive === true ||
+      Boolean(property.verificationStatus?.isFullyVerified) ||
+      ((property.verificationStatus?.verifiedDocuments ?? 0) >= (property.verificationStatus?.totalDocuments ?? 13) &&
+        (property.verificationStatus?.totalDocuments ?? 13) > 0));
+
   if (!isOpen) return null;
 
   const handleSave = async (andPublishLive = false) => {
     if (!token) {
       setErrorMessage('Authentication required');
       return;
+    }
+
+    if (andPublishLive) {
+      if (isDraft) {
+        setErrorMessage('Cannot publish: Draft properties must be moved to Under Review and verified first.');
+        return;
+      }
+      if (!isEligibleForLive) {
+        setErrorMessage('Cannot publish: Mandatory verification documents must be verified first.');
+        return;
+      }
     }
 
     if (!titleEn.trim()) {
@@ -507,9 +527,16 @@ export default function EditPropertyModal({
 
             <button
               type="button"
-              disabled={isSaving}
+              disabled={isSaving || isDraft || !isEligibleForLive}
               onClick={() => handleSave(true)}
-              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50"
+              className="inline-flex items-center gap-2 px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold shadow-sm transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+              title={
+                isDraft
+                  ? 'Cannot publish directly from DRAFT. Move to Under Review first.'
+                  : !isEligibleForLive
+                  ? 'Cannot publish: Mandatory verification documents must be verified first.'
+                  : 'Save changes and publish live to public website'
+              }
             >
               {isSaving ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Globe className="w-3.5 h-3.5" />}
               <span>Save & Publish to Public Website</span>

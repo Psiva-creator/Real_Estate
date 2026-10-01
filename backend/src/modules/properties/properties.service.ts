@@ -19,6 +19,7 @@ import {
 export interface CreatePropertyInput {
   sellerId: string;
   type: PropertyType;
+  status?: PropertyStatus;
   titleEn: string;
   titleTe?: string;
   descriptionEn: string;
@@ -39,12 +40,12 @@ export interface CreatePropertyInput {
 }
 
 const VALID_STATUS_TRANSITIONS: Record<PropertyStatus, PropertyStatus[]> = {
-  DRAFT: ['UNDER_REVIEW', 'VERIFIED', 'LIVE', 'OFF_MARKET'],
+  DRAFT: ['UNDER_REVIEW', 'OFF_MARKET'],
   UNDER_REVIEW: ['DRAFT', 'VERIFIED', 'LIVE', 'OFF_MARKET'],
   VERIFIED: ['UNDER_REVIEW', 'LIVE', 'OFF_MARKET'],
-  LIVE: ['SOLD', 'OFF_MARKET', 'UNDER_REVIEW', 'VERIFIED'],
+  LIVE: ['SOLD', 'OFF_MARKET', 'UNDER_REVIEW'],
   SOLD: ['OFF_MARKET', 'LIVE'],
-  OFF_MARKET: ['DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE'],
+  OFF_MARKET: ['DRAFT', 'UNDER_REVIEW', 'LIVE'],
 };
 
 export class PropertiesService {
@@ -103,6 +104,10 @@ export class PropertiesService {
       throw new Error('Invalid property type. Must be LAND, FLAT, or VILLA');
     }
 
+    if (input.status && !['DRAFT', 'UNDER_REVIEW', 'VERIFIED', 'LIVE', 'SOLD', 'OFF_MARKET'].includes(input.status)) {
+      throw new Error(`Invalid property status: ${input.status}`);
+    }
+
     if (!input.mainImage) {
       throw new Error('Main featured image URL is required');
     }
@@ -140,7 +145,7 @@ export class PropertiesService {
     const property = await db.createProperty({
       sellerId: input.sellerId,
       type: input.type,
-      status: 'DRAFT',
+      status: input.status || 'UNDER_REVIEW',
       titleEn: input.titleEn,
       titleTe: input.titleTe,
       descriptionEn: input.descriptionEn,

@@ -468,6 +468,7 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
           email: formData.sellerEmail.trim() || undefined,
         },
         type: formData.propertyType,
+        status: 'UNDER_REVIEW',
         titleEn: formData.title.trim(),
         titleTe: isTe ? formData.title.trim() : undefined,
         descriptionEn: formData.description.trim(),

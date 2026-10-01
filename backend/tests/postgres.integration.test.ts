@@ -985,7 +985,7 @@ describe('PostgreSQL Integration Test Suite (real_estate_brokerage_test)', () =>
       assert.strictEqual(createRes.status, 201);
       const propertyId = createRes.body.property.id;
       assert.ok(propertyId);
-      assert.strictEqual(createRes.body.property.status, 'DRAFT');
+      assert.strictEqual(createRes.body.property.status, 'UNDER_REVIEW');
 
       // Direct PostgreSQL verification
       const pool = db.getPool();
@@ -1615,6 +1615,7 @@ describe('PostgreSQL Integration Test Suite (real_estate_brokerage_test)', () =>
         .post('/api/properties')
         .set('Authorization', `Bearer ${sellerRes.body.token}`)
         .send({
+          status: 'DRAFT',
           type: 'LAND',
           titleEn: 'Status Transition Land',
           descriptionEn: 'Valid transition check',
@@ -1666,6 +1667,7 @@ describe('PostgreSQL Integration Test Suite (real_estate_brokerage_test)', () =>
         .post('/api/properties')
         .set('Authorization', `Bearer ${sellerRes.body.token}`)
         .send({
+          status: 'DRAFT',
           type: 'LAND',
           titleEn: 'Gate Test Land',
           descriptionEn: 'Testing gate',
@@ -2074,6 +2076,7 @@ describe('PostgreSQL Integration Test Suite (real_estate_brokerage_test)', () =>
         .post('/api/properties')
         .set('Authorization', `Bearer ${sellerToken}`)
         .send({
+          status: 'DRAFT',
           type: 'LAND',
           titleEn: 'Gate Protected Land Listing',
           descriptionEn: 'Must pass 13 document gates',
