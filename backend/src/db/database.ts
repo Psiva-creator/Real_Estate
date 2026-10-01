@@ -288,9 +288,9 @@ class Database {
     this.testMemoryMode = false;
   }
 
-  // Returns true only when unit tests explicitly enable test memory mode
+  // Returns true when in unit tests or when PostgreSQL is offline
   get isTestMemoryMode(): boolean {
-    return this.testMemoryMode;
+    return this.testMemoryMode || !this.isPostgresConnected;
   }
 
   getPool(): Pool {
