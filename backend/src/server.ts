@@ -19,6 +19,7 @@ async function startServer() {
     }
   } else {
     console.log('ℹ️ PostgreSQL offline — running with built-in in-memory store seeded with Telangana properties.');
+    db.enableTestMemoryMode();
   }
 
   // Seed default data if store is empty
