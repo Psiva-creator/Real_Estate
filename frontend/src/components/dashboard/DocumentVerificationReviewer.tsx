@@ -739,10 +739,7 @@ export default function DocumentVerificationReviewer({
                     const canVerify =
                       isAdmin &&
                       !isRowLoading &&
-                      row.status !== 'VERIFIED' &&
-                      (row.status === 'UPLOADED' ||
-                        row.status === 'REJECTED' ||
-                        (row.status === 'PENDING' && hasFile));
+                      row.status !== 'VERIFIED';
                     const canReject =
                       isAdmin &&
                       !isRowLoading &&
