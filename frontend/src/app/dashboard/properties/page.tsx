@@ -471,6 +471,17 @@ export default function DashboardPropertiesPage() {
           )}
         </>
       )}
+
+      {/* Staff Land Intake Modal */}
+      <CreateStaffPropertyModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onCreated={(newId) => {
+          setIsAddModalOpen(false);
+          loadProperties();
+          router.push(`/dashboard/properties/${newId}`);
+        }}
+      />
     </div>
   );
 }
