@@ -96,20 +96,43 @@ export class PropertiesController {
 
       // If user is authenticated, derive sellerId strictly from session
       if (req.user) {
-        let owner = await db.findOwnerByUserId(req.user.id);
-        if (!owner) {
-          owner = await db.createOwner({
-            userId: req.user.id,
-            name: req.user.name,
-            phone: req.user.phone,
-            whatsapp: req.user.whatsapp || req.user.phone,
-            email: req.user.email,
-            propertiesCount: 0,
-            dealsCompleted: 0,
-            rating: 5.0,
-          });
+        if (
+          (req.user.role === 'ADMIN' || req.user.role === 'AGENT') &&
+          req.body.seller &&
+          req.body.seller.name &&
+          req.body.seller.phone
+        ) {
+          const { name, phone, whatsapp, email, aadharNumber } = req.body.seller;
+          let owner = await db.findOwnerByPhone(phone);
+          if (!owner) {
+            owner = await db.createOwner({
+              name,
+              phone,
+              whatsapp: whatsapp || phone,
+              email,
+              aadharNumber,
+              propertiesCount: 0,
+              dealsCompleted: 0,
+              rating: 5.0,
+            });
+          }
+          sellerId = owner.id;
+        } else {
+          let owner = await db.findOwnerByUserId(req.user.id);
+          if (!owner) {
+            owner = await db.createOwner({
+              userId: req.user.id,
+              name: req.user.name,
+              phone: req.user.phone,
+              whatsapp: req.user.whatsapp || req.user.phone,
+              email: req.user.email,
+              propertiesCount: 0,
+              dealsCompleted: 0,
+              rating: 5.0,
+            });
+          }
+          sellerId = owner.id;
         }
-        sellerId = owner.id;
       } else {
         // If unauthenticated, seller details MUST be provided in body; raw sellerId is forbidden
         if (!req.body.seller) {
