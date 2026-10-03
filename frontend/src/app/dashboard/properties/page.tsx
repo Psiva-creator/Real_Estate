@@ -94,6 +94,7 @@ export default function DashboardPropertiesPage() {
   const [search, setSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
   const [verifFilter, setVerifFilter] = useState<VerifFilter>('ALL');
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
   // ── Fetch from backend ────────────────────────────────────────────────────
   const loadProperties = useCallback(async () => {
@@ -168,6 +169,15 @@ export default function DashboardPropertiesPage() {
           </p>
         </div>
         <div className="flex items-center gap-2 shrink-0">
+          <button
+            type="button"
+            onClick={() => setIsAddModalOpen(true)}
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-sm transition-all duration-150 cursor-pointer hover:shadow-md"
+            title="Add a new proprietary company land or landowner mandate"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add Land Mandate</span>
+          </button>
           <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#EDE6DA] text-[#3A241C] border border-[#C79A6B]">
             {filtered.length} / {allProperties.length} Listings
           </span>
