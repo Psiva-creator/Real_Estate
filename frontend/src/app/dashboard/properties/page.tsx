@@ -21,7 +21,9 @@ import {
   Loader2,
   AlertCircle,
   Edit3,
+  Plus,
 } from 'lucide-react';
+import CreateStaffPropertyModal from '@/components/dashboard/CreateStaffPropertyModal';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type StatusFilter = 'ALL' | 'DRAFT' | 'UNDER_REVIEW' | 'VERIFIED' | 'LIVE' | 'SOLD' | 'OFF_MARKET';
