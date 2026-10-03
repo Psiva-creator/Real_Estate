@@ -109,6 +109,14 @@ export default function CreateStaffPropertyModal({
     setLongitude(hub.lng);
     setDistanceFromOrrKm(hub.orrKm);
     setTier(hub.tier);
+    if (!titleEn) {
+      setTitleEn(`${totalAcres} Acres Prime Land Parcel in ${hub.village} (${hub.name})`);
+    }
+    if (!descriptionEn) {
+      setDescriptionEn(
+        `Strategic prime contiguous land parcel in ${hub.village}, ${hub.mandal} mandal, ${hub.district} district. High-growth corridor with clear titles, road approach, and high investment appreciation.`
+      );
+    }
   };
 
   // Auto calculate total price when acres or pricePerAcre changes
