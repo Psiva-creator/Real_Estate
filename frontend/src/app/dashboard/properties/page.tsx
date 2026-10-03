@@ -321,8 +321,18 @@ export default function DashboardPropertiesPage() {
               <Building2 className="w-12 h-12 text-slate-300 mx-auto" />
               <h2 className="text-lg font-bold text-slate-900">No properties yet</h2>
               <p className="text-sm text-slate-500">
-                Property submissions from sellers will appear here.
+                Property submissions from sellers or staff mandates will appear here.
               </p>
+              <div>
+                <button
+                  type="button"
+                  onClick={() => setIsAddModalOpen(true)}
+                  className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold shadow-sm transition-all duration-150 cursor-pointer"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add First Land Mandate</span>
+                </button>
+              </div>
             </div>
           )}
 
