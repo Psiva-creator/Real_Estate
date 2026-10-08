@@ -241,7 +241,7 @@ function transformBackendEnquiry(
 
 export default function DashboardEnquiriesPage() {
   const router = useRouter();
-  const { token, isStaff, isSeller, isLoading: authLoading } = useAuth();
+  const { token, user, isStaff, isSeller, isLoading: authLoading } = useAuth();
 
   useEffect(() => {
     if (!authLoading) {
@@ -252,7 +252,9 @@ export default function DashboardEnquiriesPage() {
       }
     }
   }, [authLoading, token, isStaff, isSeller, router]);
+
   const [leads, setLeads] = useState<Lead[]>([]);
+  const [propertyMap, setPropertyMap] = useState<Record<string, PropertyLookup>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
@@ -271,35 +273,158 @@ export default function DashboardEnquiriesPage() {
 
   const getTemplateText = useCallback((lead: Lead, template: string, lang: 'en' | 'te') => {
     const buyer = lead.buyerName;
-    const property = lead.propertyTitle;
-    const agent = lead.agentName && lead.agentName !== 'Unassigned' ? lead.agentName : 'Suresh Reddy (Senior Land Advisor)';
+    const propertyTitle = lang === 'te' && lead.propertyTitleTe ? lead.propertyTitleTe : lead.propertyTitle;
+    const propertyRef = lead.propertyRef || (lead.propertyId.length > 8 ? `#${lead.propertyId.slice(0, 8).toUpperCase()}` : lead.propertyId);
+    const agent = resolveAgentName(lead.agentName, user?.name);
 
     // Extract booked slot timing if present in notes
-    const slotMatch = lead.notes?.match(/Booked slot timing:\s*([^\n]+)/i);
+    const slotMatch =
+      lead.notes?.match(/(?:Booked slot timing|Booked Slot Timing):\s*([^\n|\]]+)/i) ||
+      lead.notes?.match(/\[Booked Slot Timing:\s*([^\]]+)\]/i);
     const slotInfo = slotMatch ? slotMatch[1].trim() : '';
+
+    const baseUrl =
+      typeof window !== 'undefined' && window.location.origin
+        ? window.location.origin
+        : 'https://frontend-six-psi-ecroth2n1r.vercel.app';
+    const propertyUrl = `${baseUrl}/${lang}/properties/${lead.propertyId}`;
 
     if (template === 'confirmation') {
       return lang === 'te'
-        ? `నమస్కారం ${buyer} గారు, మీరు కోరిన ${property} ప్రాపర్టీ కన్సల్టేషన్ వివరాలు స్వీకరించబడ్డాయి. మా సీనియర్ అడ్వైజర్ ${agent} ధరణి రికార్డులు & చట్టపరమైన పత్రాలతో మిమ్మల్ని సంప్రదిస్తారు. మీకు ఏ సమయం అనుకూలంగా ఉంటుంది? - తెలంగాణ రియల్టీ హబ్`
-        : `Hello ${buyer}, thank you for booking a consultation for ${property} with Telangana Realty Hub. I am ${agent}, your assigned senior property advisor. All 13 legal documents and revenue records are verified. Would today or tomorrow be a good time to connect for a detailed briefing?`;
+        ? `🏢 *ప్రాపర్టీ కన్సల్టేషన్ వివరాలు | తెలంగాణ రియల్టీ హబ్*
+
+నమస్కారం ${buyer} గారు,
+
+${propertyTitle} (Ref: ${propertyRef}) ప్రాపర్టీ పట్ల ఆసక్తి చూపించినందుకు ధన్యవాదాలు.
+
+నేను ${agent}, మీ నియమిత సీనియర్ ప్రాపర్టీ అడ్వైజర్. మీ అభ్యర్థన మా డీల్ డెస్క్ వద్ద విజయవంతంగా నమోదు చేయబడింది.
+
+🔗 *మా వెబ్‌సైట్‌లో పూర్తి ప్రాపర్టీ & విక్రేత పత్రాలను ఇక్కడ చూడండి:*
+${propertyUrl}
+
+కీలక ప్రయోజనాలు:
+✅ 13 చట్టపరమైన చెక్‌పాయింట్ల ద్వారా ధ్రువీకరించబడిన క్లియర్ టైటిల్
+✅ ధరణి రికార్డులు & 30 సంవత్సరాల EC పరిశీలన పూర్తయింది
+✅ యజమానితో నేరుగా సమన్వయం & పారదర్శక ధర
+
+వివరాలపై మాట్లాడటానికి ఈ రోజు లేదా రేపు మీకు ఏ సమయం అనుకూలంగా ఉంటుంది?
+
+భవదీయుడు,
+${agent}
+తెలంగాణ రియల్టీ హబ్ (+91 94400 12345)`
+        : `🏢 *Property Consultation Confirmed | Telangana Realty Hub*
+
+Hello ${buyer},
+
+Thank you for your enquiry regarding ${propertyTitle} (Ref: ${propertyRef}).
+
+I am ${agent}, your dedicated Senior Property Advisor. Your enquiry has been received and prioritized at our Deal Desk.
+
+🔗 *View Verified Property Listing & Seller Documents:*
+${propertyUrl}
+
+Key Highlights:
+✅ 100% Clear Title verified across 13 government checkpoints
+✅ Dharani Revenue Records & 30-Year EC validated
+✅ Direct owner-verified pricing & instant site visit scheduling
+
+Would today or tomorrow be a convenient time for a brief 10-minute briefing call?
+
+Best regards,
+${agent}
+Telangana Realty Hub Deal Desk (+91 94400 12345)`;
     }
 
     if (template === 'site_visit') {
-      const slotMention = slotInfo ? ` (Booked slot: ${slotInfo})` : '';
-      const slotMentionTe = slotInfo ? ` (${slotInfo} స్లాట్)` : '';
+      const slotMention = slotInfo ? slotInfo : 'Scheduled on Request';
+      const slotMentionTe = slotInfo ? `${slotInfo} స్లాట్` : 'అభ్యర్థన మేరకు షెడ్యూల్ చేయబడింది';
       return lang === 'te'
-        ? `నమస్కారం ${buyer} గారు, ${property} కొరకు మీ సైట్ విజిట్${slotMentionTe} షెడ్యూల్ చేయడానికి సిద్ధంగా ఉన్నాము. ప్రాపర్టీ బౌండరీలు మరియు లేఅవుట్ చూపించడానికి మా ప్రతినిధి ${agent} మీతో ఉంటారు. దయచేసి వివరాలు నిర్ధారించండి.`
-        : `Hi ${buyer}, regarding your site visit request for ${property}${slotMention}: Our team has coordinated with the land owner. Advisor ${agent} will accompany you for an on-ground boundary inspection and survey verification. Looking forward to meeting you!`;
+        ? `🏡 *సైట్ విజిట్ స్లాట్ బుకింగ్ నిర్ధారించబడింది | తెలంగాణ రియల్టీ హబ్*
+
+నమస్కారం ${buyer} గారు,
+
+మీరు కోరిన ప్రాపర్టీ కోసం మా సర్టిఫైడ్ అడ్వైజర్ ${agent} తో సైట్ విజిట్ స్లాట్ విజయవంతంగా బుక్ చేయబడింది.
+
+📋 *ప్రాపర్టీ:* ${propertyTitle} (Ref: ${propertyRef})
+🕒 *స్లాట్ సమయం:* ${slotMentionTe}
+📍 *పరిశీలన:* ఆన్-గ్రౌండ్ రెవెన్యూ సర్వే & బౌండరీ వెరిఫికేషన్
+
+🔗 *విక్రేత దరఖాస్తు చేసిన భూమి / ప్రాపర్టీ వివరాలను మా వెబ్‌సైట్‌లో చూడండి:*
+${propertyUrl}
+
+మా అడ్వైజర్ ధరణి పట్టాదారు పాస్‌బుక్, 30 ఏళ్ల EC మరియు ధ్రువీకరించబడిన సర్వే పత్రాలతో మీకు మార్గనిర్దేశం చేస్తారు.
+
+ఏవైనా సందేహాలుంటే ఈ వాట్సాప్ నంబర్‌కు రిప్లై ఇవ్వండి లేదా +91 94400 12345 కి కాల్ చేయండి.
+
+భవదీయుడు,
+తెలంగాణ రియల్టీ హబ్ బృందం`
+        : `🏡 *Site Visit Slot Confirmed | Telangana Realty Hub*
+
+Dear ${buyer},
+
+Your site visit slot has been successfully booked with our certified property advisor, ${agent}.
+
+📋 *Property:* ${propertyTitle} (Ref: ${propertyRef})
+🕒 *Booked Slot:* ${slotMention}
+📍 *Meeting Point:* On-ground boundary & survey inspection site
+
+🔗 *View Verified Property & Land Details on Our Website:*
+${propertyUrl}
+
+Our advisor will accompany you with the Dharani Pattadar Passbook, certified survey boundary maps, and 30-year Encumbrance Certificate (EC).
+
+For immediate coordination or directions, reply directly to this message or call our Deal Desk at +91 94400 12345.
+
+Looking forward to meeting you!
+— Telangana Realty Hub Team`;
     }
 
     if (template === 'legal_docs') {
       return lang === 'te'
-        ? `నమస్కారం ${buyer} గారు, ${property} కి సంబంధించిన ధరణి పట్టాదారు పాస్‌బుక్, 30 ఏళ్ల EC మరియు రెవెన్యూ సర్వే నంబర్ల పరిశీలన నివేదిక సిద్ధంగా ఉంది. వివరాలు పరిశీలించడానికి కాల్ చేయగలరు: +91 98765 43210.`
-        : `Dear ${buyer}, the legal verification report for ${property} is ready. It covers 30-year Encumbrance Certificate (EC), Dharani Pattadar Passbook, and SRO market valuation. Please let us know if you would like to review the document dossier.`;
+        ? `📑 *చట్టపరమైన పత్రాల పరిశీలన నివేదిక (Dossier) | తెలంగాణ రియల్టీ హబ్*
+
+నమస్కారం ${buyer} గారు,
+
+${propertyTitle} (Ref: ${propertyRef}) ప్రాపర్టీకి సంబంధించిన 13-పాయింట్ల సమగ్ర లీగల్ వెరిఫికేషన్ డాసియర్ సిద్ధంగా ఉంది.
+
+🔗 *పూర్తి డాక్యుమెంట్లు & ప్రాపర్టీ వివరాలను మా వెబ్‌సైట్‌లో చూడండి:*
+${propertyUrl}
+
+పరిశీలన ముఖ్యాంశాలు:
+• 30 ఏళ్ల నిల్ ఎన్‌కంబ్రెన్స్ సర్టిఫికేట్ (EC)
+• ధరణి డిజిటల్ పట్టాదారు పాస్‌బుక్ & సర్వే నంబర్ల మ్యాప్
+• HMDA / RERA మాస్టర్ ప్లాన్ జోనింగ్ క్లియరెన్స్
+• కోర్టు వివాదాలు లేవని ధ్రువీకరించిన లీగల్ ఒపీనియన్
+
+ఈ PDF కాపీని వాట్సాప్‌లో పొందడానికి "SEND DOSSIER" అని రిప్లై ఇవ్వండి లేదా +91 94400 12345 కి కాల్ చేయండి.
+
+భవదీయుడు,
+${agent}
+తెలంగాణ రియల్టీ హబ్`
+        : `📑 *Legal Due Diligence Dossier Ready | Telangana Realty Hub*
+
+Dear ${buyer},
+
+The comprehensive 13-point legal due diligence dossier for ${propertyTitle} (Ref: ${propertyRef}) is now ready for your review.
+
+🔗 *View Complete Property & Document Overview:*
+${propertyUrl}
+
+Dossier Summary:
+• 30-Year Non-Encumbrance Certificate (Nil Encumbrance)
+• Dharani Digital Pattadar Passbook & Revenue Survey Map
+• HMDA / RERA / SRO Master Plan Verification
+• Certified Litigations Check across Revenue & Civil Courts
+
+To receive the downloadable PDF dossier on WhatsApp or schedule an in-person legal review, please reply "SEND DOSSIER" or reach out to our legal desk at +91 94400 12345.
+
+Warm regards,
+${agent}
+Telangana Realty Hub`;
     }
 
     return customMessageText;
-  }, [customMessageText]);
+  }, [customMessageText, user?.name]);
 
   const handleOpenMessageModal = (lead: Lead) => {
     const initialTemplate = lead.enquiryType === 'SITE_VISIT' ? 'site_visit' : 'confirmation';
@@ -336,20 +461,88 @@ export default function DashboardEnquiriesPage() {
     setTimeout(() => setIsCopied(false), 2000);
   };
 
-  // Fetch real enquiries from the backend
+  // Fetch real enquiries and property metadata from backend
   const fetchEnquiries = useCallback(async () => {
     setIsLoading(true);
     setErrorMessage(null);
     try {
+      const pMap: Record<string, PropertyLookup> = {};
+      const origin =
+        typeof window !== 'undefined' && window.location.origin
+          ? window.location.origin
+          : 'https://frontend-six-psi-ecroth2n1r.vercel.app';
+
+      // 1. Seed with offline mock properties
+      MOCK_PROPERTIES.forEach((p) => {
+        pMap[p.id] = {
+          id: p.id,
+          titleEn: p.titleEn,
+          titleTe: p.titleTe || p.titleEn,
+          ref: getCleanPropertyRef(p.id),
+          url: `${origin}/en/properties/${p.id}`,
+        };
+      });
+
+      // 2. Fetch live properties catalog
+      try {
+        const { properties } = await getProperties({ limit: 100 });
+        if (properties && properties.length > 0) {
+          properties.forEach((p) => {
+            pMap[p.id] = {
+              id: p.id,
+              titleEn: p.titleEn,
+              titleTe: p.titleTe || p.titleEn,
+              ref: getCleanPropertyRef(p.id),
+              url: `${origin}/en/properties/${p.id}`,
+            };
+          });
+        }
+      } catch (catErr) {
+        console.warn('[Enquiries] Could not fetch catalog properties:', catErr);
+      }
+
       if (token) {
         const res = await getEnquiriesApi(token);
         if (res.enquiries && res.enquiries.length > 0) {
-          setLeads(res.enquiries.map(transformBackendEnquiry));
+          // Identify any enquiries with property IDs not yet in pMap
+          const missingIds = Array.from(
+            new Set(
+              res.enquiries
+                .map((e) => e.propertyId)
+                .filter((pid) => pid && !pMap[pid])
+            )
+          );
+
+          if (missingIds.length > 0) {
+            await Promise.allSettled(
+              missingIds.map(async (pid) => {
+                try {
+                  const single = await getPropertyById(pid);
+                  if (single) {
+                    pMap[single.id] = {
+                      id: single.id,
+                      titleEn: single.titleEn,
+                      titleTe: single.titleTe || single.titleEn,
+                      ref: getCleanPropertyRef(single.id),
+                      url: `${origin}/en/properties/${single.id}`,
+                    };
+                  }
+                } catch {
+                  // Fallback to ref-based label
+                }
+              })
+            );
+          }
+
+          setPropertyMap(pMap);
+          setLeads(res.enquiries.map((be) => transformBackendEnquiry(be, pMap, user?.name)));
         } else {
+          setPropertyMap(pMap);
           // Real backend returned 0 records -> show empty state (no fake data)
           setLeads([]);
         }
       } else {
+        setPropertyMap(pMap);
         // Fallback for standalone preview when unauthenticated
         setLeads(INITIAL_LEADS);
       }
@@ -361,7 +554,7 @@ export default function DashboardEnquiriesPage() {
     } finally {
       setIsLoading(false);
     }
-  }, [token]);
+  }, [token, user?.name]);
 
   useEffect(() => {
     fetchEnquiries();
@@ -375,6 +568,7 @@ export default function DashboardEnquiriesPage() {
         const hit =
           lead.buyerName.toLowerCase().includes(q) ||
           lead.propertyTitle.toLowerCase().includes(q) ||
+          (lead.propertyRef && lead.propertyRef.toLowerCase().includes(q)) ||
           lead.propertyId.toLowerCase().includes(q);
         if (!hit) return false;
       }
@@ -397,8 +591,9 @@ export default function DashboardEnquiriesPage() {
       'Lead ID',
       'Buyer Name',
       'Phone',
-      'Property ID',
+      'Property Ref',
       'Property Title',
+      'Listing URL',
       'Enquiry Type',
       'Status',
       'Assigned Agent',
@@ -410,8 +605,9 @@ export default function DashboardEnquiriesPage() {
       `"${l.id}"`,
       `"${l.buyerName.replace(/"/g, '""')}"`,
       `"${l.phone.replace(/"/g, '""')}"`,
-      `"${l.propertyId}"`,
+      `"${l.propertyRef || l.propertyId}"`,
       `"${l.propertyTitle.replace(/"/g, '""')}"`,
+      `"${l.propertyUrl || ''}"`,
       `"${l.enquiryType}"`,
       `"${l.status}"`,
       `"${l.agentName.replace(/"/g, '""')}"`,
