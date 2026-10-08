@@ -874,12 +874,26 @@ Telangana Realty Hub`;
                     </td>
 
                     {/* Target Property */}
-                    <td className="px-4 py-3.5 max-w-[200px]">
-                      <span className="font-mono text-[11px] text-emerald-800 font-bold block">
-                        {lead.propertyId}
-                      </span>
+                    <td className="px-4 py-3.5 max-w-[240px]">
+                      <div className="flex items-center gap-1.5 mb-1">
+                        <span className="font-mono text-[11px] text-emerald-800 font-bold bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-200">
+                          {lead.propertyRef || (lead.propertyId.length > 8 ? `#${lead.propertyId.slice(0, 8).toUpperCase()}` : lead.propertyId)}
+                        </span>
+                        {lead.propertyUrl && (
+                          <a
+                            href={lead.propertyUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-flex items-center gap-0.5 text-[11px] text-blue-600 hover:text-blue-800 hover:underline font-semibold"
+                            title="Open verified listing page in new tab"
+                          >
+                            <span>View Listing</span>
+                            <ExternalLink className="w-2.5 h-2.5" />
+                          </a>
+                        )}
+                      </div>
                       <span
-                        className="text-xs text-slate-600 line-clamp-2"
+                        className="text-xs text-slate-800 font-medium line-clamp-2 block"
                         title={lead.propertyTitle}
                       >
                         {lead.propertyTitle}
@@ -929,11 +943,13 @@ Telangana Realty Hub`;
                           onChange={(e) => updateAgent(lead.id, e.target.value)}
                           className="w-full h-8 px-2 pr-6 rounded-md bg-white border border-slate-200 text-xs text-slate-700 font-medium focus:outline-none focus:ring-1 focus:ring-blue-500 cursor-pointer appearance-none"
                         >
-                          {AGENTS.map((agent) => (
-                            <option key={agent} value={agent}>
-                              {agent}
-                            </option>
-                          ))}
+                          {Array.from(new Set([...BASE_AGENTS, lead.agentName]))
+                            .filter(Boolean)
+                            .map((agent) => (
+                              <option key={agent} value={agent}>
+                                {agent}
+                              </option>
+                            ))}
                         </select>
                         <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 w-3 h-3 text-slate-400 pointer-events-none" />
                       </div>
