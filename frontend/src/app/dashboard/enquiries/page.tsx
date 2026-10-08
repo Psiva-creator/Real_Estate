@@ -1051,11 +1051,25 @@ Telangana Realty Hub`;
                     </p>
                   </div>
                 </div>
-                <div className="mt-2 text-xs text-slate-600 flex items-center gap-2">
-                  <span className="font-mono px-1.5 py-0.5 rounded bg-slate-200 text-slate-700 text-[11px] font-semibold">
-                    {selectedLeadForMessage.propertyId}
+                <div className="mt-2 text-xs text-slate-600 flex items-center gap-2 flex-wrap">
+                  <span className="font-mono px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 text-[11px] font-bold border border-emerald-200">
+                    {selectedLeadForMessage.propertyRef || (selectedLeadForMessage.propertyId.length > 8 ? `#${selectedLeadForMessage.propertyId.slice(0, 8).toUpperCase()}` : selectedLeadForMessage.propertyId)}
                   </span>
-                  <span className="truncate max-w-[320px]">{selectedLeadForMessage.propertyTitle}</span>
+                  <span className="font-semibold text-slate-800 truncate max-w-[280px]">
+                    {selectedLeadForMessage.propertyTitle}
+                  </span>
+                  {selectedLeadForMessage.propertyUrl && (
+                    <a
+                      href={selectedLeadForMessage.propertyUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-1 text-[11px] text-blue-600 hover:text-blue-800 font-semibold underline ml-auto"
+                      title="View listing details on website"
+                    >
+                      <span>View Listing</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  )}
                 </div>
               </div>
               <button
@@ -1164,7 +1178,7 @@ Telangana Realty Hub`;
                 </div>
                 <textarea
                   id="messageText"
-                  rows={5}
+                  rows={9}
                   value={customMessageText}
                   onChange={(e) => setCustomMessageText(e.target.value)}
                   className="w-full p-3 rounded-xl border border-slate-200 bg-slate-50/50 text-xs sm:text-sm text-slate-800 font-normal focus:bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500 resize-none transition-colors"
