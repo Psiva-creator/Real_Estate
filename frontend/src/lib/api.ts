@@ -413,23 +413,49 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 
+export const PRODUCTION_API_URL = 'https://telangana-realty-backend.onrender.com/api';
+
 export function getApiBaseUrl(): string {
-  const configured = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
-  if (typeof window !== 'undefined' && window.location?.hostname) {
-    const currentHost = window.location.hostname;
-    if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
-      try {
-        const parsed = new URL(configured);
-        if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
-          parsed.hostname = currentHost;
-          return parsed.toString().replace(/\/+$/, '');
-        }
-      } catch {
-        // ignore parse errors and fallback to configured
+  const envUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.trim();
+
+  // If running in browser:
+  if (typeof window !== 'undefined' && window.location) {
+    const isHttps = window.location.protocol === 'https:';
+    const host = window.location.hostname;
+    const isLocalhost = host === 'localhost' || host === '127.0.0.1';
+
+    // 1. If loaded over HTTPS (e.g. Vercel deployment), NEVER allow insecure http:// URLs (prevents browser Mixed Content blocking)
+    if (isHttps) {
+      if (envUrl && envUrl.startsWith('https://')) {
+        return envUrl.replace(/\/+$/, '');
       }
+      return PRODUCTION_API_URL;
     }
+
+    // 2. If on a remote non-localhost domain
+    if (!isLocalhost) {
+      if (envUrl && envUrl.startsWith('http')) {
+        return envUrl.replace(/\/+$/, '');
+      }
+      return PRODUCTION_API_URL;
+    }
+
+    // 3. Localhost development
+    if (envUrl) {
+      return envUrl.replace(/\/+$/, '');
+    }
+    return 'http://localhost:5000/api';
   }
-  return configured;
+
+  // SSR / Node build environment
+  if (process.env.NODE_ENV === 'production') {
+    if (envUrl && envUrl.startsWith('https://')) {
+      return envUrl.replace(/\/+$/, '');
+    }
+    return PRODUCTION_API_URL;
+  }
+
+  return (envUrl || 'http://localhost:5000/api').replace(/\/+$/, '');
 }
 
 const API_BASE_URL = getApiBaseUrl();
