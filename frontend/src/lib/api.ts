@@ -821,7 +821,7 @@ export async function uploadPropertyDocument(
   if (isRealBackend()) {
     return new Promise((resolve, reject) => {
       const xhr = new XMLHttpRequest();
-      xhr.open('POST', `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/upload`);
+      xhr.open('POST', `${getApiBaseUrl()}/properties/${encodeURIComponent(propertyId)}/documents/upload`);
 
       const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('trh_auth_token') : null);
       if (authToken) {
