@@ -24,12 +24,13 @@ import {
   Upload,
   Camera,
   Trash2,
+  Loader2,
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { SellerFormData, INITIAL_SELLER_FORM_DATA, PropertyType } from '@/types/seller';
 import DocumentChecklistUploader from './DocumentChecklistUploader';
 import { formatINR } from '@/lib/formatters';
-import { createProperty, CreatePropertyDTO, uploadPropertyDocument, uploadImageApi } from '@/lib/api';
+import { createProperty, CreatePropertyDTO, uploadPropertyDocument, uploadImageApi, getApiBaseUrl } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 import LeafletPropertyMap, { DetectedLocalityPayload } from '@/components/properties/LeafletPropertyMap';
 import {
@@ -97,6 +98,16 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       }));
     }
   }, [isAuthenticated, user]);
+
+  // Ping backend health on mount to warm up Render container while user is filling Step 1
+  useEffect(() => {
+    try {
+      const apiBase = getApiBaseUrl();
+      if (apiBase.startsWith('https://')) {
+        fetch(`${apiBase}/health`, { mode: 'cors' }).catch(() => {});
+      }
+    } catch {}
+  }, []);
 
   const steps: StepMeta[] = [
     { id: 'type', label: sfDict.steps.type, icon: Home },
