@@ -13,8 +13,7 @@ export function stripInternalNotes(
   details?: AdminPropertyDetails | null
 ): BuyerFacingAdminDetails | null {
   if (!details) return null;
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { internalNotes, ...buyerFacing } = details;
+  const { internalNotes: _internalNotes, ...buyerFacing } = details;
   return buyerFacing;
 }
 

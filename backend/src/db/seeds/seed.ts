@@ -590,7 +590,7 @@ export async function runSeeds() {
     id: propLotusId,
     sellerId: seller1.id,
     type: 'LAND',
-    status: 'LIVE',
+    status: 'SOLD',
     titleEn: 'Lotus Manapolam Lucky Plots – Narayankhed',
     titleTe: 'లోటస్ మనపొలం లక్కీ ప్లాట్స్ – నారాయణఖేడ్',
     descriptionEn:
@@ -651,7 +651,7 @@ export async function runSeeds() {
     id: propNimzId,
     sellerId: nskSeller.id,
     type: 'LAND',
-    status: 'LIVE',
+    status: 'SOLD',
     titleEn: 'NIMZ Siri Kshetram – Narayankhed',
     titleTe: 'నిమ్జ్ సిరి క్షేత్రం – నారాయణఖేడ్',
     descriptionEn:
@@ -703,7 +703,7 @@ export async function runSeeds() {
     id: propVspId,
     sellerId: seller2.id,
     type: 'FLAT',
-    status: 'LIVE',
+    status: 'SOLD',
     titleEn: 'Vasu Sri Pride – Gandimaisamma, Hyderabad',
     titleTe: 'వాసు శ్రీ ప్రైడ్ – గండిమైసమ్మ, హైదరాబాద్',
     descriptionEn:
@@ -789,7 +789,7 @@ export async function runSeeds() {
     id: propKaId,
     sellerId: seller1.id,
     type: 'FLAT',
-    status: 'LIVE',
+    status: 'SOLD',
     titleEn: "Krishna's Arena – Masjid Banda, Kondapur, Hyderabad",
     titleTe: 'కృష్ణాస్ ఎరీనా – మసీద్ బండ, కొండాపూర్, హైదరాబాద్',
     descriptionEn:
@@ -878,7 +878,7 @@ export async function runSeeds() {
     id: propKgmId,
     sellerId: seller2.id,
     type: 'VILLA',
-    status: 'LIVE',
+    status: 'SOLD',
     titleEn: 'Kaakatiya Golden Meadows – Indresham, Patancheru',
     titleTe: 'కాకతీయ గోల్డెన్ మెడోస్ – ఇంద్రేశం, పటాన్‌చెరు',
     descriptionEn:

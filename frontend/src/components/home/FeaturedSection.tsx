@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   Building2,
@@ -224,12 +225,15 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
               
               {/* Lead Image (7 cols) */}
               <div className="lg:col-span-7 relative group overflow-hidden bg-[#EFE9E0] min-h-[380px] lg:min-h-[500px]">
-                <img
+                <Image
                   src={leadProperty.mainImage}
                   alt={leadProperty.title}
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 58vw"
+                  loading="lazy"
+                  className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/60 via-transparent to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/60 via-transparent to-transparent pointer-events-none" />
 
                 {/* Top Floating Badges */}
                 <div className="absolute top-5 left-5 flex flex-wrap gap-2">
@@ -390,10 +394,13 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
               <div>
                 {/* Image & Overlay Badges */}
                 <div className="aspect-[4/3] relative w-full overflow-hidden bg-[#EFE9E0]">
-                  <img
+                  <Image
                     src={property.mainImage}
                     alt={property.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                    fill
+                    sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+                    loading="lazy"
+                    className="object-cover group-hover:scale-105 transition-transform duration-500"
                   />
                   <div className="absolute top-3 left-3 flex flex-wrap gap-1.5">
                     {property.status === 'SOLD' && (
@@ -559,7 +566,7 @@ export default function FeaturedSection({ locale, initialProperties }: FeaturedS
                       required
                       value={buyerPhone}
                       onChange={(e) => setBuyerPhone(e.target.value)}
-                      placeholder="9876543210"
+                      placeholder="9XXXXXXXXX"
                       className="w-full h-11 px-3.5 rounded-xl border border-[#E8E2D9] bg-white text-xs sm:text-sm text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] font-mono"
                     />
                   </div>

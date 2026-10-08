@@ -106,20 +106,10 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
   useEffect(() => {
     let cancelled = false;
     setIsFetchingBackend(true);
-    getProperties({ limit: 100 })
-      .then(({ properties, fromBackend }) => {
+    getProperties({ limit: 100, status: 'ALL' })
+      .then(({ properties }) => {
         if (!cancelled) {
-          if (fromBackend) {
-            // Backend only returns LIVE properties — ensure SOLD entries from
-            // mockData (the 5 real completed projects) are always included so
-            // the Sold filter works correctly.
-            const MOCK_SOLD = MOCK_PROPERTIES.filter((p) => p.status === 'SOLD');
-            const backendIds = new Set(properties.map((p) => p.id));
-            const missingSold = MOCK_SOLD.filter((p) => !backendIds.has(p.id));
-            setAllProperties([...properties, ...missingSold]);
-          } else {
-            setAllProperties(properties);
-          }
+          setAllProperties(properties);
         }
       })
       .catch(() => {
@@ -456,6 +446,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
                 if (e.key === 'Enter') handleApplyFilters();
               }}
               placeholder={dict.filters.searchPlaceholder}
+              aria-label={dict.filters.searchPlaceholder}
               className="w-full h-11 pl-11 pr-4 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-2 focus:ring-[#8C653E]"
             />
             {filters.query && (
@@ -584,10 +575,11 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
           <div className="grid grid-cols-1 min-[480px]:grid-cols-2 lg:grid-cols-5 gap-3.5">
             {/* 1. Location / Mandal Filter */}
             <div>
-              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
+              <label htmlFor="filter-location" className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.location}
               </label>
               <select
+                id="filter-location"
                 value={filters.location}
                 onChange={(e) => setFilters({ ...filters, location: e.target.value })}
                 className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
@@ -602,10 +594,11 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 2. Price Range Filter */}
             <div>
-              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
+              <label htmlFor="filter-price-range" className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.priceRange}
               </label>
               <select
+                id="filter-price-range"
                 value={filters.priceRange}
                 onChange={(e) => setFilters({ ...filters, priceRange: e.target.value })}
                 className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
@@ -621,10 +614,11 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 3. Area / Acreage Filter */}
             <div>
-              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
+              <label htmlFor="filter-area-range" className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.acres}
               </label>
               <select
+                id="filter-area-range"
                 value={filters.areaRange}
                 onChange={(e) => setFilters({ ...filters, areaRange: e.target.value })}
                 className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
@@ -640,10 +634,11 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 4. ORR Distance Filter */}
             <div>
-              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
+              <label htmlFor="filter-orr-distance" className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.distanceOrr}
               </label>
               <select
+                id="filter-orr-distance"
                 value={filters.orrDistance}
                 onChange={(e) => setFilters({ ...filters, orrDistance: e.target.value })}
                 className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
@@ -658,10 +653,11 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
             {/* 5. Verification Status Filter */}
             <div>
-              <label className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
+              <label htmlFor="filter-verification" className="block text-[10px] font-bold text-[#8C653E] uppercase tracking-[0.16em] mb-1.5">
                 {dict.filters.verificationStatus}
               </label>
               <select
+                id="filter-verification"
                 value={filters.verificationStatus}
                 onChange={(e) => setFilters({ ...filters, verificationStatus: e.target.value })}
                 className="w-full h-10 px-3 rounded-xl bg-[#F5F1EA] border border-[#E8E2D9] text-xs font-medium text-[#191512] focus:outline-none focus:ring-2 focus:ring-[#8C653E] cursor-pointer"
@@ -718,7 +714,7 @@ export default function PropertyDiscovery({ locale, initialParams }: PropertyDis
 
       {/* Results Header & Mobile Toggle */}
       <div className="flex flex-col min-[480px]:flex-row items-stretch min-[480px]:items-center justify-between gap-3">
-        <div className="font-serif text-base text-[#191512] flex items-center gap-2">
+        <div className="font-serif text-base text-[#191512] flex items-center gap-2" role="status" aria-live="polite">
           <span>
             {appliedFilters.status === 'SOLD'
               ? (isTe

@@ -85,7 +85,7 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
       <div className="relative aspect-[16/10] w-full overflow-hidden bg-[#F5F1EA]">
         <Image
           src={imgSrc}
-          alt={title}
+          alt={imgSrc.includes('placeholder') ? `${title} (Representative Image)` : title}
           fill
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           className="object-cover group-hover:scale-105 transition-transform duration-700 ease-out"
@@ -94,6 +94,11 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
             setImgSrc('/images/property-placeholder.svg');
           }}
         />
+        {imgSrc.includes('placeholder') && (
+          <span className="absolute bottom-2 right-2 px-2 py-0.5 rounded text-[9px] font-mono tracking-wider uppercase bg-black/60 text-white/90 backdrop-blur-sm pointer-events-none">
+            Representative Asset
+          </span>
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-black/30 pointer-events-none" />
 
         {/* Top Badges */}
@@ -160,7 +165,7 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
       <div className="p-5 flex-1 flex flex-col justify-between space-y-4">
         <div>
           {/* Location Line */}
-          <div className="flex items-center gap-1.5 text-xs text-[#8C827A] mb-1.5">
+          <div className="flex items-center gap-1.5 text-xs text-[#5E564F] mb-1.5">
             <MapPin className="w-3.5 h-3.5 text-[#8C653E] shrink-0" />
             <span className="truncate">
               {property.location.village}, {property.location.mandal},{' '}
@@ -206,7 +211,7 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
         <div className="pt-3.5 border-t border-[#E8E2D9]/70 space-y-3.5">
           <div className="flex items-baseline justify-between">
             <div>
-              <span className="text-[9px] uppercase font-bold text-[#8C827A] tracking-[0.18em] block">
+              <span className="text-[10px] uppercase font-bold text-[#5E564F] tracking-[0.16em] block">
                 {isTe ? 'మొత్తం ధర' : 'Investment'}
               </span>
               <span className="font-serif text-xl sm:text-2xl font-bold text-[#191512]">
@@ -217,17 +222,17 @@ export default function PropertyCard({ property, locale, onBookVisit }: Property
             {/* Sub-rate */}
             <div className="text-right">
               {property.pricing.pricePerAcre && (
-                <span className="text-xs text-[#8C827A] block font-mono">
+                <span className="text-xs text-[#5E564F] block font-mono">
                   {formatINR(property.pricing.pricePerAcre)} / Acre
                 </span>
               )}
               {property.pricing.pricePerSqft && (
-                <span className="text-xs text-[#8C827A] block font-mono">
+                <span className="text-xs text-[#5E564F] block font-mono">
                   ₹{property.pricing.pricePerSqft.toLocaleString('en-IN')} / sq.ft
                 </span>
               )}
               {property.pricing.pricePerSqYard && (
-                <span className="text-xs text-[#8C827A] block font-mono">
+                <span className="text-xs text-[#5E564F] block font-mono">
                   ₹{property.pricing.pricePerSqYard.toLocaleString('en-IN')} / sq.yd
                 </span>
               )}

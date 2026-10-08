@@ -24,6 +24,7 @@ const cormorantGaramond = Cormorant_Garamond({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://frontend-six-psi-ecroth2n1r.vercel.app'),
   title: {
     default: 'Telangana Realty Hub | 100% Verified Land & Flat Brokerage',
     template: '%s | Telangana Realty Hub',
@@ -43,7 +44,10 @@ export const metadata: Metadata = {
   ],
   authors: [{ name: 'Telangana Realty Advisory Team' }],
   icons: {
-    icon: '/favicon.ico',
+    icon: [
+      { url: '/favicon.ico' },
+      { url: '/icon.svg', type: 'image/svg+xml' },
+    ],
   },
   openGraph: {
     title: 'Telangana Realty Hub | 100% Verified Land & Flat Brokerage',

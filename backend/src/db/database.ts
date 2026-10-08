@@ -59,6 +59,27 @@ export function getPhoneCandidates(phone: string): string[] {
   return Array.from(candidates).filter(Boolean);
 }
 
+// Demo property ID alias mappings (e.g. PROP-HYD-003 -> PostgreSQL UUID)
+export const DEMO_PROPERTY_ID_MAP: Record<string, string> = {
+  'PROP-HYD-001': '7b4fa763-3988-4114-a0ea-2d5ac9dd980f',
+  'PROP-HYD-002': 'ca1712b3-e5c0-45ec-a98f-a1b9c76d4dce',
+  'PROP-HYD-003': '47e96ae1-1d04-4d89-a65a-834ed535761c',
+  'PROP-HYD-004': 'ac7f1749-1e56-4202-a013-34511004832a',
+  'PROP-HYD-005': '08d9a120-a63f-44e5-ae9c-465f7e40b7a5',
+  'PROP-HYD-006': 'e138a834-eb56-47c7-a262-16de9d05eded',
+  'PROP-LOTUS-001': '38778bab-a043-4baa-a070-c658301443de',
+  'PROP-NIMZ-001': 'fc5837e7-3838-4180-8fd8-a37c0c931c68',
+  'PROP-VSP-001': '31ce5b44-f2fa-42e0-9425-54a0ef944e31',
+  'PROP-KA-001': '6f38b85a-a3c3-4afa-99b1-178629cc28ca',
+  'PROP-KGM-001': 'ff226a81-414c-4daa-bae9-8a1f96058fbe',
+};
+
+export function resolvePropertyId(id: string): string {
+  if (!id || typeof id !== 'string') return id;
+  const trimmed = id.trim();
+  return DEMO_PROPERTY_ID_MAP[trimmed] || trimmed;
+}
+
 // Row mapper helpers to convert PostgreSQL snake_case to application camelCase
 function mapUserRow(row: any): User {
   return {
@@ -1025,24 +1046,32 @@ class Database {
 
   async findPropertyById(id: string): Promise<Property | null> {
     if (this.isTestMemoryMode) {
-      return this.memory.properties.get(id) || null;
+      const resolved = resolvePropertyId(id);
+      return this.memory.properties.get(id) || this.memory.properties.get(resolved) || null;
     }
 
     if (!id || typeof id !== 'string') return null;
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+    const resolvedId = resolvePropertyId(id);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedId);
     if (!isUUID) {
       return null;
     }
 
     const pool = this.ensurePool();
-    const res = await pool.query('SELECT * FROM properties WHERE id = $1', [id]);
+    const res = await pool.query('SELECT * FROM properties WHERE id = $1', [resolvedId]);
     if (res.rows.length === 0) return null;
-    return mapPropertyRow(res.rows[0]);
+    const property = mapPropertyRow(res.rows[0]);
+    if (id !== resolvedId) {
+      return { ...property, id };
+    }
+    return property;
   }
 
   async updateProperty(id: string, updates: Partial<Property>): Promise<Property | null> {
+    const resolvedId = resolvePropertyId(id);
     if (this.isTestMemoryMode) {
-      const existing = this.memory.properties.get(id);
+      const targetId = this.memory.properties.has(id) ? id : resolvedId;
+      const existing = this.memory.properties.get(targetId);
       if (!existing) return null;
       const updated: Property = {
         ...existing,
@@ -1061,7 +1090,10 @@ class Database {
         id: existing.id,
         updatedAt: new Date().toISOString(),
       };
-      this.memory.properties.set(id, updated);
+      this.memory.properties.set(targetId, updated);
+      if (id !== resolvedId) {
+        return { ...updated, id };
+      }
       return updated;
     }
 
@@ -1325,7 +1357,7 @@ class Database {
       values.push(updates.villa.possessionStatus);
     }
 
-    values.push(id);
+    values.push(resolvedId);
     const query = `
       UPDATE properties
       SET ${setClauses.join(', ')}
@@ -1336,7 +1368,11 @@ class Database {
     try {
       const res = await pool.query(query, values);
       if (res.rows.length === 0) return null;
-      return mapPropertyRow(res.rows[0]);
+      const updated = mapPropertyRow(res.rows[0]);
+      if (id !== resolvedId) {
+        return { ...updated, id };
+      }
+      return updated;
     } catch (err) {
       console.error('PostgreSQL updateProperty error:', (err as Error).message);
       throw err;
@@ -1344,10 +1380,12 @@ class Database {
   }
 
   async deleteProperty(id: string): Promise<boolean> {
+    const resolvedId = resolvePropertyId(id);
     if (this.isTestMemoryMode) {
-      const existing = this.memory.properties.get(id);
+      const targetId = this.memory.properties.has(id) ? id : resolvedId;
+      const existing = this.memory.properties.get(targetId);
       if (!existing) return false;
-      this.memory.properties.delete(id);
+      this.memory.properties.delete(targetId);
 
       const owner = this.memory.owners.get(existing.sellerId);
       if (owner && (owner.propertiesCount || 0) > 0) {
@@ -1356,13 +1394,13 @@ class Database {
       }
 
       for (const [docId, doc] of this.memory.propertyDocuments.entries()) {
-        if (doc.propertyId === id) {
+        if (doc.propertyId === id || doc.propertyId === resolvedId) {
           this.memory.propertyDocuments.delete(docId);
         }
       }
 
       for (const [enqId, enq] of this.memory.enquiries.entries()) {
-        if (enq.propertyId === id) {
+        if (enq.propertyId === id || enq.propertyId === resolvedId) {
           this.memory.enquiries.delete(enqId);
         }
       }
@@ -1375,7 +1413,7 @@ class Database {
     try {
       await client.query('BEGIN');
 
-      const propRes = await client.query('SELECT seller_id FROM properties WHERE id = $1', [id]);
+      const propRes = await client.query('SELECT seller_id FROM properties WHERE id = $1', [resolvedId]);
       if (propRes.rows.length === 0) {
         await client.query('ROLLBACK');
         return false;
@@ -1384,7 +1422,7 @@ class Database {
       const sellerId = propRes.rows[0].seller_id;
 
       // Delete property (PostgreSQL CASCADE foreign keys automatically delete documents and enquiries)
-      await client.query('DELETE FROM properties WHERE id = $1', [id]);
+      await client.query('DELETE FROM properties WHERE id = $1', [resolvedId]);
 
       // Decrement owner properties count
       await client.query(
@@ -1420,7 +1458,9 @@ class Database {
   async searchProperties(params: PropertySearchParams): Promise<{ properties: Property[]; total: number }> {
     if (this.isTestMemoryMode) {
       let results = Array.from(this.memory.properties.values());
-      if (params.status) {
+      if (params.status === 'ALL') {
+        results = results.filter((p) => p.status === 'LIVE' || p.status === 'SOLD');
+      } else if (params.status) {
         results = results.filter((p) => p.status === params.status);
       } else {
         results = results.filter((p) => p.status === 'LIVE');
@@ -1484,7 +1524,9 @@ class Database {
     const values: any[] = [];
     let idx = 1;
 
-    if (params.status) {
+    if (params.status === 'ALL') {
+      conditions.push(`status IN ('LIVE', 'SOLD')`);
+    } else if (params.status) {
       conditions.push(`status = $${idx++}`);
       values.push(params.status);
     } else {
@@ -1598,10 +1640,14 @@ class Database {
   async upsertDocument(
     data: Omit<PropertyDocument, 'id' | 'createdAt' | 'updatedAt'>
   ): Promise<PropertyDocument> {
+    const resolvedPropertyId = resolvePropertyId(data.propertyId);
     if (this.isTestMemoryMode) {
       let existingDoc: PropertyDocument | null = null;
       for (const doc of this.memory.propertyDocuments.values()) {
-        if (doc.propertyId === data.propertyId && doc.documentType === data.documentType) {
+        if (
+          (doc.propertyId === data.propertyId || doc.propertyId === resolvedPropertyId) &&
+          doc.documentType === data.documentType
+        ) {
           existingDoc = doc;
           break;
         }
@@ -1611,6 +1657,7 @@ class Database {
         const updated: PropertyDocument = {
           ...existingDoc,
           ...data,
+          propertyId: data.propertyId,
           verifiedBy: data.verifiedBy || undefined,
           verifiedAt: data.verifiedAt || undefined,
           rejectionReason: data.rejectionReason || undefined,
@@ -1647,7 +1694,7 @@ class Database {
     `;
 
     const values = [
-      data.propertyId,
+      resolvedPropertyId,
       data.documentType,
       data.fileUrl,
       data.status,
@@ -1658,7 +1705,11 @@ class Database {
 
     try {
       const res = await pool.query(query, values);
-      return mapDocumentRow(res.rows[0]);
+      const doc = mapDocumentRow(res.rows[0]);
+      if (data.propertyId !== resolvedPropertyId) {
+        return { ...doc, propertyId: data.propertyId };
+      }
+      return doc;
     } catch (err) {
       console.error('PostgreSQL upsertDocument error:', (err as Error).message);
       throw err;
@@ -1666,45 +1717,62 @@ class Database {
   }
 
   async findDocumentsByPropertyId(propertyId: string): Promise<PropertyDocument[]> {
+    const resolvedId = resolvePropertyId(propertyId);
     if (this.isTestMemoryMode) {
       const list: PropertyDocument[] = [];
       for (const doc of this.memory.propertyDocuments.values()) {
-        if (doc.propertyId === propertyId) list.push(doc);
+        if (doc.propertyId === propertyId || doc.propertyId === resolvedId) {
+          list.push(propertyId !== resolvedId ? { ...doc, propertyId } : doc);
+        }
       }
       return list;
     }
 
     if (!propertyId || typeof propertyId !== 'string') return [];
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedId);
     if (!isUUID) return [];
 
     const pool = this.ensurePool();
     const res = await pool.query(
       'SELECT * FROM property_documents WHERE property_id = $1 ORDER BY created_at ASC',
-      [propertyId]
+      [resolvedId]
     );
-    return res.rows.map(mapDocumentRow);
+    const docs = res.rows.map(mapDocumentRow);
+    if (propertyId !== resolvedId) {
+      return docs.map((d) => ({ ...d, propertyId }));
+    }
+    return docs;
   }
 
   async findDocument(propertyId: string, docType: DocumentType): Promise<PropertyDocument | null> {
+    const resolvedId = resolvePropertyId(propertyId);
     if (this.isTestMemoryMode) {
       for (const doc of this.memory.propertyDocuments.values()) {
-        if (doc.propertyId === propertyId && doc.documentType === docType) return doc;
+        if (
+          (doc.propertyId === propertyId || doc.propertyId === resolvedId) &&
+          doc.documentType === docType
+        ) {
+          return propertyId !== resolvedId ? { ...doc, propertyId } : doc;
+        }
       }
       return null;
     }
 
     if (!propertyId || typeof propertyId !== 'string') return null;
-    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(propertyId);
+    const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(resolvedId);
     if (!isUUID) return null;
 
     const pool = this.ensurePool();
     const res = await pool.query(
       'SELECT * FROM property_documents WHERE property_id = $1 AND document_type = $2',
-      [propertyId, docType]
+      [resolvedId, docType]
     );
     if (res.rows.length === 0) return null;
-    return mapDocumentRow(res.rows[0]);
+    const doc = mapDocumentRow(res.rows[0]);
+    if (propertyId !== resolvedId) {
+      return { ...doc, propertyId };
+    }
+    return doc;
   }
 
   // ==========================================
@@ -1880,6 +1948,7 @@ class Database {
     verifiedBy?: string,
     rejectionReason?: string
   ): Promise<PropertyDocument> {
+    const resolvedId = resolvePropertyId(propertyId);
     if (this.isTestMemoryMode) {
       const doc = await this.findDocument(propertyId, docType);
       if (!doc) {
@@ -1902,12 +1971,16 @@ class Database {
       WHERE property_id = $5 AND document_type = $6
       RETURNING *;
     `;
-    const values = [status, verifiedBy || null, verifiedAt, rejectionReason || null, propertyId, docType];
+    const values = [status, verifiedBy || null, verifiedAt, rejectionReason || null, resolvedId, docType];
     const res = await pool.query(query, values);
     if (res.rows.length === 0) {
       throw new Error(`Document ${docType} not found for property ${propertyId}`);
     }
-    return mapDocumentRow(res.rows[0]);
+    const doc = mapDocumentRow(res.rows[0]);
+    if (propertyId !== resolvedId) {
+      return { ...doc, propertyId };
+    }
+    return doc;
   }
 
   async assignEnquiry(id: string, assignedTo: string): Promise<Enquiry> {

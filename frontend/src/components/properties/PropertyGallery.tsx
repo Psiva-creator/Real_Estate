@@ -49,7 +49,7 @@ export default function PropertyGallery({
       <div className="relative aspect-[16/10] w-full rounded-2xl overflow-hidden bg-[#141210] border border-[#E8E2D9] shadow-sm group">
         <Image
           src={currentSrc}
-          alt={`${title} - Photo ${currentIndex + 1}`}
+          alt={currentSrc.includes('placeholder') ? `${title} (Representative Image)` : `${title} - Photo ${currentIndex + 1}`}
           fill
           priority
           sizes="(max-width: 768px) 100vw, (max-width: 1200px) 70vw, 800px"
@@ -58,6 +58,11 @@ export default function PropertyGallery({
             setImgErrors((prev) => ({ ...prev, [currentIndex]: true }));
           }}
         />
+        {currentSrc.includes('placeholder') && (
+          <span className="absolute bottom-3 left-3 px-2.5 py-1 rounded-md text-[10px] font-mono tracking-wider uppercase bg-[#191512]/75 text-white/90 backdrop-blur-sm pointer-events-none">
+            Representative Asset
+          </span>
+        )}
 
         {/* Previous / Next Arrow Overlays */}
         {allImages.length > 1 && (

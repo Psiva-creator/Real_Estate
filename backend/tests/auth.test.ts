@@ -166,63 +166,82 @@ describe('Auth & RBAC Module', () => {
     assert.strictEqual(res.body.error, 'Invalid credentials');
   });
 
-  test('POST /api/auth/google should authenticate existing user with Gmail email', async () => {
+  test('POST /api/auth/login should reject hardcoded backdoor passwords (admin123, seller123, Seller@1234)', async () => {
+    // 1. admin123 backdoor attempt
+    const resAdmin = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'admin@telanganarealty.in',
+        password: 'admin123',
+      });
+    assert.strictEqual(resAdmin.status, 401);
+    assert.strictEqual(resAdmin.body.error, 'Invalid credentials');
+
+    // 2. seller123 backdoor attempt
+    const resSeller1 = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'kvrao.hyderabad@gmail.com',
+        password: 'seller123',
+      });
+    assert.strictEqual(resSeller1.status, 401);
+    assert.strictEqual(resSeller1.body.error, 'Invalid credentials');
+
+    // 3. Seller@1234 backdoor attempt
+    const resSeller2 = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'kvrao.hyderabad@gmail.com',
+        password: 'Seller@1234',
+      });
+    assert.strictEqual(resSeller2.status, 401);
+    assert.strictEqual(resSeller2.body.error, 'Invalid credentials');
+  });
+
+  test('POST /api/auth/google safely rejects unverified requests when Google OAuth is not configured (501)', async () => {
     const res = await request(app)
       .post('/api/auth/google')
       .send({
-        email: 'kvrao.hyderabad@gmail.com',
-        name: 'K.V. Rao',
+        email: 'admin@telanganarealty.in',
+        name: 'Attacker Admin Spoof',
       });
 
-    assert.strictEqual(res.status, 200);
-    assert.strictEqual(res.body.user.email, 'kvrao.hyderabad@gmail.com');
-    assert.strictEqual(res.body.user.role, 'SELLER');
-    assert.strictEqual(res.body.isNewUser, false);
-    assert.ok(res.body.token);
+    assert.strictEqual(res.status, 501);
+    assert.ok(res.body.error.includes('Google OAuth'));
+    assert.strictEqual(res.body.token, undefined);
   });
 
-  test('POST /api/auth/google should register new user and owner entity if not existing', async () => {
-    const uniqueEmail = `new.investor.${Date.now()}@gmail.com`;
-    const res = await request(app)
-      .post('/api/auth/google')
-      .send({
-        email: uniqueEmail,
-        name: 'Venkata Ramana',
-      });
-
-    assert.strictEqual(res.status, 200);
-    assert.strictEqual(res.body.user.email, uniqueEmail);
-    assert.strictEqual(res.body.user.role, 'SELLER');
-    assert.strictEqual(res.body.isNewUser, true);
-    assert.ok(res.body.token);
+  test('Production Guard: Missing JWT_SECRET causes fatal startup error in production', () => {
+    const { execSync } = require('child_process');
+    const path = require('path');
+    assert.throws(
+      () => {
+        execSync(
+          'NODE_ENV=production JWT_SECRET="" ./node_modules/.bin/tsx -e \'import("./src/config/index.js")\'',
+          { stdio: 'pipe', cwd: path.resolve(__dirname, '..') }
+        );
+      },
+      (err: any) => {
+        const stderr = err.stderr ? err.stderr.toString() : '';
+        return stderr.includes('JWT_SECRET environment variable is missing in production');
+      }
+    );
   });
 
-  test('POST /api/auth/google should authenticate via Google JWT credential', async () => {
-    const payload = {
-      email: 'direct.google.user@gmail.com',
-      name: 'Google User',
-      picture: 'https://lh3.googleusercontent.com/a/default',
-    };
-    // Mock 3-part JWT header.payload.signature
-    const mockToken = `eyJhbGciOiJSUzI1NiJ9.${Buffer.from(JSON.stringify(payload)).toString('base64')}.mock_sig`;
-
-    const res = await request(app)
-      .post('/api/auth/google')
-      .send({
-        credential: mockToken,
-      });
-
-    assert.strictEqual(res.status, 200);
-    assert.strictEqual(res.body.user.email, 'direct.google.user@gmail.com');
-    assert.ok(res.body.token);
-  });
-
-  test('POST /api/auth/google should reject request with no email or credential', async () => {
-    const res = await request(app)
-      .post('/api/auth/google')
-      .send({});
-
-    assert.strictEqual(res.status, 400);
-    assert.ok(res.body.error);
+  test('Production Guard: Insecure default JWT_SECRET causes fatal startup error in production', () => {
+    const { execSync } = require('child_process');
+    const path = require('path');
+    assert.throws(
+      () => {
+        execSync(
+          'NODE_ENV=production JWT_SECRET="telangana-realty-jwt-secret-key-2026-production" ./node_modules/.bin/tsx -e \'import("./src/config/index.js")\'',
+          { stdio: 'pipe', cwd: path.resolve(__dirname, '..') }
+        );
+      },
+      (err: any) => {
+        const stderr = err.stderr ? err.stderr.toString() : '';
+        return stderr.includes('Insecure default JWT_SECRET detected in production');
+      }
+    );
   });
 });

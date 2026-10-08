@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isValidLocale, Locale } from '@/lib/i18n';
@@ -6,6 +7,16 @@ import { ShieldCheck } from 'lucide-react';
 
 interface PrivacyPageProps {
   params: { locale: string };
+}
+
+export async function generateMetadata({ params }: PrivacyPageProps): Promise<Metadata> {
+  const isTe = params.locale === 'te';
+  return {
+    title: isTe ? 'గోప్యతా విధానం | తెలంగాణ రియల్టీ హబ్' : 'Privacy Policy & Owner Document Protection',
+    description: isTe
+      ? 'వినియోగదారుల డేటా మరియు ప్రాపర్టీ లీగల్ డాక్యుమెంట్ల భద్రత మరియు గోప్యతా రక్షణ నిబంధనలు.'
+      : 'Understand how Telangana Realty Hub protects seller land records, confidential deeds, and buyer enquiry data.',
+  };
 }
 
 export default function PrivacyPage({ params }: PrivacyPageProps) {

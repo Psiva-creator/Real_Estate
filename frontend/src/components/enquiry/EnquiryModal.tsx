@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import { EnquiryType, submitEnquiry, EnquirySubmissionResult } from '@/lib/api';
+import { CONTACT_CONFIG } from '@/lib/constants';
 
 interface EnquiryModalProps {
   isOpen: boolean;
@@ -93,20 +94,70 @@ export default function EnquiryModal({
   const [isCopied, setIsCopied] = useState(false);
 
   const modalRef = useRef<HTMLDivElement>(null);
+  const previouslyFocusedElementRef = useRef<HTMLElement | null>(null);
 
   useEffect(() => {
     if (isOpen) {
+      previouslyFocusedElementRef.current = document.activeElement as HTMLElement | null;
       setActiveType(initialType);
       setErrors({});
       setResult(null);
       setIsCopied(false);
+
+      // Move focus into the modal when opened
+      requestAnimationFrame(() => {
+        if (modalRef.current) {
+          const focusable = modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          );
+          if (focusable.length > 0) {
+            focusable[0].focus();
+          } else {
+            modalRef.current.focus();
+          }
+        }
+      });
+    } else {
+      if (previouslyFocusedElementRef.current && typeof previouslyFocusedElementRef.current.focus === 'function') {
+        previouslyFocusedElementRef.current.focus();
+      }
     }
   }, [isOpen, initialType]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape' && isOpen) {
+      if (!isOpen) return;
+
+      if (e.key === 'Escape') {
+        e.preventDefault();
         onClose();
+        return;
+      }
+
+      if (e.key === 'Tab') {
+        if (!modalRef.current) return;
+        const focusableElements = Array.from(
+          modalRef.current.querySelectorAll<HTMLElement>(
+            'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+          )
+        ).filter((el) => el.offsetParent !== null);
+
+        if (focusableElements.length === 0) return;
+
+        const firstElement = focusableElements[0];
+        const lastElement = focusableElements[focusableElements.length - 1];
+
+        if (e.shiftKey) {
+          if (document.activeElement === firstElement || !modalRef.current.contains(document.activeElement)) {
+            e.preventDefault();
+            lastElement.focus();
+          }
+        } else {
+          if (document.activeElement === lastElement || !modalRef.current.contains(document.activeElement)) {
+            e.preventDefault();
+            firstElement.focus();
+          }
+        }
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -162,7 +213,8 @@ export default function EnquiryModal({
     const message = isTe
       ? `🏡 *సైట్ విజిట్ స్లాట్ బుకింగ్ వివరాలు*\n\nనమస్తే! నేను "${propertyTitle}" కోసం సైట్ విజిట్ స్లాట్ బుక్ చేసుకున్నాను.\n\n📅 *తేదీ:* ${preferredDate}\n⏰ *సమయం:* ${selectedSlotTime}\n🔖 *రిఫరెన్స్:* ${result?.referenceId}\n👤 *పేరు:* ${buyerName}\n📱 *ఫోన్:* +91 ${cleanPhone}\n\n👉 *బుక్ చేసిన ప్రాపర్టీ లింక్:*\n${propertyDirectLink}\n\nదయచేసి నా విజిట్ పాస్ మరియు గూగుల్ మ్యాప్స్ లొకేషన్ కోఆర్డినేట్లను పంపగలరు.`
       : `🏡 *Site Visit Slot Booking Request*\n\nHello! I have booked a site visit for "${propertyTitle}".\n\n📅 *Date:* ${preferredDate}\n⏰ *Time Slot:* ${selectedSlotTime}\n🔖 *Reference:* ${result?.referenceId}\n👤 *Name:* ${buyerName}\n📱 *Phone:* +91 ${cleanPhone}\n\n👉 *Direct Property Link:*\n${propertyDirectLink}\n\nKindly confirm my visit pass and exact Google Maps location coordinates.`;
-    return `https://wa.me/919876543210?text=${encodeURIComponent(message)}`;
+    const targetPhone = (CONTACT_CONFIG.mediationDeskPhoneRaw || '+919440012345').replace(/[^0-9]/g, '');
+    return `https://wa.me/${targetPhone}?text=${encodeURIComponent(message)}`;
   };
 
   const validate = () => {
@@ -232,7 +284,8 @@ export default function EnquiryModal({
     >
       <div
         ref={modalRef}
-        className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden max-h-[92vh] flex flex-col animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-2 duration-200"
+        tabIndex={-1}
+        className="bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-2xl shadow-2xl border border-slate-200 overflow-hidden max-h-[92vh] flex flex-col animate-in slide-in-from-bottom-6 sm:slide-in-from-bottom-2 duration-200 outline-none"
       >
         {/* Header */}
         <div className="px-4 sm:px-6 py-4 border-b border-slate-100 flex items-center justify-between bg-slate-50/70 shrink-0">
@@ -457,10 +510,11 @@ export default function EnquiryModal({
 
               {/* Input: Full Name */}
               <div className="space-y-1">
-                <label className="block text-xs font-bold text-slate-700">
+                <label htmlFor="enquiry-buyer-name" className="block text-xs font-bold text-slate-700">
                   {dict.enquiryModal.fullName} <span className="text-red-500">*</span>
                 </label>
                 <input
+                  id="enquiry-buyer-name"
                   type="text"
                   value={buyerName}
                   onChange={(e) => setBuyerName(e.target.value)}
@@ -479,7 +533,7 @@ export default function EnquiryModal({
 
               {/* Input: Phone Number */}
               <div className="space-y-1.5">
-                <label className="block text-xs font-bold text-slate-700">
+                <label htmlFor="enquiry-phone" className="block text-xs font-bold text-slate-700">
                   {dict.enquiryModal.phone} <span className="text-red-500">*</span>
                 </label>
                 <div className="relative">
@@ -487,6 +541,7 @@ export default function EnquiryModal({
                     +91
                   </span>
                   <input
+                    id="enquiry-phone"
                     type="tel"
                     value={phone}
                     onChange={(e) => setPhone(e.target.value)}
@@ -532,7 +587,7 @@ export default function EnquiryModal({
                   {/* Preferred Date with Quick Select */}
                   <div className="space-y-1.5">
                     <div className="flex items-center justify-between">
-                      <label className="block text-xs font-bold text-slate-700">
+                      <label htmlFor="enquiry-date" className="block text-xs font-bold text-slate-700">
                         {dict.enquiryModal.preferredDate} <span className="text-red-500">*</span>
                       </label>
                       <span className="text-[11px] text-slate-400">
@@ -564,6 +619,7 @@ export default function EnquiryModal({
                     </div>
 
                     <input
+                      id="enquiry-date"
                       type="date"
                       min={todayStr}
                       value={preferredDate}
@@ -652,10 +708,11 @@ export default function EnquiryModal({
               {/* Conditional Fields: CALL */}
               {activeType === 'CALL' && (
                 <div className="space-y-1 pt-1">
-                  <label className="block text-xs font-bold text-slate-700">
+                  <label htmlFor="enquiry-calling-window" className="block text-xs font-bold text-slate-700">
                     {dict.enquiryModal.callingWindow}
                   </label>
                   <select
+                    id="enquiry-calling-window"
                     value={callingWindow}
                     onChange={(e) => setCallingWindow(e.target.value)}
                     className="w-full h-11 px-3 rounded-xl bg-slate-50 border border-slate-200 text-xs sm:text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-emerald-700 cursor-pointer"
@@ -671,10 +728,11 @@ export default function EnquiryModal({
               {/* Conditional Fields: QUESTION */}
               {activeType === 'QUESTION' && (
                 <div className="space-y-1 pt-1">
-                  <label className="block text-xs font-bold text-slate-700">
+                  <label htmlFor="enquiry-question" className="block text-xs font-bold text-slate-700">
                     {dict.enquiryModal.question} <span className="text-red-500">*</span>
                   </label>
                   <textarea
+                    id="enquiry-question"
                     rows={3}
                     value={question}
                     onChange={(e) => setQuestion(e.target.value)}

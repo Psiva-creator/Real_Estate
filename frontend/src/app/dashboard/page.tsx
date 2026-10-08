@@ -233,7 +233,7 @@ export default function ExecutiveCommandCenterPage() {
             </div>
             <div className="mt-1 flex items-center gap-1.5 text-xs text-[#5A382B]">
               <span className="font-semibold text-[#5A382B]">100% Zero-Dispute</span>
-              <span>legal guarantee</span>
+              <span>due diligence</span>
             </div>
           </div>
           <div className="mt-3 pt-3 border-t border-[#F5F0E8] flex items-center justify-between text-[11px] text-[#8B624C]">

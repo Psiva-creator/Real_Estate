@@ -27,6 +27,7 @@ import {
 import { isValidLocale, Locale, getDictionary } from '@/lib/i18n';
 import { useAuth } from '@/lib/auth-context';
 import { UserRole } from '@/lib/api';
+import { CONTACT_CONFIG } from '@/lib/constants';
 
 function GoogleIcon({ className = 'w-4 h-4' }: { className?: string }) {
   return (
@@ -74,6 +75,7 @@ function LoginFormContent({ params }: LoginPageProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [successMessage, setSuccessMessage] = useState<string | null>(null);
+  const [showRecoveryModal, setShowRecoveryModal] = useState(false);
 
   // Production login state: strictly empty by default, no pre-fill
   const [loginIdentifier, setLoginIdentifier] = useState('');
@@ -455,7 +457,7 @@ function LoginFormContent({ params }: LoginPageProps) {
 
                   <form onSubmit={handleLoginSubmit} className="space-y-4">
                     <div className="space-y-1.5">
-                      <label className="block text-xs font-semibold text-[#191512]">
+                      <label htmlFor="login-identifier" className="block text-xs font-semibold text-[#191512]">
                         {isTe ? 'యూజర్‌నేమ్, మొబైల్ లేదా ఈమెయిల్' : 'Username, Mobile Number or Email'}
                         <span className="text-[#8C653E] ml-0.5">*</span>
                       </label>
@@ -464,6 +466,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                           <User className="w-4 h-4" />
                         </div>
                         <input
+                          id="login-identifier"
                           type="text"
                           value={loginIdentifier}
                           onChange={(e) => setLoginIdentifier(e.target.value)}
@@ -477,19 +480,13 @@ function LoginFormContent({ params }: LoginPageProps) {
 
                     <div className="space-y-1.5">
                       <div className="flex items-center justify-between">
-                        <label className="block text-xs font-semibold text-[#191512]">
+                        <label htmlFor="login-password" className="block text-xs font-semibold text-[#191512]">
                           {isTe ? 'పాస్‌వర్డ్' : 'Account Password'}
                           <span className="text-[#8C653E] ml-0.5">*</span>
                         </label>
                         <button
                           type="button"
-                          onClick={() =>
-                            alert(
-                              isTe
-                                ? 'ఖాతా లేదా పాస్‌వర్డ్ సహాయం కోసం దయచేసి advisory@telanganarealty.in లేదా +91 94400 12345 ను సంప్రదించండి.'
-                                : 'For password recovery assistance, please contact the advisory desk at advisory@telanganarealty.in or +91 94400 12345.'
-                            )
-                          }
+                          onClick={() => setShowRecoveryModal(true)}
                           className="text-[11px] font-medium text-[#8C653E] hover:underline"
                         >
                           {isTe ? 'పాస్‌వర్డ్ మర్చిపోయారా?' : 'Forgot Password?'}
@@ -500,6 +497,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                           <Lock className="w-4 h-4" />
                         </div>
                         <input
+                          id="login-password"
                           type={showPassword ? 'text' : 'password'}
                           value={loginPassword}
                           onChange={(e) => setLoginPassword(e.target.value)}
@@ -590,7 +588,7 @@ function LoginFormContent({ params }: LoginPageProps) {
 
                   <form onSubmit={handleRegisterSubmit} className="space-y-4">
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-[#191512]">
+                    <label htmlFor="reg-name" className="block text-xs font-semibold text-[#191512]">
                       {isTe ? 'పూర్తి పేరు (సేల్ డీడ్ ప్రకారం)' : 'Full Legal Name (as per Sale Deed)'}{' '}
                       <span className="text-[#8C653E]">*</span>
                     </label>
@@ -599,6 +597,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         <User className="w-4 h-4" />
                       </div>
                       <input
+                        id="reg-name"
                         type="text"
                         value={regName}
                         onChange={(e) => setRegName(e.target.value)}
@@ -611,7 +610,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-[#191512]">
+                    <label htmlFor="reg-phone" className="block text-xs font-semibold text-[#191512]">
                       {isTe ? 'మొబైల్ నంబర్ (OTP & ధృవీకరణ కోసం)' : 'Mobile Phone (for OTP & Verification)'}{' '}
                       <span className="text-[#8C653E]">*</span>
                     </label>
@@ -620,6 +619,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         <Phone className="w-4 h-4" />
                       </div>
                       <input
+                        id="reg-phone"
                         type="tel"
                         value={regPhone}
                         onChange={(e) => setRegPhone(e.target.value)}
@@ -632,7 +632,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-[#191512]">
+                    <label htmlFor="reg-email" className="block text-xs font-semibold text-[#191512]">
                       {isTe ? 'ఈమెయిల్ చిరునామా (ఐచ్ఛికం)' : 'Email Address (Optional)'}
                     </label>
                     <div className="relative">
@@ -640,6 +640,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         <Mail className="w-4 h-4" />
                       </div>
                       <input
+                        id="reg-email"
                         type="email"
                         value={regEmail}
                         onChange={(e) => setRegEmail(e.target.value)}
@@ -651,7 +652,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-xs font-semibold text-[#191512]">
+                    <label htmlFor="reg-password" className="block text-xs font-semibold text-[#191512]">
                       {isTe ? 'ఖాతా పాస్‌వర్డ్' : 'Account Password'}{' '}
                       <span className="text-[#8C653E]">*</span>
                     </label>
@@ -660,6 +661,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                         <Lock className="w-4 h-4" />
                       </div>
                       <input
+                        id="reg-password"
                         type={showPassword ? 'text' : 'password'}
                         value={regPassword}
                         onChange={(e) => setRegPassword(e.target.value)}
@@ -815,7 +817,7 @@ function LoginFormContent({ params }: LoginPageProps) {
 
               <div className="space-y-2.5">
                 <div>
-                  <label className="block text-xs font-semibold text-[#191512] mb-1">
+                  <label htmlFor="google-email" className="block text-xs font-semibold text-[#191512] mb-1">
                     {isTe ? 'Gmail ఈమెయిల్' : 'Gmail Email Address'} *
                   </label>
                   <div className="relative">
@@ -823,6 +825,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                       <Mail className="w-3.5 h-3.5" />
                     </div>
                     <input
+                      id="google-email"
                       type="email"
                       value={googleEmailInput}
                       onChange={(e) => setGoogleEmailInput(e.target.value)}
@@ -834,7 +837,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-semibold text-[#191512] mb-1">
+                  <label htmlFor="google-name" className="block text-xs font-semibold text-[#191512] mb-1">
                     {isTe ? 'మీ పూర్తి పేరు (ఐచ్ఛికం)' : 'Full Name (Optional)'}
                   </label>
                   <div className="relative">
@@ -842,6 +845,7 @@ function LoginFormContent({ params }: LoginPageProps) {
                       <User className="w-3.5 h-3.5" />
                     </div>
                     <input
+                      id="google-name"
                       type="text"
                       value={googleNameInput}
                       onChange={(e) => setGoogleNameInput(e.target.value)}
@@ -874,6 +878,79 @@ function LoginFormContent({ params }: LoginPageProps) {
                 ? 'కొనసాగడం ద్వారా, మీరు తెలంగాణ రియల్టీ హబ్ గోప్యతా విధానం మరియు నిబంధనలకు అంగీకరిస్తున్నారు.'
                 : 'To continue, Google will share your name and email address with Telangana Realty Hub in accordance with our Privacy Policy.'}
             </p>
+          </div>
+        </div>
+      )}
+
+      {/* Accessible Password Recovery Modal */}
+      {showRecoveryModal && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs animate-in fade-in duration-150"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="recovery-modal-title"
+        >
+          <div className="bg-white rounded-2xl p-6 max-w-sm w-full border border-[#E8E2D9] shadow-2xl space-y-4 animate-in zoom-in-95 duration-150">
+            <div className="flex items-center justify-between border-b border-[#E8E2D9] pb-3">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-full bg-[#FAF8F5] border border-[#E8E2D9] text-[#8C653E] flex items-center justify-center">
+                  <KeyRound className="w-4 h-4" />
+                </div>
+                <h3 id="recovery-modal-title" className="font-serif text-sm sm:text-base font-bold text-[#191512]">
+                  {isTe ? 'ఖాతా రికవరీ సహాయం' : 'Account Recovery Assistance'}
+                </h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowRecoveryModal(false)}
+                className="p-1 rounded-full text-[#8C827A] hover:text-[#191512] hover:bg-[#F5F1EA] transition-colors"
+                aria-label="Close"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+
+            <p className="text-xs text-[#574F48] leading-relaxed">
+              {isTe
+                ? 'ఖాతా లేదా పాస్‌వర్డ్ సహాయం కోసం దయచేసి మా అడ్వైజరీ డెస్క్‌ను సంప్రదించండి:'
+                : 'For password recovery assistance, please reach out to our dedicated advisory team:'}
+            </p>
+
+            <div className="space-y-2.5 pt-1 text-xs">
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <Phone className="w-4 h-4 text-[#8C653E] shrink-0" />
+                <div className="flex flex-col">
+                  <span className="text-[10px] text-[#8C827A] uppercase tracking-wider">{isTe ? 'ఫోన్ డెస్క్' : 'Phone Desk'}</span>
+                  <a
+                    href={`tel:${CONTACT_CONFIG.mediationDeskPhoneRaw}`}
+                    className="font-mono text-[#8C653E] font-semibold hover:underline"
+                  >
+                    {CONTACT_CONFIG.mediationDeskPhone}
+                  </a>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9]">
+                <Mail className="w-4 h-4 text-[#8C653E] shrink-0" />
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] text-[#8C827A] uppercase tracking-wider">{isTe ? 'ఇమెయిల్ సహాయం' : 'Email Support'}</span>
+                  <a
+                    href={`mailto:${CONTACT_CONFIG.advisoryEmail}`}
+                    className="text-[#8C653E] font-medium hover:underline truncate"
+                  >
+                    {CONTACT_CONFIG.advisoryEmail}
+                  </a>
+                </div>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              onClick={() => setShowRecoveryModal(false)}
+              className="w-full py-2.5 rounded-full bg-[#191512] hover:bg-[#8C653E] text-white text-xs font-semibold tracking-wide uppercase shadow-sm transition-colors"
+            >
+              {isTe ? 'ముగించు' : 'Done'}
+            </button>
           </div>
         </div>
       )}

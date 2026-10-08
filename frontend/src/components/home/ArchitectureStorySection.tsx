@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, Compass, ShieldCheck, Award } from 'lucide-react';
 import { Locale } from '@/lib/i18n';
@@ -54,12 +55,15 @@ export default function ArchitectureStorySection({ locale }: ArchitectureStorySe
           {/* Left Column: Tall Featured Architectural Visual (7 cols) */}
           <div className="lg:col-span-7 relative group rounded-3xl overflow-hidden border border-[#E8E2D9] shadow-[0_12px_40px_-10px_rgba(25,21,18,0.06)] bg-[#EFE9E0] flex flex-col justify-end">
             <div className="aspect-[4/3] sm:aspect-[16/11] lg:aspect-auto lg:h-[580px] w-full relative overflow-hidden">
-              <img
+              <Image
                 src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1200&q=85"
                 alt="Sky Villa Architecture in Financial District"
-                className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                fill
+                sizes="(max-width: 1024px) 100vw, 58vw"
+                loading="lazy"
+                className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/80 via-[#191512]/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/80 via-[#191512]/20 to-transparent pointer-events-none" />
             </div>
 
             {/* Overlaid Editorial Meta */}
@@ -91,10 +95,13 @@ export default function ArchitectureStorySection({ locale }: ArchitectureStorySe
             {/* Top Detail Card: Interior Lounge / Architectural Finish */}
             <div className="group rounded-3xl overflow-hidden border border-[#E8E2D9] shadow-sm bg-white p-5 flex flex-col sm:flex-row gap-5 items-center hover:border-[#8C653E]/40 transition-all duration-300">
               <div className="w-full sm:w-44 h-36 rounded-2xl overflow-hidden shrink-0 relative">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1545324418-cc1a3fa10c00?auto=format&fit=crop&w=600&q=80"
                   alt="Curated Interior Lounge"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 176px"
+                  loading="lazy"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
               <div className="space-y-2">
@@ -115,10 +122,13 @@ export default function ArchitectureStorySection({ locale }: ArchitectureStorySe
             {/* Bottom Detail Card: Strategic Land Venture / Landscape */}
             <div className="group rounded-3xl overflow-hidden border border-[#E8E2D9] shadow-sm bg-white p-5 flex flex-col sm:flex-row gap-5 items-center hover:border-[#8C653E]/40 transition-all duration-300">
               <div className="w-full sm:w-44 h-36 rounded-2xl overflow-hidden shrink-0 relative">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1500382017468-9049fed747ef?auto=format&fit=crop&w=600&q=80"
                   alt="Mokila Gated Venture Plot"
-                  className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                  fill
+                  sizes="(max-width: 640px) 100vw, 176px"
+                  loading="lazy"
+                  className="object-cover group-hover:scale-105 transition-transform duration-500"
                 />
               </div>
               <div className="space-y-2">
@@ -144,8 +154,8 @@ export default function ArchitectureStorySection({ locale }: ArchitectureStorySe
               <div>
                 <p className="font-serif text-sm sm:text-base font-bold text-[#191512] leading-snug">
                   {isTe
-                    ? '“ప్రతి కొనుగోలుకు ముందు 30 సంవత్సరాల టైటిల్ ఇన్వెస్టిగేషన్ రిపోర్ట్ మా న్యాయవాదుల నుండి పొందండి.”'
-                    : '“Every transaction is backed by a 30-year certified title search conducted by senior High Court advocates.”'}
+                    ? '“ప్రతి కొనుగోలుకు ముందు 30 సంవత్సరాల టైటిల్ ఇన్వెస్టిగేషన్ రిపోర్ట్ మా లీగల్ కౌన్సిల్ నుండి పొందండి.”'
+                    : '“Every transaction is backed by a 30-year title search and documentation review conducted by experienced legal counsel.”'}
                 </p>
                 <span className="text-[10px] uppercase font-mono tracking-widest text-[#8C653E] mt-1 block">
                   Legal Compliance Protocol

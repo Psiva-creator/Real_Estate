@@ -38,14 +38,20 @@ const DEV_TOKEN_EMAIL_MAP: Record<string, string> = {
 };
 
 export const requireAuth = async (req: AuthRequest, res: Response, next: NextFunction) => {
+  let token: string | undefined;
   const authHeader = req.headers.authorization;
-  if (!authHeader || !authHeader.startsWith('Bearer ')) {
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  } else if (req.query && typeof req.query.token === 'string' && req.query.token.trim()) {
+    token = req.query.token.trim();
+  }
+
+  if (!token) {
     return res.status(401).json({ error: 'Authentication required. Missing or invalid Bearer token.' });
   }
 
-  const token = authHeader.split(' ')[1];
   try {
-    if (DEV_TOKEN_EMAIL_MAP[token]) {
+    if (config.nodeEnv !== 'production' && DEV_TOKEN_EMAIL_MAP[token]) {
       const devUser = await db.findUserByEmail(DEV_TOKEN_EMAIL_MAP[token]);
       if (devUser && devUser.isActive) {
         req.user = devUser;
@@ -66,11 +72,17 @@ export const requireAuth = async (req: AuthRequest, res: Response, next: NextFun
 };
 
 export const optionalAuth = async (req: AuthRequest, _res: Response, next: NextFunction) => {
+  let token: string | undefined;
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
-    const token = authHeader.split(' ')[1];
+    token = authHeader.split(' ')[1];
+  } else if (req.query && typeof req.query.token === 'string' && req.query.token.trim()) {
+    token = req.query.token.trim();
+  }
+
+  if (token) {
     try {
-      if (DEV_TOKEN_EMAIL_MAP[token]) {
+      if (config.nodeEnv !== 'production' && DEV_TOKEN_EMAIL_MAP[token]) {
         const devUser = await db.findUserByEmail(DEV_TOKEN_EMAIL_MAP[token]);
         if (devUser && devUser.isActive) {
           req.user = devUser;

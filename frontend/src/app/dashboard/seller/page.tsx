@@ -832,7 +832,7 @@ export default function SellerDashboardPage() {
       <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-start gap-3 text-xs text-slate-600">
         <ShieldCheck className="w-5 h-5 text-emerald-700 shrink-0 mt-0.5" />
         <div className="space-y-1">
-          <span className="font-bold text-slate-800">Direct Contact & Legal Privacy Guarantee</span>
+          <span className="font-bold text-slate-800">Direct Contact & Legal Privacy Protection</span>
           <p className="leading-relaxed">
             Your mobile number, Aadhaar, and revenue documents are never exposed to public viewers or unauthorized third parties. All inquiries are screened by certified deal mediators.
           </p>

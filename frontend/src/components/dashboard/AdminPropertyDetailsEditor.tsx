@@ -505,7 +505,7 @@ export default function AdminPropertyDetailsEditor({
                         addHighlight();
                       }
                     }}
-                    placeholder="e.g., 30-Year clear title vetted by High Court advocate"
+                    placeholder="e.g., 30-Year clear title vetted by independent legal counsel"
                     className="flex-1 text-sm rounded-xl border border-slate-200 px-3.5 py-2 text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent"
                   />
                   <button

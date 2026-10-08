@@ -25,6 +25,7 @@ import {
   getVerificationPublishStatusApi,
   PropertyDocumentRecord,
   resolveUploadUrl,
+  getBackendRootUrl,
 } from '@/lib/api';
 import { useAuth } from '@/lib/auth-context';
 
@@ -284,13 +285,13 @@ export default function DocumentVerificationReviewer({
       const row = docStates[key];
       if (!row?.fileUrl) return;
 
-      // fileUrl is a relative server path like /uploads/propId/doctype_filename.pdf
-      // Construct absolute URL pointing to backend uploads
-      const absUrl = resolveUploadUrl(row.fileUrl);
+      const root = getBackendRootUrl();
+      const tokenParam = token ? `?token=${encodeURIComponent(token)}` : '';
+      const docUrl = `${root}/api/properties/${encodeURIComponent(propertyId)}/documents/${encodeURIComponent(key)}/file${tokenParam}`;
 
-      window.open(absUrl, '_blank', 'noopener,noreferrer');
+      window.open(docUrl, '_blank', 'noopener,noreferrer');
     },
-    [docStates]
+    [docStates, propertyId, token]
   );
 
   // ── Verify document ────────────────────────────────────────────────────────

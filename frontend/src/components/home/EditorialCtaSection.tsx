@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, PlusCircle, ShieldCheck } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
@@ -17,10 +18,13 @@ export default function EditorialCtaSection({ locale }: EditorialCtaSectionProps
     <section className="relative overflow-hidden py-24 sm:py-36 bg-[#141210] text-[#FAF8F5] border-t border-[#2C2520]">
       {/* High-Resolution Architectural Image Background with Dark Luxury Overlay */}
       <div className="absolute inset-0 z-0">
-        <img
+        <Image
           src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1600&q=85"
           alt="Luxury Architecture Facade at Twilight"
-          className="w-full h-full object-cover object-center opacity-25 scale-105"
+          fill
+          sizes="100vw"
+          loading="lazy"
+          className="object-cover object-center opacity-25 scale-105"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-[#141210] via-[#141210]/90 to-[#141210]/80" />
       </div>

@@ -42,6 +42,38 @@ interface PropertyDetailPageProps {
   };
 }
 
+export async function generateMetadata({ params }: PropertyDetailPageProps) {
+  const property = await getPropertyById(params.id);
+  if (!property) {
+    return {
+      title: 'Property Not Found',
+      description: 'The requested property listing could not be found.',
+    };
+  }
+
+  const isTe = params.locale === 'te';
+  const rawTitle = isTe && property.titleTe ? property.titleTe : property.title;
+  const rawDesc = isTe && property.descriptionTe ? property.descriptionTe : property.description;
+  const location = `${property.location.district || property.location.mandal || 'Hyderabad'}, Telangana`;
+  const isSold = property.status === 'SOLD';
+
+  const titlePrefix = isSold ? (isTe ? '[విక్రయించబడింది] ' : '[Sold] ') : '';
+  const metaTitle = `${titlePrefix}${rawTitle} - ${location}`;
+  const metaDescription = rawDesc
+    ? rawDesc.slice(0, 155)
+    : `${rawTitle} located in ${location}. 100% verified 13-point legal revenue documents.`;
+
+  return {
+    title: metaTitle,
+    description: metaDescription,
+    openGraph: {
+      title: `${metaTitle} | Telangana Realty Hub`,
+      description: metaDescription,
+      images: property.mainImage ? [{ url: property.mainImage }] : undefined,
+    },
+  };
+}
+
 export default async function PropertyDetailPage({ params }: PropertyDetailPageProps) {
   if (!isValidLocale(params.locale)) notFound();
   const locale = params.locale as Locale;

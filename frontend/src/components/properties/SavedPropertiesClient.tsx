@@ -24,17 +24,10 @@ export default function SavedPropertiesClient({ locale }: SavedPropertiesClientP
   // Fetch properties from backend with fallback
   useEffect(() => {
     let cancelled = false;
-    getProperties({ limit: 100 })
-      .then(({ properties, fromBackend }) => {
+    getProperties({ limit: 100, status: 'ALL' })
+      .then(({ properties }) => {
         if (!cancelled) {
-          if (fromBackend) {
-            const MOCK_SOLD = MOCK_PROPERTIES.filter((p) => p.status === 'SOLD');
-            const backendIds = new Set(properties.map((p) => p.id));
-            const missingSold = MOCK_SOLD.filter((p) => !backendIds.has(p.id));
-            setAllProperties([...properties, ...missingSold]);
-          } else {
-            setAllProperties(properties);
-          }
+          setAllProperties(properties);
         }
       })
       .catch(() => {

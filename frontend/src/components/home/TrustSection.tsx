@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import Image from 'next/image';
 import {
   ShieldCheck,
   FileText,
@@ -94,12 +95,15 @@ export default function TrustSection({ locale }: TrustSectionProps) {
           <div className="lg:col-span-5 relative">
             <div className="relative rounded-3xl overflow-hidden border border-[#E8E2D9] bg-[#EFE9E0] shadow-[0_12px_40px_-10px_rgba(25,21,18,0.08)]">
               <div className="aspect-[4/5] relative w-full overflow-hidden">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=1000&q=80"
                   alt="Modern Corporate & Architectural Diligence"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="(max-width: 1024px) 100vw, 42vw"
+                  loading="lazy"
+                  className="object-cover"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/85 via-[#191512]/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/85 via-[#191512]/30 to-transparent pointer-events-none" />
               </div>
 
               {/* Architectural Seal Caption Card */}
@@ -113,7 +117,7 @@ export default function TrustSection({ locale }: TrustSectionProps) {
                       Revenue Protocol
                     </span>
                     <h4 className="font-serif text-base font-bold text-[#191512]">
-                      Dharani & High Court Panel
+                      Dharani & Legal Title Due Diligence
                     </h4>
                   </div>
                 </div>

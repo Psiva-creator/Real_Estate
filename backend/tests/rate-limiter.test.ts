@@ -8,7 +8,7 @@ describe('Rate Limiter Middleware', () => {
   test('allows requests within limit and sets RateLimit headers', async () => {
     const app = express();
     const limiter = createRateLimiter({
-      windowMs: 5000,
+      windowMs: 60000,
       maxRequests: 3,
       skipInTests: false, // Explicitly test rate limiting logic
     });
@@ -33,7 +33,7 @@ describe('Rate Limiter Middleware', () => {
   test('blocks requests exceeding limit with 429 and Retry-After header', async () => {
     const app = express();
     const limiter = createRateLimiter({
-      windowMs: 5000,
+      windowMs: 60000,
       maxRequests: 2,
       skipInTests: false,
     });

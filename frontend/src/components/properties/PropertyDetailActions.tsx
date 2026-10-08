@@ -19,6 +19,7 @@ import { formatINR } from '@/lib/formatters';
 import { EnquiryType } from '@/lib/api';
 import EnquiryModal from '@/components/enquiry/EnquiryModal';
 import { useFavorites } from '@/lib/favorites';
+import { CONTACT_CONFIG } from '@/lib/constants';
 
 interface PropertyDetailActionsProps {
   property: MockProperty;
@@ -151,10 +152,10 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
           <div className="pt-2 flex items-center justify-between text-xs text-[#8C827A] px-1">
             <span>Direct Mediation Desk:</span>
             <a
-              href="tel:+919440012345"
+              href={`tel:${CONTACT_CONFIG.mediationDeskPhoneRaw}`}
               className="font-mono font-semibold text-[#8C653E] hover:underline flex items-center gap-1"
             >
-              +91 94400 12345
+              {CONTACT_CONFIG.mediationDeskPhone}
             </a>
           </div>
         </div>
@@ -238,24 +239,24 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
       </div>
 
       {/* Mobile Sticky Bottom Action Bar (visible on < lg) */}
-      <div className="fixed lg:hidden bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#E8E2D9] p-3 px-4 shadow-2xl flex items-center justify-between gap-3 print:hidden">
-        <div>
-          <span className="text-[10px] uppercase font-mono text-[#8C827A] block">
+      <div className="fixed lg:hidden bottom-0 left-0 right-0 z-40 bg-[#FAF8F5]/95 backdrop-blur-md border-t border-[#E8E2D9] py-2.5 px-3 sm:py-3 sm:px-4 shadow-2xl flex items-center justify-between gap-2 sm:gap-3 print:hidden max-w-full overflow-hidden">
+        <div className="shrink min-w-0 pr-1">
+          <span className="text-[9px] sm:text-[10px] uppercase font-mono text-[#8C827A] block truncate">
             {isSold
               ? (isTe ? 'చివరి లిస్టింగ్' : 'Last Listed')
               : (isTe ? 'మొత్తం ధర' : 'Total Price')}
           </span>
-          <span className="text-base font-serif font-semibold text-[#191512]">
+          <span className="text-sm sm:text-base font-serif font-semibold text-[#191512] whitespace-nowrap block">
             {formatINR(property.pricing.totalPrice)}
           </span>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2 shrink-0 justify-end">
           {/* Mobile Save Button */}
           <button
             type="button"
             onClick={() => toggleSave(property.id)}
-            className={`p-2.5 rounded-full border shadow-sm active:scale-95 transition-all ${
+            className={`p-2 sm:p-2.5 rounded-full border shadow-sm active:scale-95 transition-all shrink-0 ${
               saved
                 ? 'border-rose-300 bg-rose-50 text-rose-600'
                 : 'border-[#E8E2D9] bg-white text-[#574F48]'
@@ -263,35 +264,37 @@ export default function PropertyDetailActions({ property, locale }: PropertyDeta
             title={saved ? (isTe ? 'సేవ్ చేసిన వాటి నుండి తొలగించు' : 'Remove from Saved') : (isTe ? 'సేవ్ చేయండి' : 'Save Property')}
             aria-label={saved ? 'Remove from Saved' : 'Save Property'}
           >
-            <Heart className={`w-4 h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-[#8C653E]'}`} />
+            <Heart className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${saved ? 'fill-rose-500 text-rose-500' : 'text-[#8C653E]'}`} />
           </button>
 
           <button
             type="button"
             onClick={() => openEnquiry('CALL')}
-            className="py-2.5 px-3.5 rounded-full border border-[#E8E2D9] bg-white text-[#191512] font-medium text-xs flex items-center gap-1.5 shadow-sm active:scale-95 transition-all"
+            className="py-2 px-2.5 sm:py-2.5 sm:px-3.5 rounded-full border border-[#E8E2D9] bg-white text-[#191512] font-medium text-xs flex items-center gap-1 sm:gap-1.5 shadow-sm active:scale-95 transition-all shrink-0"
+            title={dict.enquiryModal.tabCall}
+            aria-label={dict.enquiryModal.tabCall}
           >
             <Phone className="w-3.5 h-3.5 text-[#8C653E]" />
-            <span>{dict.enquiryModal.tabCall}</span>
+            <span className="hidden xs:inline sm:inline">{dict.enquiryModal.tabCall}</span>
           </button>
 
           {isSold ? (
             <button
               type="button"
               onClick={() => openEnquiry('QUESTION')}
-              className="py-2.5 px-4 rounded-full bg-[#8C653E] text-white font-medium text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+              className="py-2 px-3 sm:py-2.5 sm:px-4 rounded-full bg-[#8C653E] text-white font-medium text-xs flex items-center gap-1 sm:gap-1.5 shadow-md active:scale-95 transition-all shrink-0 max-w-[150px] sm:max-w-none"
             >
-              <MessageSquare className="w-3.5 h-3.5 text-white" />
-              <span>{isTe ? 'ఇలాంటివి' : 'Inquire Similar'}</span>
+              <MessageSquare className="w-3.5 h-3.5 text-white shrink-0" />
+              <span className="truncate">{isTe ? 'ఇలాంటివి' : 'Inquire Similar'}</span>
             </button>
           ) : (
             <button
               type="button"
               onClick={() => openEnquiry('SITE_VISIT')}
-              className="py-2.5 px-4 rounded-full bg-[#191512] text-white font-medium text-xs flex items-center gap-1.5 shadow-md active:scale-95 transition-all"
+              className="py-2 px-2.5 sm:py-2.5 sm:px-4 rounded-full bg-[#191512] text-white font-medium text-xs flex items-center gap-1 sm:gap-1.5 shadow-md active:scale-95 transition-all shrink-0 max-w-[150px] sm:max-w-none"
             >
-              <Calendar className="w-3.5 h-3.5 text-[#C5A880]" />
-              <span>{dict.propertyDetail.bookVisitBtn}</span>
+              <Calendar className="w-3.5 h-3.5 text-[#C5A880] shrink-0" />
+              <span className="truncate">{dict.propertyDetail.bookVisitBtn}</span>
             </button>
           )}
         </div>

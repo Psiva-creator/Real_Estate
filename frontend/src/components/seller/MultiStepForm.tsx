@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useRef } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import {
   Building,
@@ -68,6 +69,20 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submittedRefId, setSubmittedRefId] = useState<string | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
+
+  const stepContainerRef = useRef<HTMLDivElement>(null);
+  const isFirstMount = useRef(true);
+
+  // Shift focus to step container upon navigation for accessible keyboard navigation
+  useEffect(() => {
+    if (isFirstMount.current) {
+      isFirstMount.current = false;
+      return;
+    }
+    if (stepContainerRef.current) {
+      stepContainerRef.current.focus({ preventScroll: true });
+    }
+  }, [currentStepIndex]);
 
   const { user, token, isAuthenticated } = useAuth();
 
@@ -712,8 +727,9 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
 
       {/* Main Form Body */}
       <form onSubmit={handleSubmit} className="p-5 sm:p-8 lg:p-10 space-y-6">
-        {/* Step 1: Property Type */}
-        {currentStep.id === 'type' && (
+        <div ref={stepContainerRef} tabIndex={-1} className="focus:outline-none space-y-6">
+          {/* Step 1: Property Type */}
+          {currentStep.id === 'type' && (
           <div className="space-y-6">
             <div className="space-y-1.5">
               <h2 className="font-serif text-2xl sm:text-3xl font-semibold text-[#201512] tracking-tight">
@@ -923,9 +939,12 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
                 <div className="relative border-2 border-dashed border-[#E2CFB6] hover:border-[#C79A6B] rounded-2xl p-4 bg-[#FAF8F3] transition-colors text-center">
                   {formData.photoPreview ? (
                     <div className="relative w-full max-w-xs mx-auto">
-                      <img
+                      <Image
                         src={formData.photoPreview}
                         alt="Property preview"
+                        width={320}
+                        height={144}
+                        unoptimized
                         className="w-full h-36 object-cover rounded-xl border border-[#E2CFB6] shadow-sm"
                       />
                       <button
@@ -2030,6 +2049,8 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             <span>{isTe ? 'కొనసాగడానికి ముందు అవసరమైన వివరాలన్నీ సరిచూసుకోండి' : 'Please check and fill in all required fields to continue.'}</span>
           </div>
         )}
+
+        </div>
 
         {/* Navigation Actions Footer */}
         <div className="pt-6 border-t border-[#E2CFB6] flex items-center justify-between gap-3">

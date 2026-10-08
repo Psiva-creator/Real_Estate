@@ -40,6 +40,7 @@ export default function Navbar({ locale }: NavbarProps) {
   });
 
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const headerRef = useRef<HTMLElement>(null);
   const pathname = usePathname();
   const dict = getDictionary(locale);
   const isTe = locale === 'te';
@@ -54,15 +55,26 @@ export default function Navbar({ locale }: NavbarProps) {
     setActiveDropdown(null);
   }, [pathname]);
 
-  // Close dropdown on outside click
+  // Close dropdown and mobile drawer on outside click or Escape key
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (headerRef.current && !headerRef.current.contains(event.target as Node)) {
+        setIsMobileMenuOpen(false);
+        setActiveDropdown(null);
+      }
+    };
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (event.key === 'Escape') {
+        setIsMobileMenuOpen(false);
         setActiveDropdown(null);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('keydown', handleKeyDown);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener('keydown', handleKeyDown);
+    };
   }, []);
 
   // Handle sticky shadow on scroll
@@ -118,22 +130,23 @@ export default function Navbar({ locale }: NavbarProps) {
 
   return (
     <header
+      ref={headerRef}
       className={`sticky top-0 z-40 w-full transition-all duration-300 bg-[#FAF8F5]/90 backdrop-blur-md border-b ${
         isScrolled ? 'border-[#E8E2D9] shadow-[0_4px_24px_-4px_rgba(25,21,18,0.06)]' : 'border-[#E8E2D9]/60'
       }`}
     >
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between gap-4 h-20 sm:h-24">
+        <div className="flex items-center justify-between gap-2 sm:gap-4 h-20 sm:h-24">
           {/* Logo & Brand */}
           <Link
             href={`/${locale}`}
-            className="flex items-center gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8C653E] rounded-lg shrink-0"
+            className="flex items-center gap-2 sm:gap-3 group focus:outline-none focus-visible:ring-2 focus-visible:ring-[#8C653E] rounded-lg shrink min-w-0"
           >
-            <div className="w-10 h-10 sm:w-11 sm:h-11 rounded-full bg-[#191512] dark:bg-[#231F1B] text-[#FAF8F5] flex items-center justify-center border border-[#8C653E]/50 shadow-sm group-hover:border-[#8C653E] transition-all duration-300 shrink-0">
-              <Shield className="w-5 h-5 sm:w-5.5 sm:h-5.5 text-[#C5A880]" />
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-[#191512] dark:bg-[#231F1B] text-[#FAF8F5] flex items-center justify-center border border-[#8C653E]/50 shadow-sm group-hover:border-[#8C653E] transition-all duration-300 shrink-0">
+              <Shield className="w-4.5 h-4.5 sm:w-5.5 sm:h-5.5 text-[#C5A880]" />
             </div>
-            <div className="flex flex-col">
-              <span className="font-serif text-lg sm:text-xl xl:text-2xl font-bold text-[#191512] tracking-wider uppercase leading-none group-hover:text-[#8C653E] transition-colors whitespace-nowrap">
+            <div className="flex flex-col min-w-0">
+              <span className="font-serif text-base sm:text-xl xl:text-2xl font-bold text-[#191512] tracking-wider uppercase leading-none group-hover:text-[#8C653E] transition-colors truncate max-w-[155px] xs:max-w-[210px] sm:max-w-none">
                 {dict.brand.name}
               </span>
               <span className="text-[9px] xl:text-[10px] font-medium text-[#8C653E] tracking-[0.15em] uppercase hidden sm:block whitespace-nowrap mt-1">
@@ -387,22 +400,22 @@ export default function Navbar({ locale }: NavbarProps) {
           </div>
 
           {/* Mobile Menu Button, Theme & Language Toggle on Mobile */}
-          <div className="flex items-center gap-2 lg:hidden">
-            <LanguageToggle currentLocale={locale} className="scale-90" />
-            <ThemeToggle locale={locale} className="p-2" />
+          <div className="flex items-center gap-1 sm:gap-2 lg:hidden shrink-0">
+            <LanguageToggle currentLocale={locale} className="scale-75 sm:scale-90 origin-right" />
+            <ThemeToggle locale={locale} className="p-1.5 sm:p-2" />
             <Link
               href={`/${locale}/saved-properties`}
-              className="relative p-2 rounded-full bg-white border border-[#E8E2D9] text-[#191512] flex items-center justify-center tap-target"
+              className="relative p-1.5 sm:p-2 rounded-full bg-white border border-[#E8E2D9] text-[#191512] flex items-center justify-center tap-target"
               title={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
               aria-label={isTe ? 'భద్రపరిచిన ప్రాపర్టీలు' : 'Saved Properties'}
             >
               <Heart
-                className={`w-4 h-4 ${
+                className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
                   savedCount > 0 ? 'fill-[#8C653E] text-[#8C653E]' : 'text-[#8C653E]'
                 }`}
               />
               {savedCount > 0 && (
-                <span className="absolute -top-1 -right-1 min-w-[16px] h-[16px] px-1 bg-[#8C653E] text-white text-[9px] font-bold rounded-full flex items-center justify-center">
+                <span className="absolute -top-1 -right-1 min-w-[15px] h-[15px] px-1 bg-[#8C653E] text-white text-[8px] sm:text-[9px] font-bold rounded-full flex items-center justify-center">
                   {savedCount}
                 </span>
               )}
@@ -410,19 +423,25 @@ export default function Navbar({ locale }: NavbarProps) {
             <button
               type="button"
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="p-2.5 rounded-full bg-white border border-[#E8E2D9] text-[#191512] hover:bg-[#F5F1EA] focus:outline-none focus:ring-2 focus:ring-[#8C653E] tap-target flex items-center justify-center"
+              className="p-2 sm:p-2.5 rounded-full bg-white border border-[#E8E2D9] text-[#191512] hover:bg-[#F5F1EA] focus:outline-none focus:ring-2 focus:ring-[#8C653E] tap-target flex items-center justify-center"
               aria-expanded={isMobileMenuOpen}
               aria-label={isMobileMenuOpen ? 'Close menu' : 'Open menu'}
             >
-              {isMobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+              {isMobileMenuOpen ? <X className="w-4 h-4 sm:w-5 sm:h-5" /> : <Menu className="w-4 h-4 sm:w-5 sm:h-5" />}
             </button>
           </div>
         </div>
       </div>
 
-      {/* Mobile Drawer */}
+      {/* Mobile Drawer Backdrop & Menu */}
       {isMobileMenuOpen && (
-        <div className="lg:hidden border-t border-[#E8E2D9] bg-[#FAF8F5] shadow-xl animate-in slide-in-from-top-2 duration-200">
+        <>
+          <div
+            className="fixed inset-0 top-20 sm:top-24 bg-black/40 backdrop-blur-xs z-30 lg:hidden animate-in fade-in duration-200"
+            onClick={() => setIsMobileMenuOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="relative z-40 lg:hidden border-t border-[#E8E2D9] bg-[#FAF8F5] shadow-xl animate-in slide-in-from-top-2 duration-200">
           <div className="max-w-7xl mx-auto px-5 py-6 space-y-5 max-h-[85vh] overflow-y-auto">
             {/* Top Level: Explore All */}
             <Link
@@ -597,6 +616,7 @@ export default function Navbar({ locale }: NavbarProps) {
             </div>
           </div>
         </div>
+        </>
       )}
     </header>
   );

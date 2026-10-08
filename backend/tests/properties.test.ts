@@ -335,6 +335,15 @@ describe('Properties Module & Seller Privacy Gate', () => {
       assert.strictEqual(p.status, 'LIVE');
       assert.notStrictEqual(p.status, 'DRAFT');
     }
+
+    // 5. Search with status=ALL must return both LIVE and SOLD properties, but never DRAFT or UNDER_REVIEW
+    const allRes = await request(app).get('/api/properties/search?status=ALL');
+    assert.strictEqual(allRes.status, 200);
+    const statuses = new Set(allRes.body.properties.map((p: any) => p.status));
+    assert.ok(statuses.has('LIVE'));
+    assert.ok(statuses.has('SOLD'));
+    assert.strictEqual(statuses.has('DRAFT'), false);
+    assert.strictEqual(statuses.has('UNDER_REVIEW'), false);
   });
 
   test('POST /api/admin/sync-seeds requires ADMIN role and synchronizes dataset', async () => {

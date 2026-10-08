@@ -20,7 +20,7 @@ describe('Documents & 13 Verification Gates', () => {
     adminToken = loginRes.body.token;
   });
 
-  test('POST /api/properties/:id/documents/upload uploads valid PDF document', async () => {
+  test('POST /api/properties/:id/documents/upload uploads valid PDF document when authenticated', async () => {
     // Find draft property (Shadnagar)
     const allProps = await db.listAllProperties();
     const draftProp = allProps.find((p) => p.status === 'DRAFT')!;
@@ -29,6 +29,7 @@ describe('Documents & 13 Verification Gates', () => {
 
     const res = await request(app)
       .post(`/api/properties/${draftProp.id}/documents/upload`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .field('docType', 'SALE_DEED')
       .attach('file', dummyPdf, 'sale_deed.pdf');
 
@@ -41,6 +42,30 @@ describe('Documents & 13 Verification Gates', () => {
     assert.strictEqual(updatedProp?.status, 'UNDER_REVIEW');
   });
 
+  test('Reject unauthenticated document upload with 401', async () => {
+    const allProps = await db.listAllProperties();
+    const draftProp = allProps.find((p) => p.status === 'DRAFT')!;
+    const dummyPdf = Buffer.from('%PDF-1.4 dummy pdf content');
+
+    const res = await request(app)
+      .post(`/api/properties/${draftProp.id}/documents/upload`)
+      .field('docType', 'SALE_DEED')
+      .attach('file', dummyPdf, 'sale_deed.pdf');
+
+    assert.strictEqual(res.status, 401);
+  });
+
+  test('Reject unauthenticated upload-url generation with 401', async () => {
+    const allProps = await db.listAllProperties();
+    const draftProp = allProps.find((p) => p.status === 'DRAFT')!;
+
+    const res = await request(app)
+      .post(`/api/properties/${draftProp.id}/documents/upload-url`)
+      .send({ docType: 'SALE_DEED', fileExtension: 'pdf' });
+
+    assert.strictEqual(res.status, 401);
+  });
+
   test('Reject invalid file formats (e.g. .exe or .txt)', async () => {
     const allProps = await db.listAllProperties();
     const draftProp = allProps.find((p) => p.status === 'DRAFT')!;
@@ -49,6 +74,7 @@ describe('Documents & 13 Verification Gates', () => {
 
     const res = await request(app)
       .post(`/api/properties/${draftProp.id}/documents/upload`)
+      .set('Authorization', `Bearer ${adminToken}`)
       .field('docType', 'EC')
       .attach('file', dummyTxt, 'notes.txt');
 
@@ -56,12 +82,11 @@ describe('Documents & 13 Verification Gates', () => {
   });
 
   test('PATCH /api/properties/:id/documents/:docType/verify allows admin to verify or reject and persists across refresh', async () => {
-    // Also verify staff portal login with username 'admin' / 'admin123'
     const staffLoginRes = await request(app)
       .post('/api/auth/login')
       .send({
         identifier: 'admin',
-        password: 'admin123',
+        password: 'Admin@1234',
       });
     assert.strictEqual(staffLoginRes.status, 200);
     const staffToken = staffLoginRes.body.token;
@@ -250,5 +275,61 @@ describe('Documents & 13 Verification Gates', () => {
       .get(`/api/properties/${otherSellerProp.id}/documents`)
       .set('Authorization', `Bearer ${sellerToken}`);
     assert.strictEqual(forbiddenRes.status, 403);
+  });
+
+  test('GET /api/properties/:id/documents/:docType/file blocks unauthenticated access with 401', async () => {
+    const allProps = await db.listAllProperties();
+    const prop = allProps[0];
+    const res = await request(app).get(`/api/properties/${prop.id}/documents/SALE_DEED/file`);
+    assert.strictEqual(res.status, 401);
+  });
+
+  test('GET /api/properties/:id/documents/:docType/file blocks unauthorized seller with 403', async () => {
+    const sellerLoginRes = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'kvrao.hyderabad@gmail.com',
+        password: 'Admin@1234',
+      });
+    const sellerToken = sellerLoginRes.body.token;
+    const sellerOwner = await db.findOwnerByUserId(sellerLoginRes.body.user.id);
+
+    const allProps = await db.listAllProperties();
+    const otherSellerProp = allProps.find((p) => p.sellerId !== sellerOwner?.id)!;
+
+    const res = await request(app)
+      .get(`/api/properties/${otherSellerProp.id}/documents/SALE_DEED/file`)
+      .set('Authorization', `Bearer ${sellerToken}`);
+
+    assert.strictEqual(res.status, 403);
+  });
+
+  test('POST /api/properties/:id/documents/upload blocks unauthorized seller from uploading to another seller property (IDOR)', async () => {
+    const sellerLoginRes = await request(app)
+      .post('/api/auth/login')
+      .send({
+        identifier: 'kvrao.hyderabad@gmail.com',
+        password: 'Admin@1234',
+      });
+    const sellerToken = sellerLoginRes.body.token;
+    const sellerOwner = await db.findOwnerByUserId(sellerLoginRes.body.user.id);
+
+    const allProps = await db.listAllProperties();
+    const otherSellerProp = allProps.find((p) => p.sellerId !== sellerOwner?.id)!;
+
+    const dummyPdf = Buffer.from('%PDF-1.4 dummy pdf content');
+    const res = await request(app)
+      .post(`/api/properties/${otherSellerProp.id}/documents/upload`)
+      .set('Authorization', `Bearer ${sellerToken}`)
+      .field('docType', 'SALE_DEED')
+      .attach('file', dummyPdf, 'sale_deed.pdf');
+
+    assert.strictEqual(res.status, 403);
+  });
+
+  test('Static uploads path does NOT serve confidential documents publicly', async () => {
+    // Attempting to fetch a confidential document directly from static /uploads
+    const res = await request(app).get('/uploads/033542d6-d8fe-4b0b-bd4f-87663f72d31b/SALE_DEED.pdf');
+    assert.strictEqual(res.status, 404);
   });
 });

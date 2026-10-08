@@ -306,7 +306,7 @@ export interface PropertySearchParams {
   minBedrooms?: number;
   maxBedrooms?: number;
   maxDistanceOrr?: number;
-  status?: PropertyStatus;
+  status?: PropertyStatus | 'ALL';
   sortBy?: 'price_asc' | 'price_desc' | 'newest' | 'orr_distance' | 'views';
   page?: number;
   limit?: number;

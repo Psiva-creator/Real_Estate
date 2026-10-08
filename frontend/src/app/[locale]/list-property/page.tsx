@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isValidLocale, Locale, getDictionary } from '@/lib/i18n';
@@ -8,6 +9,16 @@ import TrustBadge from '@/components/common/TrustBadge';
 
 interface ListPropertyPageProps {
   params: { locale: string };
+}
+
+export async function generateMetadata({ params }: ListPropertyPageProps): Promise<Metadata> {
+  const isTe = params.locale === 'te';
+  return {
+    title: isTe ? 'మీ ప్రాపర్టీని లిస్ట్ చేయండి | తెలంగాణ రియల్టీ హబ్' : 'List Your Land or Flat for Sale',
+    description: isTe
+      ? 'మీ వ్యవసాయ భూమి, వెంచర్ ప్లాట్ లేదా అపార్ట్‌మెంట్‌ను నేరుగా లిస్ట్ చేయండి. 13-పాయింట్ల ఉచిత రెవెన్యూ ధృవీకరణ పొందండి.'
+      : 'Submit your agricultural land, commercial plot, or flat for 13-point revenue document validation and mediated sale in Telangana.',
+  };
 }
 
 export default function ListPropertyPage({ params }: ListPropertyPageProps) {

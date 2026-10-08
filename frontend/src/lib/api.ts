@@ -413,11 +413,31 @@ function transformBackendProperty(bp: BackendProperty): MockProperty {
 
 // ─── Configuration ─────────────────────────────────────────────────────────────
 
-const API_BASE_URL = (process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telangana-realty-backend.onrender.com/api').replace(/\/+$/, '');
+export function getApiBaseUrl(): string {
+  const configured = (process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:5000/api').replace(/\/+$/, '');
+  if (typeof window !== 'undefined' && window.location?.hostname) {
+    const currentHost = window.location.hostname;
+    if (currentHost && currentHost !== 'localhost' && currentHost !== '127.0.0.1') {
+      try {
+        const parsed = new URL(configured);
+        if (parsed.hostname === 'localhost' || parsed.hostname === '127.0.0.1') {
+          parsed.hostname = currentHost;
+          return parsed.toString().replace(/\/+$/, '');
+        }
+      } catch {
+        // ignore parse errors and fallback to configured
+      }
+    }
+  }
+  return configured;
+}
+
+const API_BASE_URL = getApiBaseUrl();
 
 /** Returns true if the API_BASE_URL is configured and points to the real backend. */
 function isRealBackend(): boolean {
-  return !!API_BASE_URL && API_BASE_URL.trim().length > 0;
+  const base = getApiBaseUrl();
+  return !!base && base.trim().length > 0;
 }
 
 // ─── Public API functions ──────────────────────────────────────────────────────
@@ -452,7 +472,7 @@ export async function getProperties(params?: {
     try {
       const url = new URL(`${API_BASE_URL}/properties`);
       if (params?.type && params.type !== 'ALL') url.searchParams.set('type', params.type);
-      if (params?.status && params.status !== 'ALL') url.searchParams.set('status', params.status);
+      if (params?.status) url.searchParams.set('status', params.status);
       if (params?.limit) url.searchParams.set('limit', String(params.limit));
       if (params?.page) url.searchParams.set('page', String(params.page));
 
@@ -739,8 +759,9 @@ export async function uploadPropertyDocument(
       const xhr = new XMLHttpRequest();
       xhr.open('POST', `${API_BASE_URL}/properties/${encodeURIComponent(propertyId)}/documents/upload`);
 
-      if (token) {
-        xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+      const authToken = token || (typeof window !== 'undefined' ? localStorage.getItem('trh_auth_token') : null);
+      if (authToken) {
+        xhr.setRequestHeader('Authorization', `Bearer ${authToken}`);
       }
 
       if (xhr.upload && onProgress) {
@@ -815,7 +836,7 @@ export async function uploadImageApi(
   token?: string,
   propertyId?: string
 ): Promise<{ success: boolean; data: any }> {
-  const url = isRealBackend() ? `${API_BASE_URL}/upload/image` : 'http://localhost:5000/api/upload/image';
+  const url = `${getApiBaseUrl()}/upload/image`;
   const formData = new FormData();
   formData.append('image', file);
   if (propertyId) formData.append('propertyId', propertyId);
@@ -2018,7 +2039,7 @@ export async function publishAdminDetailsApi(
  * or 'https://telangana-realty-backend.onrender.com/api' -> 'http://localhost:5000'
  */
 export function getBackendRootUrl(): string {
-  const base = process.env.NEXT_PUBLIC_API_BASE_URL || 'https://telangana-realty-backend.onrender.com/api';
+  const base = getApiBaseUrl();
   return base.replace(/\/api\/?$/, '');
 }
 

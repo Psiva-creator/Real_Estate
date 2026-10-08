@@ -122,7 +122,7 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     id: 'PROP-HYD-001',
     title: 'Luxury 3 BHK High-Rise in Neopolis Corridor',
     titleTe: 'నియోపోలిస్ కారిడార్‌లో లగ్జరీ 3 BHK హై-రైజ్ ఫ్లాట్',
-    description: 'Ultra-luxurious 3 BHK apartment in Kokapet Golden Mile zone. 100% HMDA and RERA approved project with 30-year EC and clear legal title vetted by senior High Court advocates.',
+    description: 'Ultra-luxurious 3 BHK apartment in Kokapet Golden Mile zone. 100% HMDA and RERA approved project with 30-year EC and clear legal title vetted by experienced legal counsel.',
     descriptionTe: 'కోకాపేట్ గోల్డెన్ మైల్ జోన్‌లో అల్ట్రా-లగ్జరీ 3 BHK అపార్ట్‌మెంట్. 30 సంవత్సరాల క్లియర్ ఈసీ మరియు సీనియర్ న్యాయవాదులచే 100% ధృవీకరించబడిన HMDA ప్రాజెక్ట్.',
     type: 'FLAT',
     status: 'VERIFIED',
@@ -168,7 +168,7 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     adminDetails: {
       projectDescription: 'Premium high-rise tower curated directly by TRH Desk. Structural inspection and title chain vetted for 30 consecutive revenue years. Prime residential corridor with immediate connectivity to Neopolis SEZ.',
       highlights: [
-        '30-year unencumbered title verified by senior High Court advocate',
+        '30-year unencumbered title verified by independent legal counsel',
         'Adjacent to 100-foot master plan connecting road',
         'Ready for immediate registration and title deed execution',
         '100% Vastu compliant north-east entrance',
@@ -213,7 +213,7 @@ export const MOCK_PROPERTIES: MockProperty[] = [
     id: 'PROP-HYD-002',
     title: 'Gated Villa Plot in Shankarpally Growth Belt',
     titleTe: 'శంకర్‌పల్లి రోడ్‌లో గేటెడ్ విల్లా ప్లాట్',
-    description: 'Premium east-facing residential plot in HMDA sanctioned gated layout. Direct access to 100ft road, clear link records from 1985, spot Dharani passbook mutation guaranteed.',
+    description: 'Premium east-facing residential plot in HMDA sanctioned gated layout. Direct access to 100ft road, clear link records from 1985, spot Dharani passbook mutation supported upon registry.',
     descriptionTe: 'HMDA అనుమతి పొందిన లేఅవుట్‌లో తూర్పు ముఖపు రెసిడెన్షియల్ ప్లాట్. 100 అడుగుల రోడ్డు కనెక్టివిటీ, 1985 నుండి క్లియర్ లింక్ డాక్యుమెంట్లు మరియు స్పాట్ రిజిస్ట్రేషన్.',
     type: 'LAND',
     status: 'VERIFIED',

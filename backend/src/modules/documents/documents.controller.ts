@@ -1,3 +1,5 @@
+import path from 'path';
+import fs from 'fs';
 import { Response } from 'express';
 import multer from 'multer';
 import { AuthRequest } from '../../middleware/auth.js';
@@ -6,6 +8,7 @@ import { storageService } from '../../services/storage/storage.service.js';
 import { DocumentType, DocumentStatus } from '../../types/index.js';
 import { db } from '../../db/database.js';
 import { ALL_13_DOCS } from '../../middleware/security.js';
+import { config } from '../../config/index.js';
 
 // Setup multer memory storage (supports PDF, JPG, PNG up to 15MB)
 const upload = multer({
@@ -56,6 +59,10 @@ export class DocumentsController {
       const { id: propertyId } = req.params;
       const { docType } = req.body;
 
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required to upload property documents' });
+      }
+
       if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
@@ -70,11 +77,9 @@ export class DocumentsController {
         return res.status(404).json({ error: 'Property not found' });
       }
 
-      if (req.user) {
-        const hasAccess = await this.checkPropertyAccess(req, property);
-        if (!hasAccess) {
-          return res.status(403).json({ error: 'Forbidden: You can only upload documents for your own property' });
-        }
+      const hasAccess = await this.checkPropertyAccess(req, property);
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Forbidden: You can only upload documents for your own property' });
       }
 
       const doc = await documentsService.handleFileUpload(
@@ -102,6 +107,10 @@ export class DocumentsController {
       const { id: propertyId } = req.params;
       const { docType, fileExtension } = req.body;
 
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required to request upload URLs' });
+      }
+
       if (!docType || !fileExtension) {
         return res.status(400).json({ error: 'docType and fileExtension are required' });
       }
@@ -111,11 +120,9 @@ export class DocumentsController {
         return res.status(404).json({ error: 'Property not found' });
       }
 
-      if (req.user) {
-        const hasAccess = await this.checkPropertyAccess(req, property);
-        if (!hasAccess) {
-          return res.status(403).json({ error: 'Forbidden: You can only request upload URLs for your own property' });
-        }
+      const hasAccess = await this.checkPropertyAccess(req, property);
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Forbidden: You can only request upload URLs for your own property' });
       }
 
       const presigned = await storageService.generatePresignedUploadUrl(
@@ -127,6 +134,81 @@ export class DocumentsController {
       return res.json(presigned);
     } catch (err) {
       return res.status(400).json({ error: (err as Error).message });
+    }
+  }
+
+  /**
+   * Authenticated streaming download endpoint for confidential property documents
+   * GET /api/properties/:id/documents/:docType/file
+   */
+  async streamDocumentFile(req: AuthRequest, res: Response) {
+    try {
+      const { id: propertyId, docType } = req.params;
+
+      if (!req.user) {
+        return res.status(401).json({ error: 'Authentication required to view property documents' });
+      }
+
+      if (!ALL_13_DOCS.includes(docType as any)) {
+        return res.status(404).json({ error: `Invalid document type: ${docType}` });
+      }
+
+      const property = await db.findPropertyById(propertyId);
+      if (!property) {
+        return res.status(404).json({ error: 'Property not found' });
+      }
+
+      const hasAccess = await this.checkPropertyAccess(req, property);
+      if (!hasAccess) {
+        return res.status(403).json({ error: 'Forbidden: You do not have permission to view documents for this property' });
+      }
+
+      const doc = await documentsService.getDocument(propertyId, docType as DocumentType);
+      if (!doc || !doc.fileUrl) {
+        return res.status(404).json({ error: `No uploaded file found for document ${docType}` });
+      }
+
+      // If document is in remote S3/R2 storage
+      if (doc.fileUrl.startsWith('http://') || doc.fileUrl.startsWith('https://')) {
+        const fileKey = `properties/${path.basename(propertyId)}/${path.basename(doc.fileUrl)}`;
+        const presignedUrl = await storageService.getPresignedDownloadUrl(fileKey);
+        return res.redirect(presignedUrl || doc.fileUrl);
+      }
+
+      // If document is stored in local uploads directory
+      let relativePath = doc.fileUrl;
+      if (relativePath.startsWith('/uploads/')) {
+        relativePath = relativePath.slice('/uploads/'.length);
+      } else if (relativePath.startsWith('uploads/')) {
+        relativePath = relativePath.slice('uploads/'.length);
+      }
+
+      const normalizedBaseDir = path.resolve(config.uploadDir);
+      const absoluteFilePath = path.resolve(normalizedBaseDir, relativePath);
+
+      // Prevent directory traversal attacks
+      if (!absoluteFilePath.startsWith(normalizedBaseDir + path.sep) && absoluteFilePath !== normalizedBaseDir) {
+        return res.status(403).json({ error: 'Access denied: Invalid file path' });
+      }
+
+      if (!fs.existsSync(absoluteFilePath)) {
+        return res.status(404).json({ error: 'Document file not found on server' });
+      }
+
+      const ext = path.extname(absoluteFilePath).toLowerCase();
+      let contentType = 'application/pdf';
+      if (ext === '.jpg' || ext === '.jpeg') contentType = 'image/jpeg';
+      else if (ext === '.png') contentType = 'image/png';
+      else if (ext === '.webp') contentType = 'image/webp';
+
+      res.setHeader('Content-Type', contentType);
+      res.setHeader('Content-Disposition', `inline; filename="${docType}${ext}"`);
+      res.setHeader('X-Content-Type-Options', 'nosniff');
+      res.setHeader('Cache-Control', 'private, no-cache, no-store, must-revalidate');
+
+      return res.sendFile(absoluteFilePath);
+    } catch (err) {
+      return res.status(500).json({ error: (err as Error).message });
     }
   }
 

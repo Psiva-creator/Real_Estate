@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { isValidLocale, Locale, getDictionary } from '@/lib/i18n';
@@ -6,6 +7,16 @@ import { Scale, ShieldCheck } from 'lucide-react';
 
 interface TermsPageProps {
   params: { locale: string };
+}
+
+export async function generateMetadata({ params }: TermsPageProps): Promise<Metadata> {
+  const isTe = params.locale === 'te';
+  return {
+    title: isTe ? 'నిబంధనలు & షరతులు | తెలంగాణ రియల్టీ హబ్' : 'Terms of Mediation & Representation',
+    description: isTe
+      ? 'తెలంగాణ రియల్టీ హబ్ ద్వారా ప్రాపర్టీ అమ్మకాలు మరియు కొనుగోళ్లకు వర్తించే మధ్యవర్తిత్వ నిబంధనలు.'
+      : 'Review the statutory representation, fee structures, and mediation terms for real estate transactions in Telangana.',
+  };
 }
 
 export default function TermsPage({ params }: TermsPageProps) {

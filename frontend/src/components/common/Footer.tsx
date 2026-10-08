@@ -3,6 +3,7 @@ import Link from 'next/link';
 import { Shield, Phone, Mail, MapPin, CheckCircle, Scale, Building } from 'lucide-react';
 import { Locale, getDictionary } from '@/lib/i18n';
 import LanguageToggle from './LanguageToggle';
+import { CONTACT_CONFIG } from '@/lib/constants';
 
 interface FooterProps {
   locale: Locale;
@@ -156,11 +157,15 @@ export default function Footer({ locale }: FooterProps) {
               </div>
               <div className="flex items-center gap-2.5">
                 <Phone className="w-4 h-4 text-[#8C653E] shrink-0" />
-                <span className="font-mono text-[#FAF8F5]">+91 94400 12345</span>
+                <a href={`tel:${CONTACT_CONFIG.mediationDeskPhoneRaw}`} className="font-mono text-[#FAF8F5] hover:underline">
+                  {CONTACT_CONFIG.mediationDeskPhone}
+                </a>
               </div>
               <div className="flex items-center gap-2.5">
                 <Mail className="w-4 h-4 text-[#8C653E] shrink-0" />
-                <span>advisory@telanganarealty.in</span>
+                <a href={`mailto:${CONTACT_CONFIG.advisoryEmail}`} className="hover:underline">
+                  {CONTACT_CONFIG.advisoryEmail}
+                </a>
               </div>
             </div>
             <div className="pt-2">

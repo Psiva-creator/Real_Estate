@@ -208,8 +208,8 @@ export class PropertiesService {
     page: number;
     limit: number;
   }> {
-    // Only LIVE or SOLD properties can be searched publicly (default to LIVE)
-    const publicStatus = params.status === 'SOLD' ? 'SOLD' : 'LIVE';
+    // Only LIVE or SOLD properties can be searched publicly (default to LIVE, or ALL for both)
+    const publicStatus = params.status === 'ALL' ? 'ALL' : params.status === 'SOLD' ? 'SOLD' : 'LIVE';
     const { properties, total } = await db.searchProperties({
       ...params,
       status: publicStatus,

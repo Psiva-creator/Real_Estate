@@ -157,7 +157,7 @@ function VerificationModal({ locale, onClose }: { locale: Locale; onClose: () =>
         <div className="px-6 py-4 bg-[#F5F1EA] border-t border-[#E8E2D9] flex items-center justify-between shrink-0">
           <span className="text-xs text-[#574F48] flex items-center gap-1.5 font-medium">
             <CheckCircle2 className="w-4 h-4 text-[#8C653E]" />
-            {isTe ? '100% పారదర్శక బ్రోకరేజ్ హామీ' : '100% Transparent Brokerage Guarantee'}
+            {isTe ? '100% పారదర్శక బ్రోకరేజ్ విధానం' : '100% Transparent Brokerage Commitment'}
           </span>
           <button
             type="button"

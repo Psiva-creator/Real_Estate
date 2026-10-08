@@ -3,6 +3,19 @@ import path from 'path';
 
 dotenv.config();
 
+const isProduction = (process.env.NODE_ENV || 'development') === 'production';
+const INSECURE_DEFAULT_JWT_SECRET = 'telangana-realty-jwt-secret-key-2026-production';
+const rawJwtSecret = process.env.JWT_SECRET;
+
+if (isProduction) {
+  if (!rawJwtSecret || !rawJwtSecret.trim()) {
+    throw new Error('FATAL: JWT_SECRET environment variable is missing in production. Startup aborted.');
+  }
+  if (rawJwtSecret === INSECURE_DEFAULT_JWT_SECRET) {
+    throw new Error('FATAL: Insecure default JWT_SECRET detected in production. A strong, random JWT_SECRET must be configured. Startup aborted.');
+  }
+}
+
 export const config = {
   port: parseInt(process.env.PORT || '5000', 10),
   host: process.env.HOST || '0.0.0.0',
@@ -14,7 +27,7 @@ export const config = {
   dbSsl: process.env.DB_SSL === 'true',
 
   // JWT Auth
-  jwtSecret: process.env.JWT_SECRET || 'telangana-realty-jwt-secret-key-2026-production',
+  jwtSecret: rawJwtSecret || (isProduction ? '' : INSECURE_DEFAULT_JWT_SECRET),
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
 
   // Storage (AWS S3 & Cloudflare R2 compatible)

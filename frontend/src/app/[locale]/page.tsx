@@ -1,4 +1,5 @@
 import React from 'react';
+import type { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { isValidLocale, Locale } from '@/lib/i18n';
 import { MOCK_PROPERTIES, MockProperty } from '@/lib/mockData';
@@ -14,6 +15,18 @@ import MapView from '@/components/properties/MapView';
 interface HomePageProps {
   params: {
     locale: string;
+  };
+}
+
+export async function generateMetadata({ params }: HomePageProps): Promise<Metadata> {
+  const isTe = params.locale === 'te';
+  return {
+    title: isTe
+      ? 'హోమ్‌పేజీ | 100% ధృవీకరించబడిన ల్యాండ్ & ఫ్లాట్ బ్రోకరేజ్'
+      : 'Home | 100% Verified Land & Flat Brokerage',
+    description: isTe
+      ? 'హైదరాబాద్ & తెలంగాణలో 13-పాయింట్ల రెవెన్యూ రికార్డులు, ధరణి పాస్‌బుక్ మరియు HMDA అనుమతులు ధృవీకరించబడిన ల్యాండ్స్, ఫ్లాట్స్ మరియు విల్లాలు.'
+      : 'Telangana premier real estate mediator & brokerage. Discover 100% legally verified lands, HMDA plots, and luxury flats across Hyderabad with 13-document due diligence.',
   };
 }
 

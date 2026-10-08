@@ -165,3 +165,12 @@ export const VERIFIED_13_DOCS: VerificationDoc[] = [
     isMandatory: true,
   },
 ];
+
+export const CONTACT_CONFIG = {
+  mediationDeskPhone: process.env.NEXT_PUBLIC_MEDIATION_PHONE || '+91 94400 12345',
+  mediationDeskPhoneRaw: process.env.NEXT_PUBLIC_MEDIATION_PHONE_RAW || '+919440012345',
+  supportEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'advisory@telanganarealty.in',
+  advisoryEmail: process.env.NEXT_PUBLIC_SUPPORT_EMAIL || 'advisory@telanganarealty.in',
+  officeAddress: process.env.NEXT_PUBLIC_OFFICE_ADDRESS || 'Financial District, Nanakramguda, Hyderabad, Telangana 500032',
+  isDemoContact: process.env.NEXT_PUBLIC_IS_DEMO_CONTACT !== 'false',
+};

@@ -288,16 +288,18 @@ export default function DocumentChecklistUploader({
             </div>
           </div>
 
-          {/* Quick Mock Fill button for tester convenience */}
-          <button
-            type="button"
-            onClick={handlePrepopulateMockDocs}
-            className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#3A241C] hover:bg-[#5A382B] text-[#E2CFB6] text-xs font-medium border border-[#C79A6B]/30 transition-colors tap-target"
-            title="Pre-populate with sample documents for testing"
-          >
-            <Sparkles className="w-3.5 h-3.5 text-[#C79A6B]" />
-            <span>{isTe ? 'నమూనా డాక్యుమెంట్లను నింపండి' : 'Pre-fill Sample Pack'}</span>
-          </button>
+          {/* Quick Mock Fill button gated strictly to development mode */}
+          {process.env.NODE_ENV === 'development' && (
+            <button
+              type="button"
+              onClick={handlePrepopulateMockDocs}
+              className="self-start sm:self-auto inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg bg-[#3A241C] hover:bg-[#5A382B] text-[#E2CFB6] text-xs font-medium border border-[#C79A6B]/30 transition-colors tap-target"
+              title="Development only: Pre-populate with sample documents"
+            >
+              <Sparkles className="w-3.5 h-3.5 text-[#C79A6B]" />
+              <span>{isTe ? 'నమూనా డాక్యుమెంట్లను నింపండి (Dev)' : 'Pre-fill Sample Pack (Dev)'}</span>
+            </button>
+          )}
         </div>
 
         {/* Progress bar */}

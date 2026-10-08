@@ -1,6 +1,7 @@
 import express, { Request, Response, NextFunction } from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { config } from './config/index.js';
 import { authController } from './modules/auth/auth.controller.js';
 import { propertiesController } from './modules/properties/properties.controller.js';
@@ -32,8 +33,15 @@ app.use('/api', globalRateLimiter);
 app.use(express.json({ limit: '20mb' }));
 app.use(express.urlencoded({ extended: true, limit: '20mb' }));
 
-// Static uploads serving (for local file driver)
-app.use('/uploads', express.static(path.resolve(config.uploadDir)));
+// Static uploads serving restricted to public property/media images only
+// Confidential legal documents (deeds, EC, passbooks) are protected and served via authenticated endpoint
+const publicImagesDir = path.join(path.resolve(config.uploadDir), 'images');
+if (!fs.existsSync(publicImagesDir)) {
+  try {
+    fs.mkdirSync(publicImagesDir, { recursive: true });
+  } catch {}
+}
+app.use('/uploads/images', express.static(publicImagesDir));
 
 // --- ROOT & SERVICE DISCOVERY ---
 app.get('/', (_req: Request, res: Response) => {
@@ -136,14 +144,19 @@ app.use('/properties', propertiesRouter);
 const documentsRouter = express.Router();
 documentsRouter.post(
   '/properties/:id/documents/upload',
-  optionalAuth,
+  requireAuth,
   documentUploadMiddleware,
   documentsController.uploadDocument.bind(documentsController)
 );
 documentsRouter.post(
   '/properties/:id/documents/upload-url',
-  optionalAuth,
+  requireAuth,
   documentsController.getPresignedUploadUrl.bind(documentsController)
+);
+documentsRouter.get(
+  '/properties/:id/documents/:docType/file',
+  requireAuth,
+  documentsController.streamDocumentFile.bind(documentsController)
 );
 documentsRouter.get(
   '/properties/:id/documents/go-live-check',

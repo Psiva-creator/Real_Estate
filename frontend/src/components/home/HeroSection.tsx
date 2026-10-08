@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import {
@@ -136,6 +137,11 @@ export default function HeroSection({ locale }: HeroSectionProps) {
                         ? 'గ్రామం, ORR కారిడార్ లేదా సర్వే నంబర్...'
                         : 'Search Kokapet, Mokila, Tellapur, or corridor...'
                     }
+                    aria-label={
+                      isTe
+                        ? 'గ్రామం, ORR కారిడార్ లేదా సర్వే నంబర్ ద్వారా శోధించండి'
+                        : 'Search by location, corridor, or survey number'
+                    }
                     className="w-full h-12 pl-10 pr-4 rounded-xl bg-[#FAF8F5] border border-[#E8E2D9] text-xs sm:text-sm text-[#191512] placeholder:text-[#8C827A] focus:outline-none focus:ring-1 focus:ring-[#8C653E]"
                   />
                 </div>
@@ -192,12 +198,15 @@ export default function HeroSection({ locale }: HeroSectionProps) {
             {/* Main Luxury Architectural Image */}
             <div className="relative rounded-3xl overflow-hidden border border-[#E8E2D9] shadow-[0_20px_50px_-10px_rgba(25,21,18,0.12)] group bg-[#EDE6DA]">
               <div className="aspect-[4/5] relative w-full overflow-hidden">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1200&q=85"
                   alt="Luxury Villa & High-Rise Living in Hyderabad"
-                  className="w-full h-full object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
+                  fill
+                  priority
+                  sizes="(max-width: 1024px) 100vw, 42vw"
+                  className="object-cover object-center group-hover:scale-105 transition-transform duration-700 ease-out"
                 />
-                <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/75 via-transparent to-transparent opacity-80" />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#191512]/75 via-transparent to-transparent opacity-80 pointer-events-none" />
               </div>
 
               {/* Floating Lead Asset Pill / Badge */}
@@ -237,10 +246,12 @@ export default function HeroSection({ locale }: HeroSectionProps) {
             {/* Asymmetrical Floating Secondary Detail Card (Desktop/Tablet) */}
             <div className="hidden sm:block absolute -bottom-8 -left-10 w-48 rounded-2xl overflow-hidden border-2 border-[#FAF8F5] shadow-2xl bg-white p-2.5">
               <div className="aspect-[4/3] relative rounded-xl overflow-hidden mb-2">
-                <img
+                <Image
                   src="https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=600&q=80"
                   alt="Modern Architectural Pavilion"
-                  className="w-full h-full object-cover"
+                  fill
+                  sizes="192px"
+                  className="object-cover"
                 />
               </div>
               <div className="px-1">
