@@ -19,6 +19,7 @@
  */
 
 import { MockProperty, MOCK_PROPERTIES, PropertyType, PropertyStatus, ServiceTier } from './mockData';
+export type { ServiceTier };
 import { AdminPropertyDetails } from '@/types/adminDetails';
 import { loadAdminDetails, persistAdminDetailsLocally } from './adminDetailsStorage';
 
