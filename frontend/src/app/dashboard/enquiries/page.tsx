@@ -476,8 +476,8 @@ Telangana Realty Hub`;
       MOCK_PROPERTIES.forEach((p) => {
         pMap[p.id] = {
           id: p.id,
-          titleEn: p.titleEn,
-          titleTe: p.titleTe || p.titleEn,
+          titleEn: p.title,
+          titleTe: p.titleTe || p.title,
           ref: getCleanPropertyRef(p.id),
           url: `${origin}/en/properties/${p.id}`,
         };
@@ -490,8 +490,8 @@ Telangana Realty Hub`;
           properties.forEach((p) => {
             pMap[p.id] = {
               id: p.id,
-              titleEn: p.titleEn,
-              titleTe: p.titleTe || p.titleEn,
+              titleEn: p.title,
+              titleTe: p.titleTe || p.title,
               ref: getCleanPropertyRef(p.id),
               url: `${origin}/en/properties/${p.id}`,
             };
@@ -521,8 +521,8 @@ Telangana Realty Hub`;
                   if (single) {
                     pMap[single.id] = {
                       id: single.id,
-                      titleEn: single.titleEn,
-                      titleTe: single.titleTe || single.titleEn,
+                      titleEn: single.title,
+                      titleTe: single.titleTe || single.title,
                       ref: getCleanPropertyRef(single.id),
                       url: `${origin}/en/properties/${single.id}`,
                     };
