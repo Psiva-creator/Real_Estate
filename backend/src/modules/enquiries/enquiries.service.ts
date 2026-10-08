@@ -239,13 +239,20 @@ export class EnquiriesService {
       meetingPoint ||
       `https://maps.google.com/?q=${property?.location.latitude || 17.4},${property?.location.longitude || 78.4}`;
 
+    const baseUrl = config.frontendUrl.replace(/\/$/, '');
+    const lang = enquiry.preferredLanguage || 'en';
+    const propertyUrl = property?.id ? `${baseUrl}/${lang}/properties/${property.id}` : '';
+    const propertyRef = property?.id ? property.id.slice(0, 8).toUpperCase() : 'PROP';
+
     await notificationService.sendWhatsApp({
       to: enquiry.whatsapp || enquiry.phone,
       template: 'site_visit_scheduled',
-      language: enquiry.preferredLanguage || 'en',
+      language: lang,
       variables: {
         buyer_name: enquiry.buyerName,
         property_title: property?.titleEn || 'Property',
+        property_ref: propertyRef,
+        property_url: propertyUrl,
         visit_date_time: visitDateTime,
         map_link: mapLink,
         agent_name: agent?.name || 'Assigned Property Advisor',
