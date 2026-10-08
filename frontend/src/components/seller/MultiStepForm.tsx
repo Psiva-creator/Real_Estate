@@ -555,11 +555,24 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
       }
     } catch (err: unknown) {
       console.error('[MultiStepForm] Submission error:', err);
-      const msg =
+      let msg =
         (err as Error)?.message ||
         sfDict.review?.submissionError ||
         'Failed to submit property listing. Please try again.';
+
+      if (
+        msg.includes('Failed to fetch') ||
+        msg.includes('NetworkError') ||
+        msg.includes('network') ||
+        msg.includes('Load failed')
+      ) {
+        msg = isTe
+          ? 'నెట్‌వర్క్ కనెక్షన్ సమస్య. సర్వర్‌కు కనెక్ట్ కాలేకపోయాము, దయచేసి మీ ఇంటర్నెట్ కనెక్షన్‌ను తనిఖీ చేసి మళ్లీ సమర్పించండి.'
+          : 'Network connection issue. Unable to connect to the property server. Please check your internet connection and try submitting again.';
+      }
+
       setSubmitError(msg);
+      window.scrollTo({ top: 150, behavior: 'smooth' });
     } finally {
       setIsSubmitting(false);
     }
