@@ -22,14 +22,18 @@ import {
   Send,
   Copy,
   Check,
+  ExternalLink,
 } from 'lucide-react';
 import { useAuth } from '@/lib/auth-context';
 import {
   getEnquiriesApi,
   updateEnquiryStatusApi,
+  getProperties,
+  getPropertyById,
   BackendEnquiry,
   BackendEnquiryStatus,
 } from '@/lib/api';
+import { MOCK_PROPERTIES } from '@/lib/mockData';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type EnquiryStatus =
@@ -46,12 +50,46 @@ interface Lead {
   phone: string;
   propertyId: string;
   propertyTitle: string;
+  propertyTitleTe?: string;
+  propertyRef?: string;
+  propertyUrl?: string;
   enquiryType: EnquiryType;
   status: EnquiryStatus;
   agentName: string;
   date: string;
   notes: string;
   priority: Priority;
+}
+
+export interface PropertyLookup {
+  id: string;
+  titleEn: string;
+  titleTe?: string;
+  ref: string;
+  url: string;
+}
+
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+function isUuid(str: string): boolean {
+  return UUID_REGEX.test(str.trim());
+}
+
+function getCleanPropertyRef(propertyId: string): string {
+  if (!propertyId) return '#PROP';
+  if (propertyId.startsWith('PROP-')) return propertyId;
+  if (isUuid(propertyId)) return `#${propertyId.slice(0, 8).toUpperCase()}`;
+  return propertyId.length > 8 ? `#${propertyId.slice(0, 8).toUpperCase()}` : `#${propertyId}`;
+}
+
+function resolveAgentName(assignedTo: string | undefined | null, currentUserName?: string): string {
+  if (!assignedTo || assignedTo === 'Unassigned') {
+    return currentUserName || 'Suresh Reddy (Senior Land Advisor)';
+  }
+  if (isUuid(assignedTo)) {
+    return currentUserName || 'Suresh Reddy (Senior Land Advisor)';
+  }
+  return assignedTo;
 }
 
 // ─── Offline Fallback Demo Leads ──────────────────────────────────────────────
@@ -62,6 +100,9 @@ const INITIAL_LEADS: Lead[] = [
     phone: '+91 98480 23456',
     propertyId: 'PROP-HYD-001',
     propertyTitle: 'Luxury 3 BHK High-Rise in Neopolis Corridor',
+    propertyTitleTe: 'నియోపోలిస్ కారిడార్‌లో లగ్జరీ 3 BHK హై-రైజ్',
+    propertyRef: 'PROP-HYD-001',
+    propertyUrl: 'https://frontend-six-psi-ecroth2n1r.vercel.app/en/properties/PROP-HYD-001',
     enquiryType: 'SITE_VISIT',
     status: 'ASSIGNED',
     agentName: 'Vikram Rao',
@@ -75,6 +116,9 @@ const INITIAL_LEADS: Lead[] = [
     phone: '+91 94401 56789',
     propertyId: 'PROP-HYD-003',
     propertyTitle: 'Clear Title Agricultural Farm Land near Airport',
+    propertyTitleTe: 'ఎయిర్‌పోర్ట్ సమీపంలో క్లియర్ టైటిల్ వ్యవసాయ భూమి',
+    propertyRef: 'PROP-HYD-003',
+    propertyUrl: 'https://frontend-six-psi-ecroth2n1r.vercel.app/en/properties/PROP-HYD-003',
     enquiryType: 'CALL',
     status: 'NEW',
     agentName: 'Unassigned',
@@ -88,6 +132,9 @@ const INITIAL_LEADS: Lead[] = [
     phone: '+91 98850 88765',
     propertyId: 'PROP-HYD-002',
     propertyTitle: 'Gated Villa Plot in Shankarpally Growth Belt',
+    propertyTitleTe: 'శంకర్‌పల్లి గ్రోత్ బెల్ట్‌లో గేటెడ్ విల్లా ప్లాట్',
+    propertyRef: 'PROP-HYD-002',
+    propertyUrl: 'https://frontend-six-psi-ecroth2n1r.vercel.app/en/properties/PROP-HYD-002',
     enquiryType: 'SITE_VISIT',
     status: 'SITE_VISIT_SCHEDULED',
     agentName: 'Mahesh Kumar',
@@ -101,6 +148,9 @@ const INITIAL_LEADS: Lead[] = [
     phone: '+91 99887 76655',
     propertyId: 'PROP-HYD-004',
     propertyTitle: '2.5 BHK Tech Corridor Smart Residence',
+    propertyTitleTe: 'టెక్ కారిడార్‌లో 2.5 BHK స్మార్ట్ రెసిడెన్స్',
+    propertyRef: 'PROP-HYD-004',
+    propertyUrl: 'https://frontend-six-psi-ecroth2n1r.vercel.app/en/properties/PROP-HYD-004',
     enquiryType: 'QUESTION',
     status: 'DEAL_CLOSED',
     agentName: 'Anita Reddy',
@@ -110,7 +160,7 @@ const INITIAL_LEADS: Lead[] = [
   },
 ];
 
-const AGENTS = ['Unassigned', 'Vikram Rao', 'Mahesh Kumar', 'Anita Reddy', 'Suresh Patel'];
+const BASE_AGENTS = ['Unassigned', 'Vikram Rao', 'Mahesh Kumar', 'Anita Reddy', 'Suresh Patel'];
 
 function toBackendStatus(s: EnquiryStatus): BackendEnquiryStatus {
   if (s === 'COMPLETED') return 'DEAL_CLOSED';
@@ -118,7 +168,11 @@ function toBackendStatus(s: EnquiryStatus): BackendEnquiryStatus {
   return s;
 }
 
-function transformBackendEnquiry(be: BackendEnquiry): Lead {
+function transformBackendEnquiry(
+  be: BackendEnquiry,
+  propertyMap?: Record<string, PropertyLookup>,
+  currentUserName?: string
+): Lead {
   const priority: Priority =
     (be.leadScore ?? 0) >= 70
       ? 'HIGH'
@@ -134,11 +188,38 @@ function transformBackendEnquiry(be: BackendEnquiry): Lead {
       })
     : 'Recent';
 
-  // Extract clean property title or fallback
-  let cleanTitle = `Property ${be.propertyId}`;
-  if (be.notes && !be.notes.includes('Booked slot timing') && !be.notes.includes('Preferred date')) {
-    cleanTitle = be.notes.split('\n')[0].substring(0, 70);
+  const ref = getCleanPropertyRef(be.propertyId);
+  const origin =
+    typeof window !== 'undefined' && window.location.origin
+      ? window.location.origin
+      : 'https://frontend-six-psi-ecroth2n1r.vercel.app';
+
+  // Check lookup map first
+  const prop = propertyMap ? propertyMap[be.propertyId] : undefined;
+  let cleanTitle = prop?.titleEn;
+  const cleanTitleTe = prop?.titleTe;
+
+  if (!cleanTitle) {
+    // Check if first line of notes has a real title (not slot timing or dates)
+    if (
+      be.notes &&
+      !be.notes.toLowerCase().includes('booked slot') &&
+      !be.notes.toLowerCase().includes('preferred date') &&
+      !be.notes.startsWith('[')
+    ) {
+      const firstLine = be.notes.split('\n')[0].split('|')[0].trim();
+      if (firstLine.length > 3 && !firstLine.includes('http') && !isUuid(firstLine)) {
+        cleanTitle = firstLine.substring(0, 70);
+      }
+    }
   }
+
+  if (!cleanTitle) {
+    cleanTitle = `Verified Telangana Realty Listing (${ref})`;
+  }
+
+  const propertyUrl = prop?.url || `${origin}/en/properties/${be.propertyId}`;
+  const agentName = resolveAgentName(be.assignedTo, currentUserName);
 
   return {
     id: be.id,
@@ -146,9 +227,12 @@ function transformBackendEnquiry(be: BackendEnquiry): Lead {
     phone: be.phone,
     propertyId: be.propertyId,
     propertyTitle: cleanTitle,
+    propertyTitleTe: cleanTitleTe || cleanTitle,
+    propertyRef: ref,
+    propertyUrl,
     enquiryType: be.enquiryType,
     status: be.status,
-    agentName: be.assignedTo || 'Unassigned',
+    agentName,
     date: dateStr,
     notes: be.notes || '',
     priority,
