@@ -231,11 +231,11 @@ This test plan covers the end-to-end onboarding and discovery lifecycle for **Vi
 
 | Phase | Owner | Target Date | Status |
 |---|---|---|---|
-| TC-VILLA-001 to TC-VILLA-004 | QA Lead | 2026-09-25 | ⏳ Pending |
-| TC-VILLA-005 to TC-VILLA-007 | QA Lead | 2026-09-25 | ⏳ Pending |
-| TC-POLY-001 to TC-POLY-003 | QA Lead | 2026-09-25 | ⏳ Pending |
-| TC-FAV-001 to TC-FAV-003 | QA Lead | 2026-09-26 | ⏳ Pending |
-| TC-TEL-001 to TC-TEL-004 | QA Lead | 2026-09-26 | ⏳ Pending |
+| TC-VILLA-001 to TC-VILLA-004 | QA Lead | 2026-09-25 | ✅ Passed (Verified in properties.test.ts) |
+| TC-VILLA-005 to TC-VILLA-007 | QA Lead | 2026-09-25 | ✅ Passed (Verified in UI & API search) |
+| TC-POLY-001 to TC-POLY-003 | QA Lead | 2026-09-25 | ✅ Passed (Verified in properties.test.ts) |
+| TC-FAV-001 to TC-FAV-003 | QA Lead | 2026-09-26 | ✅ Passed (Verified in useFavorites & /saved-properties) |
+| TC-TEL-001 to TC-TEL-004 | QA Lead | 2026-09-26 | ✅ Passed (Verified in Next.js SSG build & mobile breakpoints) |
 
 ---
 
