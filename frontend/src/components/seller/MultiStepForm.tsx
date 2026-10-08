@@ -2106,10 +2106,18 @@ export default function MultiStepForm({ locale }: MultiStepFormProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#201512] dark:bg-[#C79A6B] hover:bg-[#3A241C] dark:hover:bg-[#D4AA7D] disabled:opacity-60 text-[#F5F0E8] dark:text-[#191512] text-xs sm:text-sm font-bold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target"
+              className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-xl bg-[#201512] dark:bg-[#C79A6B] hover:bg-[#3A241C] dark:hover:bg-[#D4AA7D] disabled:opacity-60 text-[#F5F0E8] dark:text-[#191512] text-xs sm:text-sm font-bold tracking-wider uppercase shadow-[0_8px_20px_-6px_rgba(32,21,18,0.25)] hover:shadow-[0_12px_24px_-6px_rgba(32,21,18,0.35)] hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 tap-target cursor-pointer disabled:cursor-not-allowed"
             >
-              <ShieldCheck className="w-4 h-4 text-[#C79A6B] dark:text-[#191512]" />
-              <span>{isSubmitting ? sfDict.review.submitting : sfDict.review.submitButton}</span>
+              {isSubmitting ? (
+                <Loader2 className="w-4 h-4 text-[#C79A6B] dark:text-[#191512] animate-spin" />
+              ) : (
+                <ShieldCheck className="w-4 h-4 text-[#C79A6B] dark:text-[#191512]" />
+              )}
+              <span>
+                {isSubmitting
+                  ? (isTe ? 'ప్రాపర్టీ సమర్పిస్తున్నాము...' : 'Verifying & Submitting Listing...')
+                  : sfDict.review.submitButton}
+              </span>
             </button>
           )}
         </div>
