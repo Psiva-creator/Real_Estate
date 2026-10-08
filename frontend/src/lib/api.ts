@@ -51,7 +51,7 @@ export interface EnquirySubmissionResult {
 // ─── Seller property creation types ──────────────────────────────────────────
 
 export interface CreatePropertyDTO {
-  seller: {
+  seller?: {
     name: string;
     phone: string;
     whatsapp?: string;
