@@ -42,8 +42,8 @@ const TEMPLATES: Record<string, { en: string; te: string }> = {
     te: '🚨 *కొత్త సైట్ విజిట్ స్లాట్ బుకింగ్*\n\nకస్టమర్: {{buyer_name}} (ఫోన్: {{buyer_phone}})\nప్రాపర్టీ: {{property_title}}\nస్లాట్ సమయం: {{slot_timing}}\nలీడ్ స్కోర్: {{lead_score}}\n\n🔗 ప్రాపర్టీ: {{property_url}}\n📋 డాష్‌బోర్డ్: {{dashboard_url}}',
   },
   site_visit_scheduled: {
-    en: 'Hi {{buyer_name}}, your site visit for {{property_title}} is scheduled for {{visit_date_time}}. Meeting point & coordinates: {{map_link}}. Advisor {{agent_name}} (+91-{{agent_phone}}) will accompany you. Please carry valid ID.',
-    te: '{{buyer_name}} గారు, {{property_title}} కోసం మీ సైట్ విజిట్ {{visit_date_time}} సమయానికి నిర్ణయించబడింది. లొకేషన్ వివరాలు: {{map_link}}. మా ప్రతినిధి {{agent_name}} (+91-{{agent_phone}}) మీకు సహాయం చేస్తారు.',
+    en: '🏡 *Site Visit Slot Confirmed | Telangana Realty Hub*\n\nHi {{buyer_name}}, your site visit for *{{property_title}}* is scheduled for *{{visit_date_time}}*.\n\n🔗 *View Verified Property Listing & Seller Land Details:*\n{{property_url}}\n\n📍 *Meeting Point & Directions:* {{map_link}}\n👤 *Assigned Field Advisor:* {{agent_name}} (+91-{{agent_phone}})\n\nPlease carry a valid ID. Our team will verify on-ground survey boundaries with you.',
+    te: '🏡 *సైట్ విజిట్ స్లాట్ బుకింగ్ నిర్ధారించబడింది | తెలంగాణ రియల్టీ హబ్*\n\nనమస్కారం {{buyer_name}} గారు, *{{property_title}}* కోసం మీ సైట్ విజిట్ *{{visit_date_time}}* సమయానికి నిర్ణయించబడింది.\n\n🔗 *విక్రేత భూమి / ప్రాపర్టీ వివరాలను మా వెబ్‌సైట్‌లో చూడండి:*\n{{property_url}}\n\n📍 *లొకేషన్ & మ్యాప్ వివరాలు:* {{map_link}}\n👤 *ఫీల్డ్ అడ్వైజర్:* {{agent_name}} (+91-{{agent_phone}})\n\nదయచేసి గుర్తింపు కార్డు తీసుకురండి. మా బృందం సరిహద్దులను మీకు ప్రత్యక్షంగా పరిశీలింపజేస్తుంది.',
   },
   seller_listing_verified: {
     en: 'Dear {{seller_name}}, all 13 documents for your property {{property_title}} have been verified by our legal team. Your listing is now LIVE to active buyers. Track enquiries on your seller portal: {{seller_portal_url}}',
